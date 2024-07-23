@@ -4,36 +4,36 @@
       <h1 class="title">海龟汤</h1>
     </el-header>
     <el-main>
-      <el-row class="button-row">
+      <el-row class="button-container">
         <el-col>
-          <el-button type="primary" size="large" @click="navigateTo('/auto-match')">自动匹配</el-button>
+          <el-button class="button-item" type="primary" size="large" @click="navigateTo('/auto-match')">自动匹配
+          </el-button>
         </el-col>
         <el-col>
-          <el-button type="success" size="large" @click="navigateTo('/create-room')">创建房间</el-button>
+          <el-button class="button-item" type="success" size="large" @click="navigateTo('/create-room')">创建房间
+          </el-button>
+        </el-col>
+        <el-col>
+          <div class="text-item" @click="navigateTo('/login')">登录</div>
         </el-col>
       </el-row>
     </el-main>
   </el-container>
 </template>
 
-<script lang="ts">
-import {defineComponent} from 'vue';
+<script lang="ts" setup>
 import {useRouter} from 'vue-router';
+import {onMounted} from "vue";
+import {hideTitle} from "../utils/ViewUtils.ts";
 
-export default defineComponent({
-  name: 'Home',
-  setup() {
-    const router = useRouter();
+const router = useRouter();
+const navigateTo = (path: string) => {
+  router.push(path);
+}
 
-    const navigateTo = (path: string) => {
-      router.push(path);
-    };
-
-    return {
-      navigateTo
-    };
-  }
-});
+onMounted(() => {
+  hideTitle()
+})
 </script>
 
 <style scoped>
@@ -48,9 +48,18 @@ export default defineComponent({
   text-align: center;
 }
 
-.button-row {
+.button-container {
   margin-top: 30px;
-  position: fixed;
   align-content: center;
+}
+
+.button-item {
+  margin: 10px 0;
+  width: 200px;
+}
+
+.text-item {
+  margin-top: 10px;
+  color: dodgerblue;
 }
 </style>

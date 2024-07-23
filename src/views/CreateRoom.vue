@@ -1,16 +1,16 @@
 <template>
   <div>
-    <h1>创建房间</h1>
     <!-- 创建房间的内容 -->
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
+import {onMounted} from "vue";
+import {showTitle} from "../utils/ViewUtils.ts";
 
-export default defineComponent({
-  name: 'CreateRoom'
-});
+onMounted(() => {
+  showTitle("创建房间")
+})
 </script>
 
 <style scoped>
