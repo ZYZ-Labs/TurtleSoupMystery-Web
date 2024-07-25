@@ -1,7 +1,7 @@
 <template>
   <el-container class="root-container">
     <HeaderComponent v-if="headerStatus"/>
-    <el-main>
+    <el-main class="main-content">
       <RouterView class="router-view"/>
     </el-main>
     <FooterComponent v-if="footerStatus"/>
@@ -22,9 +22,19 @@ const footerStatus = computed(() => store.state.main.footerStatus);
 
 <style scoped>
 .root-container {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
 }
-.router-view{
+
+.main-content {
+  flex: 1;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  overflow: auto;
+}
+
+.router-view {
   height: 100%;
 }
 </style>
