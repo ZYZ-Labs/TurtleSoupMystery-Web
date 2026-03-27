@@ -688,6 +688,11 @@ onBeforeUnmount(() => {
 .message-stream {
   display: grid;
   gap: 14px;
+  height: 560px;
+  overflow-y: auto;
+  align-content: start;
+  padding-right: 6px;
+  scrollbar-gutter: stable;
 }
 
 .message-item {
@@ -704,5 +709,11 @@ onBeforeUnmount(() => {
 .message-item--status,
 .message-item--system {
   background: rgba(244, 248, 253, 0.88);
+}
+
+@media (max-width: 960px) {
+  .message-stream {
+    height: 420px;
+  }
 }
 </style>
