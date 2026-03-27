@@ -196,7 +196,7 @@
       <v-card class="glass-card mb-4">
         <v-card-title class="section-title px-6 pt-6">聊天室</v-card-title>
         <v-card-text class="pt-4">
-          <div class="message-stream">
+          <div ref="messageStreamRef" class="message-stream">
             <div v-for="message in room.messages" :key="message.id" class="message-item" :class="`message-item--${message.type}`">
               <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-2">
                 <div class="d-flex align-center ga-2">
@@ -317,7 +317,7 @@ import {
   mdiCrownOutline,
   mdiMessageQuestionOutline
 } from '@mdi/js';
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { buildRealtimeRoomUrl } from '@/api/client';
 import AnswerBadge from '@/components/ui/AnswerBadge.vue';
@@ -354,6 +354,7 @@ const rememberedDisplayName = getStoredDisplayName();
 
 const room = ref<PublicGameRoom | null>(null);
 const activeParticipant = ref<PublicRoomParticipant | null>(null);
+const messageStreamRef = ref<HTMLElement | null>(null);
 const loadingRoom = ref(false);
 const creating = ref(false);
 const joining = ref(false);
@@ -438,6 +439,16 @@ function saveStoredIdentity(roomCode: string, participant: PublicRoomParticipant
 
 function clearStoredIdentity(roomCode: string) {
   localStorage.removeItem(identityStorageKey(roomCode));
+}
+
+async function scrollMessagesToBottom() {
+  await nextTick();
+
+  if (!messageStreamRef.value) {
+    return;
+  }
+
+  messageStreamRef.value.scrollTop = messageStreamRef.value.scrollHeight;
 }
 
 function statusLabel(status: RoomStatus) {
@@ -923,6 +934,13 @@ watch(
   () => activeParticipant.value?.participantId,
   () => {
     restartHeartbeatTimer();
+  }
+);
+
+watch(
+  () => room.value?.messageCount,
+  () => {
+    void scrollMessagesToBottom();
   }
 );
 
