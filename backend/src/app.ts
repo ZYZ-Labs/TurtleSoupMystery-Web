@@ -4,19 +4,32 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import { OllamaService } from './services/ollamaService.js';
-import { SessionService } from './services/sessionService.js';
+import { RoomService, ServiceError } from './services/roomService.js';
 import { StateStore } from './storage/stateStore.js';
 
-const questionBodySchema = z.object({
-  question: z.string().trim().min(1, '问题不能为空。')
+const roomCreateSchema = z.object({
+  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称最多 24 个字符。'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  generationPrompt: z.string().trim().min(2, '请描述想生成的汤底主题。').max(200, '生成提示请控制在 200 字以内。')
+});
+
+const roomJoinSchema = z.object({
+  roomCode: z.string().trim().min(4, '请输入房间码。').max(12, '房间码格式不正确。'),
+  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称最多 24 个字符。')
+});
+
+const roomQuestionSchema = z.object({
+  participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
+  question: z.string().trim().min(1, '问题不能为空。').max(280, '单次提问请控制在 280 字以内。')
 });
 
 const finalGuessSchema = z.object({
-  guess: z.string().trim().min(1, '最终猜测不能为空。')
+  participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
+  guess: z.string().trim().min(1, '最终猜测不能为空。').max(2000, '最终猜测请控制在 2000 字以内。')
 });
 
-const sessionCreateSchema = z.object({
-  puzzleId: z.string().trim().optional()
+const participantActionSchema = z.object({
+  participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。')
 });
 
 const checkSchema = z.object({
@@ -33,7 +46,7 @@ const saveConfigSchema = z.object({
 export async function createApp() {
   const store = new StateStore();
   await store.ensureInitialized();
-  const sessionService = new SessionService(store, new OllamaService());
+  const roomService = new RoomService(store, new OllamaService());
 
   const app = express();
   app.use(cors());
@@ -63,85 +76,95 @@ export async function createApp() {
   app.get(
     '/api/overview',
     wrap(async (_request, response) => {
-      response.json(await sessionService.getOverview());
+      response.json(await roomService.getOverview());
     })
   );
 
   app.get(
     '/api/puzzles',
     wrap(async (_request, response) => {
-      response.json(await sessionService.listPuzzles());
+      response.json(await roomService.listPuzzles());
     })
   );
 
   app.get(
-    '/api/sessions',
+    '/api/rooms',
     wrap(async (_request, response) => {
-      response.json(await sessionService.listSessions());
+      response.json(await roomService.listRooms());
     })
   );
 
   app.post(
-    '/api/sessions',
+    '/api/rooms',
     wrap(async (request, response) => {
-      const body = sessionCreateSchema.parse(request.body ?? {});
-      response.status(201).json(await sessionService.createSession(body.puzzleId));
+      const body = roomCreateSchema.parse(request.body ?? {});
+      response.status(201).json(await roomService.createRoom(body));
+    })
+  );
+
+  app.post(
+    '/api/rooms/join',
+    wrap(async (request, response) => {
+      const body = roomJoinSchema.parse(request.body ?? {});
+      response.json(await roomService.joinRoom(body));
     })
   );
 
   app.get(
-    '/api/sessions/:sessionId',
+    '/api/rooms/code/:roomCode',
     wrap(async (request, response) => {
-      const sessionId = Array.isArray(request.params.sessionId)
-        ? request.params.sessionId[0]
-        : request.params.sessionId;
-      const session = await sessionService.getSession(sessionId);
+      const roomCode = Array.isArray(request.params.roomCode) ? request.params.roomCode[0] : request.params.roomCode;
+      const room = await roomService.getRoomByCode(roomCode);
 
-      if (!session) {
-        response.status(404).json({ message: '对局不存在。' });
+      if (!room) {
+        response.status(404).json({ message: '房间不存在。' });
         return;
       }
 
-      response.json(session);
+      response.json(room);
     })
   );
 
   app.post(
-    '/api/sessions/:sessionId/questions',
+    '/api/rooms/:roomId/questions',
     wrap(async (request, response) => {
-      const sessionId = Array.isArray(request.params.sessionId)
-        ? request.params.sessionId[0]
-        : request.params.sessionId;
-      const body = questionBodySchema.parse(request.body ?? {});
-      response.json(await sessionService.askQuestion(sessionId, body.question));
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = roomQuestionSchema.parse(request.body ?? {});
+      response.json(await roomService.askQuestion(roomId, body.participantId, body.question));
     })
   );
 
   app.post(
-    '/api/sessions/:sessionId/final-guess',
+    '/api/rooms/:roomId/final-guess',
     wrap(async (request, response) => {
-      const sessionId = Array.isArray(request.params.sessionId)
-        ? request.params.sessionId[0]
-        : request.params.sessionId;
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
       const body = finalGuessSchema.parse(request.body ?? {});
-      response.json(await sessionService.submitFinalGuess(sessionId, body.guess));
+      response.json(await roomService.submitFinalGuess(roomId, body.participantId, body.guess));
     })
   );
 
   app.post(
-    '/api/sessions/:sessionId/reveal',
+    '/api/rooms/:roomId/reveal',
     wrap(async (request, response) => {
-      const sessionId = Array.isArray(request.params.sessionId)
-        ? request.params.sessionId[0]
-        : request.params.sessionId;
-      response.json(await sessionService.revealSession(sessionId));
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = participantActionSchema.parse(request.body ?? {});
+      response.json(await roomService.revealRoom(roomId, body.participantId));
+    })
+  );
+
+  app.post(
+    '/api/rooms/:roomId/heartbeat',
+    wrap(async (request, response) => {
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = participantActionSchema.parse(request.body ?? {});
+      response.json(await roomService.heartbeatRoom(roomId, body.participantId));
     })
   );
 
   app.get(
     '/api/settings/ollama',
     wrap(async (_request, response) => {
-      response.json(await sessionService.getOllamaConfig());
+      response.json(await roomService.getOllamaConfig());
     })
   );
 
@@ -149,7 +172,7 @@ export async function createApp() {
     '/api/settings/ollama/check',
     wrap(async (request, response) => {
       const body = checkSchema.parse(request.body ?? {});
-      response.json(await sessionService.checkOllamaConnection(body.baseUrl, body.timeoutMs));
+      response.json(await roomService.checkOllamaConnection(body.baseUrl, body.timeoutMs));
     })
   );
 
@@ -157,7 +180,7 @@ export async function createApp() {
     '/api/settings/ollama',
     wrap(async (request, response) => {
       const body = saveConfigSchema.parse(request.body ?? {});
-      response.json(await sessionService.saveOllamaConfig(body));
+      response.json(await roomService.saveOllamaConfig(body));
     })
   );
 
@@ -181,8 +204,20 @@ export async function createApp() {
       return;
     }
 
+    if (error instanceof ServiceError) {
+      response.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    const statusCode =
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      typeof (error as { statusCode?: unknown }).statusCode === 'number'
+        ? ((error as { statusCode: number }).statusCode ?? 500)
+        : 500;
     const message = error instanceof Error ? error.message : '服务器内部错误。';
-    response.status(500).json({ message });
+    response.status(statusCode).json({ message });
   });
 
   return app;

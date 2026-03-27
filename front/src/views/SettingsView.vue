@@ -31,7 +31,7 @@
                   item-title="title"
                   item-value="value"
                   :disabled="!modelItems.length"
-                  hint="连接成功后会自动拉取模型列表"
+                  hint="连通成功后会自动拉取模型列表"
                   persistent-hint
                 />
               </v-col>
@@ -90,7 +90,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { checkOllamaConnection, fetchOllamaConfig, saveOllamaConfig } from '@/api/services';
 import { extractErrorMessage } from '@/lib/errors';
-import { formatDateTime, formatBytes } from '@/lib/format';
+import { formatBytes, formatDateTime } from '@/lib/format';
 import { useUiStore } from '@/stores/ui';
 import type { OllamaConfig } from '@/types/api';
 

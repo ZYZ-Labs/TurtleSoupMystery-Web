@@ -1,168 +1,256 @@
 <template>
-  <v-row v-if="!session">
+  <v-row v-if="!currentRoomCode">
     <v-col cols="12" lg="7">
       <v-card class="glass-card">
-        <v-card-title class="section-title px-6 pt-6">开始一局新推理</v-card-title>
+        <v-card-title class="section-title px-6 pt-6">创建多人房间</v-card-title>
         <v-card-text class="pt-4">
           <v-alert v-if="!ollamaConfigured" type="warning" variant="tonal" class="mb-4">
-            还没有完成 Ollama 配置。你依然可以先创建对局，但真正的 AI 主持效果要在“系统设置”里连通模型后才能完整发挥。
+            当前还没有连通 Ollama。你仍然可以创建房间，系统会先使用内置的动态模板兜底出题。
           </v-alert>
 
+          <v-text-field v-model="createForm.displayName" label="你的昵称" class="mb-4" />
+
           <v-select
-            v-model="selectedPuzzleId"
-            :items="puzzleItems"
+            v-model="createForm.difficulty"
+            :items="difficultyItems"
             item-title="title"
             item-value="value"
-            label="选择谜题"
+            label="难度"
             class="mb-4"
           />
 
-          <v-sheet rounded="xl" color="rgba(31,111,235,0.05)" class="pa-5 mb-4">
-            <div class="text-subtitle-1 font-weight-bold mb-2">{{ selectedPuzzle?.title || '暂无谜题' }}</div>
-            <p class="text-body-1 mb-4">{{ selectedPuzzle?.soupSurface }}</p>
-            <div class="d-flex flex-wrap ga-2">
-              <v-chip size="small" color="primary" variant="tonal">{{ difficultyLabel }}</v-chip>
-              <v-chip v-for="tag in selectedPuzzle?.tags ?? []" :key="tag" size="small" variant="outlined">
-                {{ tag }}
-              </v-chip>
-            </div>
-          </v-sheet>
+          <v-textarea
+            v-model="createForm.generationPrompt"
+            rows="5"
+            auto-grow
+            label="汤底主题"
+            placeholder="例如：现代都市、误导性强、围绕一张照片展开。"
+            class="mb-4"
+          />
 
-          <v-btn color="primary" size="large" :loading="creating" @click="handleStartSession">
-            创建并进入本局
-          </v-btn>
+          <div class="d-flex flex-wrap ga-3">
+            <v-btn color="primary" size="large" :loading="creating" @click="handleCreateRoom">创建并进入房间</v-btn>
+          </div>
         </v-card-text>
       </v-card>
     </v-col>
 
     <v-col cols="12" lg="5">
-      <v-card class="glass-card h-100">
-        <v-card-title class="section-title px-6 pt-6">玩法边界</v-card-title>
+      <v-card class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">加入已有房间</v-card-title>
+        <v-card-text class="pt-4">
+          <v-text-field v-model="joinForm.roomCode" label="房间码" class="mb-4" />
+          <v-text-field v-model="joinForm.displayName" label="你的昵称" class="mb-4" />
+          <v-btn color="secondary" size="large" :loading="joining" @click="handleJoinRoom">加入房间</v-btn>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="glass-card">
+        <v-card-title class="section-title px-6 pt-6">玩法说明</v-card-title>
         <v-card-text class="pt-4">
           <v-list density="comfortable">
-            <v-list-item>玩家通过问句逼近真相，主持回答只允许标准五类结果。</v-list-item>
-            <v-list-item>当前版本优先保证真相一致性，不让模型临场改设定。</v-list-item>
-            <v-list-item>最终猜测会进入结算，失败后也会公开完整汤底。</v-list-item>
+            <v-list-item>房主输入主题后，系统会即时生成一个全新的汤底并开启多人协作推理。</v-list-item>
+            <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已揭示事实和最终结算结果。</v-list-item>
+            <v-list-item>当前版本采用轮询同步，不需要额外消息中间件就能在局域网里多人协作。</v-list-item>
           </v-list>
         </v-card-text>
       </v-card>
     </v-col>
   </v-row>
 
-  <v-row v-else>
-    <v-col cols="12" lg="5">
+  <v-row v-else-if="loadingRoom && !room">
+    <v-col cols="12">
+      <v-card class="glass-card">
+        <v-card-text class="d-flex align-center justify-center py-16">
+          <v-progress-circular indeterminate color="primary" />
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
+
+  <v-row v-else-if="room">
+    <v-col cols="12" lg="4">
       <v-card class="glass-card mb-4">
         <v-card-title class="d-flex align-center justify-space-between px-6 pt-6">
-          <div class="section-title">{{ session.puzzleTitle }}</div>
-          <v-chip :color="statusColor(session.status)" variant="flat">{{ statusLabel(session.status) }}</v-chip>
+          <div class="section-title">{{ room.puzzleTitle }}</div>
+          <v-chip :color="statusColor(room.status)" variant="flat">{{ statusLabel(room.status) }}</v-chip>
         </v-card-title>
         <v-card-text class="pt-4">
-          <div class="text-overline mb-2">汤面</div>
-          <p class="text-body-1 mb-5">{{ session.soupSurface }}</p>
+          <div class="text-body-2 text-medium-emphasis mb-2">房间码</div>
+          <div class="d-flex align-center ga-2 mb-4">
+            <span class="font-weight-bold text-h6">{{ room.roomCode }}</span>
+            <v-btn size="small" variant="text" @click="copyRoomCode">
+              <v-icon :icon="mdiContentCopy" start />
+              复制
+            </v-btn>
+          </div>
+
+          <div class="text-body-2 text-medium-emphasis mb-2">汤面</div>
+          <p class="text-body-1 mb-4">{{ room.soupSurface }}</p>
 
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-body-2 text-medium-emphasis">推理进度</span>
-            <span class="font-weight-medium">{{ session.progressScore }}%</span>
+            <span class="font-weight-medium">{{ room.progressScore }}%</span>
           </div>
-          <v-progress-linear :model-value="session.progressScore" color="primary" rounded class="mb-5" />
+          <v-progress-linear :model-value="room.progressScore" color="primary" rounded class="mb-4" />
 
-          <div class="d-flex flex-wrap ga-2 mb-5">
-            <v-chip size="small" color="primary" variant="tonal">{{ formatDifficulty(session.difficulty) }}</v-chip>
-            <v-chip size="small" variant="outlined">{{ session.questions.length }} 个问题</v-chip>
-            <v-chip size="small" variant="outlined">{{ session.revealedFacts.length }} 条已揭示事实</v-chip>
+          <div class="d-flex flex-wrap ga-2 mb-4">
+            <v-chip size="small" color="primary" variant="tonal">{{ formatDifficulty(room.difficulty) }}</v-chip>
+            <v-chip size="small" variant="outlined">{{ room.participants.length }} 人</v-chip>
+            <v-chip size="small" variant="outlined">{{ room.questionCount }} 次提问</v-chip>
           </div>
 
-          <div class="text-subtitle-2 font-weight-bold mb-2">已揭示事实</div>
-          <v-list v-if="session.revealedFacts.length" density="comfortable" class="mb-2">
-            <v-list-item v-for="fact in session.revealedFacts" :key="fact.factId">
+          <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
+          <p class="text-body-2 mb-0">{{ room.generationPrompt }}</p>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">房间成员</v-card-title>
+        <v-card-text class="pt-4">
+          <v-list density="compact">
+            <v-list-item v-for="participant in room.participants" :key="participant.participantId">
+              <template #prepend>
+                <v-icon :icon="participant.role === 'host' ? mdiCrownOutline : mdiAccountOutline" />
+              </template>
+              <v-list-item-title>
+                {{ participant.displayName }}
+                <v-chip v-if="activeParticipant?.participantId === participant.participantId" size="x-small" class="ml-2">
+                  你
+                </v-chip>
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ participant.role === 'host' ? '房主' : '玩家' }} · 最后活跃 {{ formatDateTime(participant.lastSeenAt) }}
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
+
+      <v-card v-if="!isJoined" class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">加入当前房间</v-card-title>
+        <v-card-text class="pt-4">
+          <v-text-field v-model="joinForm.displayName" label="你的昵称" class="mb-4" />
+          <v-btn color="secondary" :loading="joining" @click="handleJoinRoom">加入并开始协作</v-btn>
+        </v-card-text>
+      </v-card>
+
+      <v-card v-else class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">当前身份</v-card-title>
+        <v-card-text class="pt-4">
+          <div class="text-body-1 font-weight-medium mb-2">{{ activeParticipant?.displayName }}</div>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ activeParticipant?.role === 'host' ? '房主' : '玩家' }} · 你当前已经加入此房间。
+          </div>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">已揭示事实</v-card-title>
+        <v-card-text class="pt-4">
+          <v-list v-if="room.revealedFacts.length" density="compact">
+            <v-list-item v-for="fact in room.revealedFacts" :key="fact.factId">
               <template #prepend>
                 <v-icon :icon="mdiCheckCircleOutline" color="success" />
               </template>
               <v-list-item-title>{{ fact.statement }}</v-list-item-title>
             </v-list-item>
           </v-list>
-          <v-alert v-else type="info" variant="tonal">还没有揭示出的事实，先从高质量提问开始。</v-alert>
+          <v-alert v-else type="info" variant="tonal">还没有揭示事实，先从高质量的 Yes / No 问题开始。</v-alert>
         </v-card-text>
       </v-card>
 
-      <v-card class="glass-card">
-        <v-card-title class="section-title px-6 pt-6">
-          {{ session.status === 'playing' ? '最终猜测' : '本局结算' }}
-        </v-card-title>
+      <v-card v-if="room.status !== 'playing'" class="glass-card">
+        <v-card-title class="section-title px-6 pt-6">完整汤底</v-card-title>
         <v-card-text class="pt-4">
-          <template v-if="session.status === 'playing'">
-            <p class="text-body-2 text-medium-emphasis mb-4">
-              当你认为自己已经还原出完整故事时，可以提交最终猜测进行结算。
-            </p>
-            <div class="d-flex flex-wrap ga-3">
-              <v-btn color="primary" @click="guessDialog = true">提交最终猜测</v-btn>
-              <v-btn variant="outlined" color="error" @click="handleReveal">结束并公开汤底</v-btn>
-            </div>
-          </template>
-
-          <template v-else>
-            <v-alert :type="session.status === 'solved' ? 'success' : 'warning'" variant="tonal" class="mb-4">
-              {{ session.status === 'solved' ? '本局已破解。' : '本局已结束，以下为完整汤底。' }}
-            </v-alert>
-            <div class="text-subtitle-2 font-weight-bold mb-2">完整汤底</div>
-            <p class="text-body-1 mb-4">{{ session.truthStory }}</p>
-            <div v-if="session.finalGuess" class="text-body-2 text-medium-emphasis">
-              最终猜测评分：{{ session.finalGuess.score }}%
-            </div>
-          </template>
+          <p class="text-body-1 mb-4">{{ room.truthStory }}</p>
+          <div v-if="room.finalGuess" class="text-body-2 text-medium-emphasis">
+            最终猜测人：{{ room.finalGuess.participantName }} · 得分 {{ room.finalGuess.score }}%
+          </div>
         </v-card-text>
       </v-card>
     </v-col>
 
-    <v-col cols="12" lg="7">
+    <v-col cols="12" lg="8">
       <v-card class="glass-card mb-4">
-        <v-card-title class="section-title px-6 pt-6">问题记录</v-card-title>
+        <v-card-title class="section-title px-6 pt-6">聊天室</v-card-title>
         <v-card-text class="pt-4">
-          <div v-if="session.questions.length" class="question-log">
-            <div v-for="item in session.questions" :key="item.id" class="question-log__item">
-              <div class="d-flex align-start justify-space-between ga-4 flex-wrap mb-2">
-                <div class="font-weight-medium">{{ item.question }}</div>
-                <AnswerBadge :code="item.answerCode" :label="item.answerLabel" />
+          <div class="message-stream">
+            <div v-for="message in room.messages" :key="message.id" class="message-item" :class="`message-item--${message.type}`">
+              <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-2">
+                <div class="d-flex align-center ga-2">
+                  <v-icon
+                    :icon="
+                      message.type === 'answer'
+                        ? mdiMessageQuestionOutline
+                        : message.type === 'status'
+                          ? mdiCompassOutline
+                          : mdiAccountOutline
+                    "
+                    size="18"
+                  />
+                  <span class="font-weight-medium">{{ message.authorName }}</span>
+                </div>
+                <div class="d-flex align-center ga-2">
+                  <AnswerBadge v-if="message.answerCode" :code="message.answerCode" :label="message.answerLabel" />
+                  <span class="text-body-2 text-medium-emphasis">{{ formatDateTime(message.createdAt) }}</span>
+                </div>
               </div>
-              <div class="text-body-2 text-medium-emphasis mb-1">
-                {{ formatDateTime(item.createdAt) }} · 命中 {{ item.matchedFactCount }} 条事实 · 推进 {{ item.progressDelta }}%
-              </div>
-              <div v-if="item.revealedFacts.length" class="d-flex flex-wrap ga-2 mt-2">
-                <v-chip
-                  v-for="fact in item.revealedFacts"
-                  :key="fact.factId"
-                  size="x-small"
-                  color="secondary"
-                  variant="tonal"
-                >
-                  揭示 {{ fact.statement }}
-                </v-chip>
-              </div>
+              <div class="text-body-1">{{ message.content }}</div>
             </div>
           </div>
-          <v-alert v-else type="info" variant="tonal">本局还没有任何提问，先抛出一个 Yes / No 风格的问题。</v-alert>
         </v-card-text>
       </v-card>
 
       <v-card class="glass-card">
-        <v-card-title class="section-title px-6 pt-6">继续提问</v-card-title>
+        <v-card-title class="section-title px-6 pt-6">继续推进</v-card-title>
         <v-card-text class="pt-4">
-          <v-textarea
-            v-model="question"
-            rows="4"
-            auto-grow
-            label="输入你的问题"
-            placeholder="例如：这件事和海难有关吗？"
-            :disabled="session.status !== 'playing'"
-          />
-          <div class="d-flex justify-space-between align-center flex-wrap ga-3">
-            <div class="text-body-2 text-medium-emphasis">
-              目标是让主持人只给出结构化回答，而不是主动剧透。
+          <v-alert v-if="!isJoined" type="warning" variant="tonal" class="mb-4">
+            你还没有加入这个房间，加入后才能参与提问和提交最终猜测。
+          </v-alert>
+
+          <template v-if="room.status === 'playing'">
+            <v-textarea
+              v-model="question"
+              rows="4"
+              auto-grow
+              label="提出一个共享问题"
+              placeholder="例如：这件事和受害者主动做出的选择有关吗？"
+              :disabled="!isJoined"
+              class="mb-4"
+            />
+
+            <div class="d-flex flex-wrap ga-3 mb-2">
+              <v-btn color="primary" :loading="asking" :disabled="!isJoined" @click="handleAskQuestion">发送问题</v-btn>
+              <v-btn variant="outlined" color="secondary" :disabled="!isJoined" @click="guessDialog = true">
+                提交最终猜测
+              </v-btn>
+              <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" @click="handleReveal">
+                公开汤底并结束
+              </v-btn>
             </div>
-            <v-btn color="primary" :loading="asking" :disabled="session.status !== 'playing'" @click="handleAskQuestion">
-              提交问题
-            </v-btn>
-          </div>
+
+            <div class="text-body-2 text-medium-emphasis">
+              这是共享聊天室，所有成员都能看到你的提问与主持回答。
+            </div>
+          </template>
+
+          <template v-else>
+            <v-alert :type="room.status === 'solved' ? 'success' : 'warning'" variant="tonal">
+              {{ room.status === 'solved' ? '本房间已经破解。' : '本房间已经结束。' }}
+            </v-alert>
+          </template>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
+
+  <v-row v-else>
+    <v-col cols="12">
+      <v-card class="glass-card">
+        <v-card-text class="py-10 text-center">
+          <div class="text-h6 mb-3">没有找到对应房间</div>
+          <v-btn color="primary" to="/game">返回大厅</v-btn>
         </v-card-text>
       </v-card>
     </v-col>
@@ -176,8 +264,8 @@
           v-model="finalGuess"
           rows="6"
           auto-grow
-          label="完整描述你还原出的故事"
-          placeholder="请尽量交代关键人物、事件顺序、动机与触发原因。"
+          label="完整描述你的还原"
+          placeholder="尽量交代关键人物、事件顺序、动机和真正触发点。"
         />
       </v-card-text>
       <v-card-actions class="px-6 pb-6">
@@ -190,65 +278,114 @@
 </template>
 
 <script setup lang="ts">
-import { mdiCheckCircleOutline } from '@mdi/js';
-import { computed, onMounted, ref, watch } from 'vue';
+import {
+  mdiAccountOutline,
+  mdiCheckCircleOutline,
+  mdiCompassOutline,
+  mdiContentCopy,
+  mdiCrownOutline,
+  mdiMessageQuestionOutline
+} from '@mdi/js';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AnswerBadge from '@/components/ui/AnswerBadge.vue';
 import {
-  askQuestion,
-  createSession,
+  askRoomQuestion,
+  createRoom,
   fetchOllamaConfig,
-  fetchPuzzles,
-  fetchSession,
-  revealSession,
-  submitFinalGuess
+  fetchRoomByCode,
+  heartbeatRoom,
+  joinRoom,
+  revealRoom,
+  submitRoomFinalGuess
 } from '@/api/services';
 import { extractErrorMessage } from '@/lib/errors';
 import { formatDateTime, formatDifficulty } from '@/lib/format';
 import { useUiStore } from '@/stores/ui';
-import type { GameSession, Puzzle, SessionStatus } from '@/types/api';
+import type { Difficulty, OllamaConfig, PublicGameRoom, PublicRoomParticipant, RoomStatus } from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
 const ui = useUiStore();
 
-const puzzles = ref<Puzzle[]>([]);
-const session = ref<GameSession | null>(null);
-const selectedPuzzleId = ref('');
+const room = ref<PublicGameRoom | null>(null);
+const activeParticipant = ref<PublicRoomParticipant | null>(null);
+const loadingRoom = ref(false);
+const creating = ref(false);
+const joining = ref(false);
+const asking = ref(false);
+const guessing = ref(false);
+const revealing = ref(false);
+const guessDialog = ref(false);
 const question = ref('');
 const finalGuess = ref('');
 const ollamaConfigured = ref(false);
 
-const creating = ref(false);
-const asking = ref(false);
-const guessing = ref(false);
-const guessDialog = ref(false);
-
-const selectedPuzzle = computed(() => {
-  const id = session.value?.puzzleId ?? selectedPuzzleId.value;
-  return puzzles.value.find((item) => item.puzzleId === id) ?? null;
+const createForm = reactive<{
+  displayName: string;
+  difficulty: Difficulty;
+  generationPrompt: string;
+}>({
+  displayName: '',
+  difficulty: 'medium',
+  generationPrompt: ''
 });
 
-const puzzleItems = computed(() =>
-  puzzles.value.map((item) => ({
-    title: `${item.title} · ${formatDifficulty(item.difficulty)}`,
-    value: item.puzzleId
-  }))
-);
+const joinForm = reactive({
+  roomCode: '',
+  displayName: ''
+});
 
-const difficultyLabel = computed(() =>
-  selectedPuzzle.value ? `${formatDifficulty(selectedPuzzle.value.difficulty)} 难度` : '未选择'
-);
+let pollTimer: number | null = null;
+let heartbeatTimer: number | null = null;
 
-function statusColor(status: SessionStatus) {
-  return {
-    playing: 'info',
-    solved: 'success',
-    failed: 'error'
-  }[status];
+const difficultyItems = [
+  { title: '简单', value: 'easy' },
+  { title: '中等', value: 'medium' },
+  { title: '困难', value: 'hard' }
+];
+
+const currentRoomCode = computed(() => {
+  const value = route.params.roomCode;
+  return typeof value === 'string' ? value.toUpperCase() : '';
+});
+
+const isJoined = computed(() => {
+  if (!room.value || !activeParticipant.value) {
+    return false;
+  }
+
+  return room.value.participants.some((participant) => participant.participantId === activeParticipant.value?.participantId);
+});
+
+const isHost = computed(() => activeParticipant.value?.role === 'host');
+
+function identityStorageKey(roomCode: string) {
+  return `turtle-soup-room:${roomCode}`;
 }
 
-function statusLabel(status: SessionStatus) {
+function readStoredIdentity(roomCode: string) {
+  try {
+    const raw = localStorage.getItem(identityStorageKey(roomCode));
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw) as PublicRoomParticipant;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredIdentity(roomCode: string, participant: PublicRoomParticipant) {
+  localStorage.setItem(identityStorageKey(roomCode), JSON.stringify(participant));
+}
+
+function clearStoredIdentity(roomCode: string) {
+  localStorage.removeItem(identityStorageKey(roomCode));
+}
+
+function statusLabel(status: RoomStatus) {
   return {
     playing: '进行中',
     solved: '已破解',
@@ -256,48 +393,155 @@ function statusLabel(status: SessionStatus) {
   }[status];
 }
 
-async function loadPuzzlesAndConfig() {
-  try {
-    const [puzzleList, config] = await Promise.all([fetchPuzzles(), fetchOllamaConfig()]);
-    puzzles.value = puzzleList;
-    ollamaConfigured.value = Boolean(config.baseUrl && config.defaultModel);
+function statusColor(status: RoomStatus) {
+  return {
+    playing: 'info',
+    solved: 'success',
+    failed: 'error'
+  }[status];
+}
 
-    if (!selectedPuzzleId.value && puzzleList.length) {
-      selectedPuzzleId.value = puzzleList[0].puzzleId;
-    }
+async function loadConfig() {
+  try {
+    const config: OllamaConfig = await fetchOllamaConfig();
+    ollamaConfigured.value = Boolean(config.baseUrl && config.defaultModel);
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
 }
 
-async function loadSessionFromRoute() {
-  const sessionId = typeof route.params.sessionId === 'string' ? route.params.sessionId : '';
+function syncIdentityWithRoom(nextRoom: PublicGameRoom) {
+  const storedIdentity = readStoredIdentity(nextRoom.roomCode);
 
-  if (!sessionId) {
-    session.value = null;
+  if (!storedIdentity) {
+    activeParticipant.value = null;
+    return;
+  }
+
+  const matched = nextRoom.participants.find((participant) => participant.participantId === storedIdentity.participantId);
+
+  if (!matched) {
+    clearStoredIdentity(nextRoom.roomCode);
+    activeParticipant.value = null;
+    return;
+  }
+
+  activeParticipant.value = matched;
+  joinForm.displayName = matched.displayName;
+}
+
+async function loadRoom(showError = true) {
+  if (!currentRoomCode.value) {
+    room.value = null;
+    activeParticipant.value = null;
+    return;
+  }
+
+  if (!room.value) {
+    loadingRoom.value = true;
+  }
+
+  try {
+    const nextRoom = await fetchRoomByCode(currentRoomCode.value);
+    room.value = nextRoom;
+    joinForm.roomCode = nextRoom.roomCode;
+    syncIdentityWithRoom(nextRoom);
+  } catch (error) {
+    room.value = null;
+    activeParticipant.value = null;
+    if (showError) {
+      ui.notify(extractErrorMessage(error), 'error');
+    }
+  } finally {
+    loadingRoom.value = false;
+  }
+}
+
+function stopSyncTimers() {
+  if (pollTimer !== null) {
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  if (heartbeatTimer !== null) {
+    window.clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
+function restartSyncTimers() {
+  stopSyncTimers();
+
+  if (!currentRoomCode.value) {
+    return;
+  }
+
+  pollTimer = window.setInterval(() => {
+    void loadRoom(false);
+  }, 3000);
+
+  if (activeParticipant.value) {
+    heartbeatTimer = window.setInterval(() => {
+      void sendHeartbeat(false);
+    }, 15000);
+  }
+}
+
+async function sendHeartbeat(showError = false) {
+  if (!room.value || !activeParticipant.value) {
     return;
   }
 
   try {
-    session.value = await fetchSession(sessionId);
+    await heartbeatRoom(room.value.roomId, activeParticipant.value.participantId);
   } catch (error) {
-    ui.notify(extractErrorMessage(error), 'error');
+    if (showError) {
+      ui.notify(extractErrorMessage(error), 'error');
+    }
   }
 }
 
-async function handleStartSession() {
-  if (!selectedPuzzleId.value) {
-    ui.notify('请先选择一个谜题。', 'warning');
+async function copyRoomCode() {
+  if (!room.value) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(room.value.roomCode);
+    ui.notify('房间码已复制。', 'success');
+  } catch {
+    ui.notify('复制失败，请手动复制房间码。', 'warning');
+  }
+}
+
+async function handleCreateRoom() {
+  if (!createForm.displayName.trim()) {
+    ui.notify('请先填写昵称。', 'warning');
+    return;
+  }
+
+  if (!createForm.generationPrompt.trim()) {
+    ui.notify('请先描述想生成的汤底主题。', 'warning');
     return;
   }
 
   creating.value = true;
 
   try {
-    const created = await createSession(selectedPuzzleId.value);
-    session.value = created;
-    ui.notify('新对局已创建。', 'success');
-    await router.push(`/game/${created.sessionId}`);
+    const created = await createRoom({
+      displayName: createForm.displayName.trim(),
+      difficulty: createForm.difficulty,
+      generationPrompt: createForm.generationPrompt.trim()
+    });
+
+    room.value = created.room;
+    activeParticipant.value = created.participant;
+    saveStoredIdentity(created.room.roomCode, created.participant);
+    joinForm.displayName = created.participant.displayName;
+    await router.push(`/game/${created.room.roomCode}`);
+    restartSyncTimers();
+    void sendHeartbeat(false);
+    ui.notify('房间已创建，把房间码发给其他成员即可加入。', 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
@@ -305,8 +549,49 @@ async function handleStartSession() {
   }
 }
 
+async function handleJoinRoom() {
+  const targetRoomCode = (currentRoomCode.value || joinForm.roomCode).trim().toUpperCase();
+
+  if (!targetRoomCode) {
+    ui.notify('请输入房间码。', 'warning');
+    return;
+  }
+
+  if (!joinForm.displayName.trim()) {
+    ui.notify('请先填写昵称。', 'warning');
+    return;
+  }
+
+  joining.value = true;
+
+  try {
+    const joined = await joinRoom({
+      roomCode: targetRoomCode,
+      displayName: joinForm.displayName.trim()
+    });
+
+    room.value = joined.room;
+    activeParticipant.value = joined.participant;
+    saveStoredIdentity(joined.room.roomCode, joined.participant);
+    joinForm.roomCode = joined.room.roomCode;
+    joinForm.displayName = joined.participant.displayName;
+
+    if (currentRoomCode.value !== joined.room.roomCode) {
+      await router.push(`/game/${joined.room.roomCode}`);
+    }
+
+    restartSyncTimers();
+    void sendHeartbeat(false);
+    ui.notify('已加入房间。', 'success');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    joining.value = false;
+  }
+}
+
 async function handleAskQuestion() {
-  if (!session.value) {
+  if (!room.value || !activeParticipant.value) {
     return;
   }
 
@@ -318,7 +603,7 @@ async function handleAskQuestion() {
   asking.value = true;
 
   try {
-    session.value = await askQuestion(session.value.sessionId, question.value.trim());
+    room.value = await askRoomQuestion(room.value.roomId, activeParticipant.value.participantId, question.value.trim());
     question.value = '';
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
@@ -328,7 +613,7 @@ async function handleAskQuestion() {
 }
 
 async function handleSubmitGuess() {
-  if (!session.value) {
+  if (!room.value || !activeParticipant.value) {
     return;
   }
 
@@ -340,10 +625,10 @@ async function handleSubmitGuess() {
   guessing.value = true;
 
   try {
-    session.value = await submitFinalGuess(session.value.sessionId, finalGuess.value.trim());
+    room.value = await submitRoomFinalGuess(room.value.roomId, activeParticipant.value.participantId, finalGuess.value.trim());
     guessDialog.value = false;
     finalGuess.value = '';
-    ui.notify(session.value.status === 'solved' ? '恭喜，你破解了本局。' : '结算完成，已公开汤底。', 'success');
+    ui.notify(room.value.status === 'solved' ? '最终猜测通过，房间已破解。' : '最终猜测未通过，房间已结算。', 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
@@ -352,41 +637,75 @@ async function handleSubmitGuess() {
 }
 
 async function handleReveal() {
-  if (!session.value) {
+  if (!room.value || !activeParticipant.value) {
     return;
   }
 
+  revealing.value = true;
+
   try {
-    session.value = await revealSession(session.value.sessionId);
-    ui.notify('本局已结束，汤底已公开。', 'warning');
+    room.value = await revealRoom(room.value.roomId, activeParticipant.value.participantId);
+    ui.notify('汤底已公开。', 'warning');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    revealing.value = false;
   }
 }
 
 watch(
-  () => route.params.sessionId,
+  currentRoomCode,
+  (nextRoomCode) => {
+    joinForm.roomCode = nextRoomCode;
+
+    if (!nextRoomCode) {
+      room.value = null;
+      activeParticipant.value = null;
+      stopSyncTimers();
+      return;
+    }
+
+    void loadRoom(true);
+    restartSyncTimers();
+  },
+  { immediate: true }
+);
+
+watch(
+  () => activeParticipant.value?.participantId,
   () => {
-    void loadSessionFromRoute();
+    restartSyncTimers();
   }
 );
 
 onMounted(() => {
-  void loadPuzzlesAndConfig();
-  void loadSessionFromRoute();
+  void loadConfig();
+});
+
+onBeforeUnmount(() => {
+  stopSyncTimers();
 });
 </script>
 
 <style scoped>
-.question-log {
+.message-stream {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
-.question-log__item {
+.message-item {
   padding: 16px;
   border-radius: 20px;
-  background: rgba(244, 248, 253, 0.9);
-  border: 1px solid rgba(214, 225, 237, 0.8);
+  border: 1px solid rgba(214, 225, 237, 0.85);
+  background: rgba(248, 250, 253, 0.94);
+}
+
+.message-item--answer {
+  background: rgba(232, 244, 255, 0.95);
+}
+
+.message-item--status,
+.message-item--system {
+  background: rgba(244, 248, 253, 0.88);
 }
 </style>

@@ -25,9 +25,9 @@
 import { computed, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useRoute } from 'vue-router';
-import AppSnackbar from '@/components/ui/AppSnackbar.vue';
 import SidebarNav from '@/components/layout/SidebarNav.vue';
 import TopBar from '@/components/layout/TopBar.vue';
+import AppSnackbar from '@/components/ui/AppSnackbar.vue';
 
 const route = useRoute();
 const display = useDisplay();
@@ -43,7 +43,7 @@ watch(
 );
 
 const pageTitle = computed(() => String(route.meta.title ?? 'Turtle Soup Mystery'));
-const statusText = computed(() => (route.path.startsWith('/settings') ? '配置模式' : '运行中'));
+const statusText = computed(() => (route.path.startsWith('/settings') ? '配置模式' : '房间运行中'));
 const statusColor = computed(() => (route.path.startsWith('/settings') ? 'secondary' : 'primary'));
 
 function toggleRail() {

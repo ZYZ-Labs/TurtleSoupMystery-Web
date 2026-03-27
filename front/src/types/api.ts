@@ -1,11 +1,14 @@
-export type SessionStatus = 'playing' | 'solved' | 'failed';
+export type Difficulty = 'easy' | 'medium' | 'hard';
+export type RoomStatus = 'playing' | 'solved' | 'failed';
 export type AnswerCode = 'yes' | 'no' | 'irrelevant' | 'partial' | 'unknown';
+export type ParticipantRole = 'host' | 'player';
+export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
 
 export interface Puzzle {
   puzzleId: string;
   title: string;
   soupSurface: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: Difficulty;
   tags: string[];
 }
 
@@ -14,19 +17,9 @@ export interface RevealedFact {
   statement: string;
 }
 
-export interface QuestionRecord {
-  id: string;
-  question: string;
-  answerCode: AnswerCode;
-  answerLabel: string;
-  matchedFactCount: number;
-  revealedFacts: RevealedFact[];
-  progressDelta: number;
-  createdAt: string;
-  source: 'ollama' | 'heuristic';
-}
-
 export interface FinalGuessRecord {
+  participantId: string;
+  participantName: string;
   guess: string;
   accepted: boolean;
   score: number;
@@ -35,20 +28,50 @@ export interface FinalGuessRecord {
   source: 'ollama' | 'heuristic';
 }
 
-export interface GameSession {
-  sessionId: string;
-  puzzleId: string;
+export interface PublicRoomParticipant {
+  participantId: string;
+  displayName: string;
+  role: ParticipantRole;
+  joinedAt: string;
+  lastSeenAt: string;
+}
+
+export interface PublicRoomMessage {
+  id: string;
+  type: MessageType;
+  authorName: string;
+  content: string;
+  createdAt: string;
+  answerCode?: AnswerCode;
+  answerLabel?: string;
+  source?: 'ollama' | 'heuristic';
+}
+
+export interface PublicGameRoom {
+  roomId: string;
+  roomCode: string;
+  title: string;
+  generationPrompt: string;
   puzzleTitle: string;
   soupSurface: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  questions: QuestionRecord[];
+  difficulty: Difficulty;
+  tags: string[];
+  participants: PublicRoomParticipant[];
+  messages: PublicRoomMessage[];
+  questionCount: number;
+  messageCount: number;
   revealedFacts: RevealedFact[];
   progressScore: number;
-  status: SessionStatus;
+  status: RoomStatus;
   finalGuess?: FinalGuessRecord;
   truthStory: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RoomJoinResult {
+  room: PublicGameRoom;
+  participant: PublicRoomParticipant;
 }
 
 export interface OllamaModel {
@@ -72,11 +95,13 @@ export interface OllamaConfig {
 
 export interface OverviewPayload {
   summary: {
-    puzzleCount: number;
-    sessionCount: number;
-    activeSessionCount: number;
-    solvedSessionCount: number;
-    failedSessionCount: number;
+    puzzleSeedCount: number;
+    roomCount: number;
+    activeRoomCount: number;
+    solvedRoomCount: number;
+    failedRoomCount: number;
+    participantCount: number;
+    onlineParticipantCount: number;
   };
   ollama: {
     configured: boolean;
@@ -86,7 +111,7 @@ export interface OverviewPayload {
     lastError: string | null;
     lastCheckedAt: string | null;
   };
-  latestSessions: GameSession[];
+  latestRooms: PublicGameRoom[];
 }
 
 export interface OllamaCheckResult {

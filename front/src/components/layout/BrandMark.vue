@@ -5,7 +5,7 @@
     </div>
     <div>
       <div class="brand-heading brand-mark__title">Turtle Soup</div>
-      <div class="brand-mark__subtitle">AI 推理主持引擎</div>
+      <div class="brand-mark__subtitle">多人推理主持台</div>
     </div>
   </div>
 </template>

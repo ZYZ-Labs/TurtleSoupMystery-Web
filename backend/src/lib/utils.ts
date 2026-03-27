@@ -1,4 +1,7 @@
-import { MAX_PROGRESS_SCORE } from './constants.js';
+import { customAlphabet } from 'nanoid';
+import { MAX_PROGRESS_SCORE, ROOM_CODE_ALPHABET } from './constants.js';
+
+const generateCode = customAlphabet(ROOM_CODE_ALPHABET, 6);
 
 export function nowIso() {
   return new Date().toISOString();
@@ -27,8 +30,8 @@ export function buildOllamaApiUrl(baseUrl: string, path: string) {
   return `${normalized}/api/${cleanPath}`;
 }
 
-export function sortSessionsByUpdatedAt<T extends { updatedAt: string }>(sessions: T[]) {
-  return [...sessions].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+export function sortByUpdatedAt<T extends { updatedAt: string }>(items: T[]) {
+  return [...items].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }
 
 export function normalizeText(value: string) {
@@ -37,4 +40,13 @@ export function normalizeText(value: string) {
 
 export function unique<T>(items: T[]) {
   return Array.from(new Set(items));
+}
+
+export function createRoomCode() {
+  return generateCode();
+}
+
+export function slugifyPrompt(value: string) {
+  const cleaned = value.replace(/\s+/g, ' ').trim();
+  return cleaned.length > 120 ? `${cleaned.slice(0, 117)}...` : cleaned;
 }

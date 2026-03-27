@@ -33,9 +33,9 @@
     <template #append>
       <div class="pa-4">
         <v-sheet rounded="xl" color="rgba(31,111,235,0.08)" class="pa-4">
-          <div class="text-subtitle-2 font-weight-bold mb-1">MVP 节奏</div>
+          <div class="text-subtitle-2 font-weight-bold mb-1">当前模式</div>
           <div class="text-body-2 text-medium-emphasis">
-            固定谜题、单人问答、Ollama 主持与会话存档。
+            动态出题、多人房间、轮询同步、Ollama 主持裁决。
           </div>
         </v-sheet>
       </div>
@@ -61,26 +61,26 @@ const route = useRoute();
 
 const items = [
   {
-    label: '作战总览',
-    caption: '状态、节奏、快捷入口',
+    label: '总览看板',
+    caption: '房间、成员与主持状态',
     to: '/dashboard',
     icon: mdiViewDashboardOutline
   },
   {
-    label: '游戏会话',
-    caption: '开始、提问、结算',
+    label: '多人房间',
+    caption: '创建、加入与共享推理',
     to: '/game',
     icon: mdiPlayBoxMultipleOutline
   },
   {
-    label: '对局历史',
-    caption: '查看过往记录',
+    label: '房间历史',
+    caption: '查看过往对局记录',
     to: '/history',
     icon: mdiHistory
   },
   {
     label: '系统设置',
-    caption: 'Ollama 与模型配置',
+    caption: 'Ollama 与默认模型',
     to: '/settings',
     icon: mdiCogOutline
   }

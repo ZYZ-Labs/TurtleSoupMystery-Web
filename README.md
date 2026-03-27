@@ -1,45 +1,36 @@
 # Turtle Soup Mystery
 
-基于 `TURTLE_SOUP_SPEC.md` 全量重建的海龟汤项目。
+基于 `TURTLE_SOUP_SPEC.md` 重建的海龟汤项目，当前版本已经改为：
 
-当前版本是一个前后端一体的 MVP：
+- 前端：`Vue 3 + Vuetify`，界面参考 Berry Free Vuetify Vue Admin Template 的后台风格
+- 后端：`Node.js + TypeScript + Express`
+- AI：接入局域网 `Ollama`
+- 持久化：`SQLite`
+- 玩法：动态生成汤底 + 多人可加入的聊天室房间
+- 部署：支持 `Dockerfile`、`docker-compose.yml`、阿里云 ACR 推送脚本
 
-- 前端基于 `Vue 3 + Vuetify`，界面组织参考 Berry Free Vuetify Vue Admin Template 的后台布局风格
-- 后端基于 `Node.js + TypeScript + Express`
-- AI 接入走局域网 Ollama
-- 持久化改为 `SQLite`
-- Docker 使用单镜像打包，便于直接推送到阿里云 ACR
+## 当前能力
+
+- 房主输入主题后，系统动态生成汤底
+- 成员通过房间码加入同一房间
+- 所有成员共享提问记录、主持回答、揭示事实与最终结算
+- 设置页支持：
+  - 检测 Ollama 连通性
+  - 自动拉取模型列表
+  - 保存默认模型
+- 数据写入 SQLite，房间历史会持续保留
 
 ## 目录结构
 
 ```text
-front/                 前端管理台
+front/                 前端项目
 backend/               后端 API 与静态资源承载
-backend/data/puzzles/  谜题种子文件
+backend/data/puzzles/  内置谜题种子
 backend/data/runtime/  SQLite 数据与运行时文件
 scripts/               初始化与发布脚本
+deploy/                Nginx 等部署模板
 TURTLE_SOUP_SPEC.md    需求规格
 ```
-
-## 当前存储方案
-
-项目已经接入 SQLite，不再使用 JSON 作为正式运行存储。
-
-默认数据库文件：
-
-```text
-backend/data/runtime/turtle-soup.db
-```
-
-当前会进入 SQLite 的内容：
-
-- Ollama 配置
-- Ollama 模型列表缓存
-- 对局会话
-- 问答记录
-- 最终猜测结果
-
-谜题仍以 JSON 种子文件维护在 `backend/data/puzzles/`，服务启动时会自动同步进 SQLite。
 
 ## 本地开发
 
@@ -71,16 +62,36 @@ npm run dev
 - 前端开发服务：`http://localhost:5174`
 - 后端 API：`http://localhost:8080`
 
+## 数据存储
+
+默认 SQLite 文件：
+
+```text
+backend/data/runtime/turtle-soup.db
+```
+
+当前会持久化的内容：
+
+- Ollama 配置
+- Ollama 模型列表缓存
+- 多人房间
+- 房间成员
+- 聊天消息
+- 问答记录
+- 最终猜测结果
+
+内置谜题种子仍保留在 `backend/data/puzzles/`，服务启动时会自动同步进 SQLite。
+
 ## Ollama 配置
 
 进入前端“系统设置”页面后：
 
-1. 填写局域网 Ollama 地址，例如 `http://192.168.1.20:11434`
+1. 填写 Ollama 地址，例如 `http://192.168.1.20:11434`
 2. 点击“检测连接并拉取模型”
-3. 如果连通成功，模型下拉会自动从接口获取
+3. 连通成功后，模型下拉会自动从接口加载
 4. 选择默认模型并保存
 
-如果应用跑在 Docker 中而 Ollama 跑在宿主机上，可以尝试：
+如果应用跑在 Docker 中，而 Ollama 跑在宿主机上，可以尝试：
 
 ```text
 http://host.docker.internal:11434
@@ -92,7 +103,11 @@ http://host.docker.internal:11434
 npm run build
 ```
 
-这会先构建前端，再把前端产物复制到 `backend/public`，最后构建后端。
+这个命令会：
+
+1. 构建前端
+2. 把前端产物复制到 `backend/public`
+3. 构建后端
 
 ## Docker
 
@@ -102,39 +117,42 @@ npm run build
 docker build -t turtle-soup-mystery:local .
 ```
 
-### Compose 运行
+### Compose 启动
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-默认容器端口：
+当前 `docker-compose.yml` 默认行为：
 
-```text
-http://localhost:8080
-```
-
-### Compose 数据目录
-
-`docker-compose.yml` 已经默认把宿主机数据目录指向：
+- 对外 HTTPS 端口：`41203`
+- 应用数据目录映射到：
 
 ```text
 /usr/local/project/docker/TurtleSoupMyStery/runtime
 ```
 
-也就是说，容器中的 SQLite 文件会落在：
+- Nginx 日志目录映射到：
 
 ```text
-/usr/local/project/docker/TurtleSoupMyStery/runtime/turtle-soup.db
+/usr/local/project/docker/TurtleSoupMyStery/nginx/logs
 ```
 
-如果你要临时改路径，也可以在执行前覆盖环境变量：
+- 证书目录映射：
+
+```text
+/usr/local/project/cert:/etc/nginx/certs:ro
+```
+
+如果证书文件名不是默认的 `fullchain.pem` / `privkey.pem`，可以在启动前覆盖：
 
 ```bash
-DOCKER_DATA_ROOT=/usr/local/project/docker/TurtleSoupMyStery docker compose up -d
+SSL_CERT_FILE=/etc/nginx/certs/你的证书.pem \
+SSL_CERT_KEY_FILE=/etc/nginx/certs/你的私钥.pem \
+docker compose up -d --build
 ```
 
-## 阿里云 ACR 推送教程
+## 阿里云 ACR 推送
 
 目标仓库：
 
@@ -148,7 +166,7 @@ crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_s
 docker login --username=z516798599@qq.com crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com
 ```
 
-### 2. 给镜像打 tag
+### 2. 打 tag
 
 ```bash
 docker tag [ImageId] crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_soup_mystery:[镜像版本号]
@@ -194,7 +212,7 @@ chmod +x scripts/deploy.sh
 - Image name: `turtle_soup_mystery`
 - Login username: `z516798599@qq.com`
 
-第一次执行会把配置保存到：
+首次执行会把配置保存到：
 
 ```text
 .deploy/registry.env
@@ -202,18 +220,23 @@ chmod +x scripts/deploy.sh
 
 ## 当前 MVP 范围
 
-- 固定谜题加载
-- 单人问答
-- Ollama 主持判定
+- 动态生成汤底
+- 多人聊天室房间
+- Ollama 主持裁决
+- 轮询同步
 - 最终猜测结算
-- 会话历史存档
-- 系统设置中的连通性检测与模型自动拉取
 - SQLite 持久化
 
-## 后续可继续做
+## 已验证
 
-- 动态提示模式
-- 推理进度条更细化
-- 多谜题批量管理
-- 多人模式
-- AI 自动生成谜题
+本地已完成：
+
+- `npm run init:data`
+- `npm run build`
+- API 烟测：
+  - 创建房间
+  - 加入房间
+  - 提问
+  - 最终猜测结算
+
+当前环境没有安装 Docker，因此没有办法在这里直接跑 `docker build` / `docker compose up` / `docker push`。

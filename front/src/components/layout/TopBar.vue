@@ -8,7 +8,7 @@
 
     <div>
       <div class="brand-heading text-h6">{{ title }}</div>
-      <div class="text-body-2 text-medium-emphasis">Berry 风格重构后的海龟汤指挥台</div>
+      <div class="text-body-2 text-medium-emphasis">动态生成汤底与多人聊天室协作推理</div>
     </div>
 
     <template #append>

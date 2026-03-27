@@ -1,10 +1,10 @@
 import { apiClient } from './client';
 import type {
-  GameSession,
   OllamaCheckResult,
   OllamaConfig,
   OverviewPayload,
-  Puzzle
+  PublicGameRoom,
+  RoomJoinResult
 } from '@/types/api';
 
 export async function fetchOverview() {
@@ -12,38 +12,57 @@ export async function fetchOverview() {
   return data;
 }
 
-export async function fetchPuzzles() {
-  const { data } = await apiClient.get<Puzzle[]>('/puzzles');
+export async function fetchRooms() {
+  const { data } = await apiClient.get<PublicGameRoom[]>('/rooms');
   return data;
 }
 
-export async function fetchSessions() {
-  const { data } = await apiClient.get<GameSession[]>('/sessions');
+export async function fetchRoomByCode(roomCode: string) {
+  const { data } = await apiClient.get<PublicGameRoom>(`/rooms/code/${roomCode}`);
   return data;
 }
 
-export async function fetchSession(sessionId: string) {
-  const { data } = await apiClient.get<GameSession>(`/sessions/${sessionId}`);
+export async function createRoom(payload: {
+  displayName: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  generationPrompt: string;
+}) {
+  const { data } = await apiClient.post<RoomJoinResult>('/rooms', payload);
   return data;
 }
 
-export async function createSession(puzzleId?: string) {
-  const { data } = await apiClient.post<GameSession>('/sessions', { puzzleId });
+export async function joinRoom(payload: { roomCode: string; displayName: string }) {
+  const { data } = await apiClient.post<RoomJoinResult>('/rooms/join', payload);
   return data;
 }
 
-export async function askQuestion(sessionId: string, question: string) {
-  const { data } = await apiClient.post<GameSession>(`/sessions/${sessionId}/questions`, { question });
+export async function askRoomQuestion(roomId: string, participantId: string, question: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/questions`, {
+    participantId,
+    question
+  });
   return data;
 }
 
-export async function submitFinalGuess(sessionId: string, guess: string) {
-  const { data } = await apiClient.post<GameSession>(`/sessions/${sessionId}/final-guess`, { guess });
+export async function submitRoomFinalGuess(roomId: string, participantId: string, guess: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/final-guess`, {
+    participantId,
+    guess
+  });
   return data;
 }
 
-export async function revealSession(sessionId: string) {
-  const { data } = await apiClient.post<GameSession>(`/sessions/${sessionId}/reveal`);
+export async function revealRoom(roomId: string, participantId: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/reveal`, {
+    participantId
+  });
+  return data;
+}
+
+export async function heartbeatRoom(roomId: string, participantId: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/heartbeat`, {
+    participantId
+  });
   return data;
 }
 

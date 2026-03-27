@@ -20,21 +20,21 @@ export const router = createRouter({
           path: 'dashboard',
           component: DashboardView,
           meta: {
-            title: '作战总览'
+            title: '总览看板'
           }
         },
         {
-          path: 'game/:sessionId?',
+          path: 'game/:roomCode?',
           component: GameView,
           meta: {
-            title: '游戏会话'
+            title: '多人房间'
           }
         },
         {
           path: 'history',
           component: HistoryView,
           meta: {
-            title: '对局历史'
+            title: '房间历史'
           }
         },
         {

@@ -1,76 +1,21 @@
 import { DatabaseSync } from 'node:sqlite';
-import { access, mkdir, readFile, readdir } from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
+import { access, mkdir, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { DEFAULT_APP_STATE } from '../lib/constants.js';
 import type {
   AppState,
-  FinalGuessRecord,
-  GameSession,
+  GameRoom,
   OllamaModel,
   Puzzle,
   PuzzleFact,
-  QuestionRecord
+  QuestionRecord,
+  RoomMessage,
+  RoomParticipant
 } from '../types/domain.js';
 
 interface MetaRow {
   value: string;
-}
-
-interface OllamaConfigRow {
-  base_url: string;
-  default_model: string;
-  timeout_ms: number;
-  last_checked_at: string | null;
-  last_status: 'idle' | 'connected' | 'error';
-  last_error: string | null;
-}
-
-interface OllamaModelRow {
-  name: string;
-  model: string;
-  size: number;
-  modified_at: string;
-  parameter_size: string | null;
-  quantization_level: string | null;
-}
-
-interface SessionRow {
-  session_id: string;
-  puzzle_id: string;
-  puzzle_title: string;
-  soup_surface: string;
-  truth_story: string;
-  difficulty: GameSession['difficulty'];
-  revealed_fact_ids_json: string;
-  progress_score: number;
-  status: GameSession['status'];
-  created_at: string;
-  updated_at: string;
-}
-
-interface QuestionRow {
-  id: string;
-  session_id: string;
-  sort_order: number;
-  question: string;
-  answer_code: QuestionRecord['answerCode'];
-  answer_label: string;
-  matched_fact_ids_json: string;
-  revealed_fact_ids_json: string;
-  progress_delta: number;
-  created_at: string;
-  source: QuestionRecord['source'];
-}
-
-interface FinalGuessRow {
-  session_id: string;
-  guess: string;
-  accepted: number;
-  score: number;
-  missing_points_json: string;
-  created_at: string;
-  source: FinalGuessRecord['source'];
 }
 
 interface PuzzleRow {
@@ -99,25 +44,6 @@ CREATE TABLE IF NOT EXISTS meta (
   value TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ollama_config (
-  id INTEGER PRIMARY KEY CHECK (id = 1),
-  base_url TEXT NOT NULL DEFAULT '',
-  default_model TEXT NOT NULL DEFAULT '',
-  timeout_ms INTEGER NOT NULL DEFAULT 30000,
-  last_checked_at TEXT NULL,
-  last_status TEXT NOT NULL DEFAULT 'idle',
-  last_error TEXT NULL
-);
-
-CREATE TABLE IF NOT EXISTS ollama_models (
-  name TEXT PRIMARY KEY,
-  model TEXT NOT NULL,
-  size INTEGER NOT NULL DEFAULT 0,
-  modified_at TEXT NOT NULL DEFAULT '',
-  parameter_size TEXT NULL,
-  quantization_level TEXT NULL
-);
-
 CREATE TABLE IF NOT EXISTS puzzles (
   puzzle_id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -139,46 +65,6 @@ CREATE TABLE IF NOT EXISTS puzzle_facts (
   PRIMARY KEY (puzzle_id, fact_id),
   FOREIGN KEY (puzzle_id) REFERENCES puzzles(puzzle_id) ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS sessions (
-  session_id TEXT PRIMARY KEY,
-  puzzle_id TEXT NOT NULL,
-  puzzle_title TEXT NOT NULL,
-  soup_surface TEXT NOT NULL,
-  truth_story TEXT NOT NULL,
-  difficulty TEXT NOT NULL,
-  revealed_fact_ids_json TEXT NOT NULL,
-  progress_score INTEGER NOT NULL,
-  status TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS question_records (
-  id TEXT PRIMARY KEY,
-  session_id TEXT NOT NULL,
-  sort_order INTEGER NOT NULL,
-  question TEXT NOT NULL,
-  answer_code TEXT NOT NULL,
-  answer_label TEXT NOT NULL,
-  matched_fact_ids_json TEXT NOT NULL,
-  revealed_fact_ids_json TEXT NOT NULL,
-  progress_delta INTEGER NOT NULL,
-  created_at TEXT NOT NULL,
-  source TEXT NOT NULL,
-  FOREIGN KEY (session_id) REFERENCES sessions(session_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS final_guesses (
-  session_id TEXT PRIMARY KEY,
-  guess TEXT NOT NULL,
-  accepted INTEGER NOT NULL,
-  score INTEGER NOT NULL,
-  missing_points_json TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  source TEXT NOT NULL,
-  FOREIGN KEY (session_id) REFERENCES sessions(session_id) ON DELETE CASCADE
-);
 `;
 
 export class StateStore {
@@ -195,6 +81,7 @@ export class StateStore {
   private readonly legacyStatePath = resolve(this.runtimeDir, 'app-state.json');
   private database: DatabaseSync | null = null;
   private initializationPromise: Promise<void> | null = null;
+  private writeQueue: Promise<void> = Promise.resolve();
 
   async ensureInitialized() {
     if (!this.initializationPromise) {
@@ -206,140 +93,115 @@ export class StateStore {
 
   async readState() {
     await this.ensureInitialized();
-    const db = this.getDatabase();
-
-    const ollamaRow = db
-      .prepare(
-        `
-          SELECT base_url, default_model, timeout_ms, last_checked_at, last_status, last_error
-          FROM ollama_config
-          WHERE id = 1
-        `
-      )
-      .get() as OllamaConfigRow | undefined;
-
-    const modelRows = db
-      .prepare(
-        `
-          SELECT name, model, size, modified_at, parameter_size, quantization_level
-          FROM ollama_models
-          ORDER BY name ASC
-        `
-      )
-      .all() as unknown as OllamaModelRow[];
-
-    const sessionRows = db
-      .prepare(
-        `
-          SELECT session_id, puzzle_id, puzzle_title, soup_surface, truth_story, difficulty,
-                 revealed_fact_ids_json, progress_score, status, created_at, updated_at
-          FROM sessions
-          ORDER BY updated_at DESC
-        `
-      )
-      .all() as unknown as SessionRow[];
-
-    const questionRows = db
-      .prepare(
-        `
-          SELECT id, session_id, sort_order, question, answer_code, answer_label,
-                 matched_fact_ids_json, revealed_fact_ids_json, progress_delta, created_at, source
-          FROM question_records
-          ORDER BY session_id ASC, sort_order ASC
-        `
-      )
-      .all() as unknown as QuestionRow[];
-
-    const finalGuessRows = db
-      .prepare(
-        `
-          SELECT session_id, guess, accepted, score, missing_points_json, created_at, source
-          FROM final_guesses
-        `
-      )
-      .all() as unknown as FinalGuessRow[];
-
-    const questionsBySession = new Map<string, QuestionRecord[]>();
-    const finalGuessBySession = new Map<string, FinalGuessRecord>();
-
-    for (const row of questionRows) {
-      const current = questionsBySession.get(row.session_id) ?? [];
-      current.push({
-        id: row.id,
-        question: row.question,
-        answerCode: row.answer_code,
-        answerLabel: row.answer_label,
-        matchedFactIds: this.parseJson<string[]>(row.matched_fact_ids_json, []),
-        revealedFactIds: this.parseJson<string[]>(row.revealed_fact_ids_json, []),
-        progressDelta: row.progress_delta,
-        createdAt: row.created_at,
-        source: row.source
-      });
-      questionsBySession.set(row.session_id, current);
-    }
-
-    for (const row of finalGuessRows) {
-      finalGuessBySession.set(row.session_id, {
-        guess: row.guess,
-        accepted: Boolean(row.accepted),
-        score: row.score,
-        missingPoints: this.parseJson<string[]>(row.missing_points_json, []),
-        createdAt: row.created_at,
-        source: row.source
-      });
-    }
-
-    return {
-      version: 1,
-      ollama: {
-        ...DEFAULT_APP_STATE.ollama,
-        baseUrl: ollamaRow?.base_url ?? '',
-        defaultModel: ollamaRow?.default_model ?? '',
-        timeoutMs: ollamaRow?.timeout_ms ?? 30000,
-        availableModels: modelRows.map((row): OllamaModel => ({
-          name: row.name,
-          model: row.model,
-          size: row.size,
-          modifiedAt: row.modified_at,
-          parameterSize: row.parameter_size ?? undefined,
-          quantizationLevel: row.quantization_level ?? undefined
-        })),
-        lastCheckedAt: ollamaRow?.last_checked_at ?? null,
-        lastStatus: ollamaRow?.last_status ?? 'idle',
-        lastError: ollamaRow?.last_error ?? null
-      },
-      sessions: sessionRows.map((row): GameSession => ({
-        sessionId: row.session_id,
-        puzzleId: row.puzzle_id,
-        puzzleTitle: row.puzzle_title,
-        soupSurface: row.soup_surface,
-        truthStory: row.truth_story,
-        difficulty: row.difficulty,
-        questions: questionsBySession.get(row.session_id) ?? [],
-        revealedFactIds: this.parseJson<string[]>(row.revealed_fact_ids_json, []),
-        progressScore: row.progress_score,
-        status: row.status,
-        finalGuess: finalGuessBySession.get(row.session_id),
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }))
-    } satisfies AppState;
+    return this.readStateSync();
   }
 
   async writeState(nextState: AppState) {
     await this.ensureInitialized();
-    this.persistStateToDatabase(nextState);
+    this.writeStateSync(nextState);
   }
 
-  async updateState(updater: (state: AppState) => AppState | Promise<AppState>) {
-    const current = await this.readState();
-    const next = await updater(current);
-    await this.writeState(next);
-    return next;
+  async updateState(updater: (state: AppState) => AppState) {
+    await this.ensureInitialized();
+
+    const task = this.writeQueue.then(() =>
+      this.runInTransaction(() => {
+        const current = this.readStateSync();
+        const next = updater(current);
+        this.writeStateSync(next);
+        return next;
+      })
+    );
+
+    this.writeQueue = task.then(
+      () => undefined,
+      () => undefined
+    );
+
+    return task;
   }
 
   async loadPuzzles() {
     await this.ensureInitialized();
+    return this.loadPuzzlesSync();
+  }
+
+  private async initialize() {
+    await mkdir(this.runtimeDir, { recursive: true });
+    await mkdir(this.puzzlesDir, { recursive: true });
+
+    const db = this.getDatabase();
+    db.exec('PRAGMA foreign_keys = ON;');
+    db.exec('PRAGMA journal_mode = WAL;');
+    db.exec(SCHEMA_SQL);
+
+    await this.syncPuzzlesFromFiles();
+    await this.migrateAppStateIfNeeded();
+  }
+
+  private getDatabase() {
+    if (!this.database) {
+      this.database = new DatabaseSync(this.databasePath);
+    }
+
+    return this.database;
+  }
+
+  private readStateSync() {
+    const db = this.getDatabase();
+    const row = db.prepare(`SELECT value FROM meta WHERE key = 'app_state_json'`).get() as MetaRow | undefined;
+
+    if (!row?.value) {
+      return structuredClone(DEFAULT_APP_STATE);
+    }
+
+    try {
+      const parsed = JSON.parse(row.value) as AppState;
+      const availableModels = (parsed.ollama?.availableModels ?? []).map((model) => ({
+        name: model.name,
+        model: model.model,
+        size: model.size,
+        modifiedAt: model.modifiedAt,
+        parameterSize: model.parameterSize,
+        quantizationLevel: model.quantizationLevel
+      })) satisfies OllamaModel[];
+
+      return {
+        ...DEFAULT_APP_STATE,
+        ...parsed,
+        ollama: {
+          ...DEFAULT_APP_STATE.ollama,
+          ...parsed.ollama,
+          availableModels
+        },
+        rooms: (parsed.rooms ?? []).map((room) => ({
+          ...room,
+          facts: room.facts ?? [],
+          misleadingPoints: room.misleadingPoints ?? [],
+          keyTriggers: room.keyTriggers ?? [],
+          participants: room.participants ?? [],
+          messages: room.messages ?? [],
+          questions: room.questions ?? [],
+          revealedFactIds: room.revealedFactIds ?? []
+        }))
+      } satisfies AppState;
+    } catch {
+      return structuredClone(DEFAULT_APP_STATE);
+    }
+  }
+
+  private writeStateSync(nextState: AppState) {
+    const db = this.getDatabase();
+    db.prepare(
+      `
+        INSERT INTO meta (key, value)
+        VALUES ('app_state_json', ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+      `
+    ).run(JSON.stringify(nextState));
+  }
+
+  private loadPuzzlesSync() {
     const db = this.getDatabase();
     const puzzleRows = db
       .prepare(
@@ -386,36 +248,6 @@ export class StateStore {
       difficulty: row.difficulty,
       tags: this.parseJson<string[]>(row.tags_json, [])
     }));
-  }
-
-  private async initialize() {
-    await mkdir(this.runtimeDir, { recursive: true });
-    await mkdir(this.puzzlesDir, { recursive: true });
-
-    const db = this.getDatabase();
-    db.exec('PRAGMA foreign_keys = ON;');
-    db.exec('PRAGMA journal_mode = WAL;');
-    db.exec(SCHEMA_SQL);
-
-    db.prepare(
-      `
-        INSERT OR IGNORE INTO ollama_config
-          (id, base_url, default_model, timeout_ms, last_checked_at, last_status, last_error)
-        VALUES
-          (1, '', '', 30000, NULL, 'idle', NULL)
-      `
-    ).run();
-
-    await this.syncPuzzlesFromFiles();
-    await this.migrateLegacyJsonIfNeeded();
-  }
-
-  private getDatabase() {
-    if (!this.database) {
-      this.database = new DatabaseSync(this.databasePath);
-    }
-
-    return this.database;
   }
 
   private async syncPuzzlesFromFiles() {
@@ -476,160 +308,201 @@ export class StateStore {
     });
   }
 
-  private async migrateLegacyJsonIfNeeded() {
+  private async migrateAppStateIfNeeded() {
     const db = this.getDatabase();
-    const migrated = db
-      .prepare(`SELECT value FROM meta WHERE key = 'legacy_json_imported'`)
-      .get() as MetaRow | undefined;
+    const stateRow = db.prepare(`SELECT value FROM meta WHERE key = 'app_state_json'`).get() as MetaRow | undefined;
 
-    if (migrated?.value === '1') {
+    if (stateRow?.value) {
       return;
     }
 
-    let nextState = DEFAULT_APP_STATE;
+    let nextState = structuredClone(DEFAULT_APP_STATE);
 
     try {
       await access(this.legacyStatePath, fsConstants.F_OK);
       const raw = await readFile(this.legacyStatePath, 'utf8');
-      const parsed = JSON.parse(raw) as Partial<AppState>;
+      const parsed = JSON.parse(raw) as {
+        ollama?: AppState['ollama'];
+        sessions?: Array<{
+          sessionId: string;
+          puzzleId: string;
+          puzzleTitle: string;
+          soupSurface: string;
+          truthStory: string;
+          difficulty: Puzzle['difficulty'];
+          questions?: Array<{
+            id: string;
+            question: string;
+            answerCode: QuestionRecord['answerCode'];
+            answerLabel: string;
+            matchedFactIds: string[];
+            revealedFactIds: string[];
+            progressDelta: number;
+            createdAt: string;
+            source: QuestionRecord['source'];
+          }>;
+          revealedFactIds?: string[];
+          progressScore: number;
+          status: GameRoom['status'];
+          finalGuess?: {
+            guess: string;
+            accepted: boolean;
+            score: number;
+            missingPoints: string[];
+            createdAt: string;
+            source: 'ollama' | 'heuristic';
+          };
+          createdAt: string;
+          updatedAt: string;
+        }>;
+      };
+
       nextState = {
-        version: 1,
+        ...nextState,
         ollama: {
-          ...DEFAULT_APP_STATE.ollama,
+          ...nextState.ollama,
           ...parsed.ollama
         },
-        sessions: parsed.sessions ?? []
+        rooms: (parsed.sessions ?? []).map((session) =>
+          this.convertLegacySessionToRoom({
+            ...session,
+            questions: session.questions ?? [],
+            revealedFactIds: session.revealedFactIds ?? []
+          })
+        )
       };
     } catch {
-      nextState = DEFAULT_APP_STATE;
+      nextState = structuredClone(DEFAULT_APP_STATE);
     }
 
-    this.persistStateToDatabase(nextState);
-    db.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('legacy_json_imported', '1')`).run();
+    this.writeStateSync(nextState);
   }
 
-  private persistStateToDatabase(nextState: AppState) {
-    const db = this.getDatabase();
-    this.runInTransaction(() => {
-      db.exec('DELETE FROM ollama_models;');
-      db.exec('DELETE FROM final_guesses;');
-      db.exec('DELETE FROM question_records;');
-      db.exec('DELETE FROM sessions;');
+  private convertLegacySessionToRoom(session: {
+    sessionId: string;
+    puzzleId: string;
+    puzzleTitle: string;
+    soupSurface: string;
+    truthStory: string;
+    difficulty: Puzzle['difficulty'];
+    questions: Array<{
+      id: string;
+      question: string;
+      answerCode: QuestionRecord['answerCode'];
+      answerLabel: string;
+      matchedFactIds: string[];
+      revealedFactIds: string[];
+      progressDelta: number;
+      createdAt: string;
+      source: QuestionRecord['source'];
+    }>;
+    revealedFactIds: string[];
+    progressScore: number;
+    status: GameRoom['status'];
+    finalGuess?: {
+      guess: string;
+      accepted: boolean;
+      score: number;
+      missingPoints: string[];
+      createdAt: string;
+      source: 'ollama' | 'heuristic';
+    };
+    createdAt: string;
+    updatedAt: string;
+  }): GameRoom {
+    const participant: RoomParticipant = {
+      participantId: 'legacy-player',
+      displayName: 'Legacy Player',
+      role: 'host',
+      joinedAt: session.createdAt,
+      lastSeenAt: session.updatedAt
+    };
 
-      db.prepare(
-        `
-          INSERT INTO ollama_config
-            (id, base_url, default_model, timeout_ms, last_checked_at, last_status, last_error)
-          VALUES
-            (1, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(id) DO UPDATE SET
-            base_url = excluded.base_url,
-            default_model = excluded.default_model,
-            timeout_ms = excluded.timeout_ms,
-            last_checked_at = excluded.last_checked_at,
-            last_status = excluded.last_status,
-            last_error = excluded.last_error
-        `
-      ).run(
-        nextState.ollama.baseUrl,
-        nextState.ollama.defaultModel,
-        nextState.ollama.timeoutMs,
-        nextState.ollama.lastCheckedAt,
-        nextState.ollama.lastStatus,
-        nextState.ollama.lastError
-      );
-
-      const insertModel = db.prepare(
-        `
-          INSERT INTO ollama_models
-            (name, model, size, modified_at, parameter_size, quantization_level)
-          VALUES
-            (?, ?, ?, ?, ?, ?)
-        `
-      );
-
-      for (const model of nextState.ollama.availableModels) {
-        insertModel.run(
-          model.name,
-          model.model,
-          model.size,
-          model.modifiedAt,
-          model.parameterSize ?? null,
-          model.quantizationLevel ?? null
-        );
+    const messages: RoomMessage[] = [
+      {
+        id: `${session.sessionId}-system`,
+        type: 'system',
+        authorName: 'System',
+        content: 'This room was migrated from the previous single-player session format.',
+        createdAt: session.createdAt
       }
+    ];
 
-      const insertSession = db.prepare(
-        `
-          INSERT INTO sessions
-            (session_id, puzzle_id, puzzle_title, soup_surface, truth_story, difficulty,
-             revealed_fact_ids_json, progress_score, status, created_at, updated_at)
-          VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
-      );
-      const insertQuestion = db.prepare(
-        `
-          INSERT INTO question_records
-            (id, session_id, sort_order, question, answer_code, answer_label,
-             matched_fact_ids_json, revealed_fact_ids_json, progress_delta, created_at, source)
-          VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
-      );
-      const insertFinalGuess = db.prepare(
-        `
-          INSERT INTO final_guesses
-            (session_id, guess, accepted, score, missing_points_json, created_at, source)
-          VALUES
-            (?, ?, ?, ?, ?, ?, ?)
-        `
-      );
-
-      for (const session of nextState.sessions) {
-        insertSession.run(
-          session.sessionId,
-          session.puzzleId,
-          session.puzzleTitle,
-          session.soupSurface,
-          session.truthStory,
-          session.difficulty,
-          JSON.stringify(session.revealedFactIds),
-          session.progressScore,
-          session.status,
-          session.createdAt,
-          session.updatedAt
-        );
-
-        session.questions.forEach((question, index) => {
-          insertQuestion.run(
-            question.id,
-            session.sessionId,
-            index,
-            question.question,
-            question.answerCode,
-            question.answerLabel,
-            JSON.stringify(question.matchedFactIds),
-            JSON.stringify(question.revealedFactIds),
-            question.progressDelta,
-            question.createdAt,
-            question.source
-          );
-        });
-
-        if (session.finalGuess) {
-          insertFinalGuess.run(
-            session.sessionId,
-            session.finalGuess.guess,
-            session.finalGuess.accepted ? 1 : 0,
-            session.finalGuess.score,
-            JSON.stringify(session.finalGuess.missingPoints),
-            session.finalGuess.createdAt,
-            session.finalGuess.source
-          );
+    const questions: QuestionRecord[] = session.questions.map((item) => {
+      messages.push(
+        {
+          id: `${item.id}-question`,
+          type: 'question',
+          authorName: participant.displayName,
+          content: item.question,
+          createdAt: item.createdAt,
+          source: item.source
+        },
+        {
+          id: `${item.id}-answer`,
+          type: 'answer',
+          authorName: 'AI Host',
+          content: item.answerLabel,
+          createdAt: item.createdAt,
+          answerCode: item.answerCode,
+          answerLabel: item.answerLabel,
+          source: item.source
         }
-      }
+      );
+
+      return {
+        ...item,
+        askedByParticipantId: participant.participantId,
+        askedByName: participant.displayName
+      };
     });
+
+    if (session.finalGuess) {
+      messages.push({
+        id: `${session.sessionId}-guess`,
+        type: 'guess',
+        authorName: participant.displayName,
+        content: session.finalGuess.guess,
+        createdAt: session.finalGuess.createdAt,
+        source: session.finalGuess.source
+      });
+    }
+
+    return {
+      roomId: session.sessionId,
+      roomCode: session.sessionId.slice(0, 6).toUpperCase(),
+      title: session.puzzleTitle,
+      generationPrompt: 'Migrated legacy session',
+      puzzleId: session.puzzleId,
+      puzzleTitle: session.puzzleTitle,
+      soupSurface: session.soupSurface,
+      truthStory: session.truthStory,
+      facts: [],
+      misleadingPoints: [],
+      keyTriggers: [],
+      difficulty: session.difficulty,
+      tags: ['legacy'],
+      participants: [participant],
+      messages,
+      questions,
+      revealedFactIds: session.revealedFactIds,
+      progressScore: session.progressScore,
+      status: session.status,
+      finalGuess: session.finalGuess
+        ? {
+            participantId: participant.participantId,
+            participantName: participant.displayName,
+            guess: session.finalGuess.guess,
+            accepted: session.finalGuess.accepted,
+            score: session.finalGuess.score,
+            missingPoints: session.finalGuess.missingPoints,
+            createdAt: session.finalGuess.createdAt,
+            source: session.finalGuess.source
+          }
+        : undefined,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt
+    };
   }
 
   private parseJson<T>(raw: string | null | undefined, fallback: T): T {

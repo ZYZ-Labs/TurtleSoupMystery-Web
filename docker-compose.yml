@@ -12,7 +12,24 @@ services:
       APP_RUNTIME_DIR: /app/data/runtime
       APP_SQLITE_PATH: /app/data/runtime/turtle-soup.db
       NODE_OPTIONS: --disable-warning=ExperimentalWarning
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     volumes:
       - ${DOCKER_DATA_ROOT:-/usr/local/project/docker/TurtleSoupMyStery}/runtime:/app/data/runtime
+
+  turtle-soup-mystery-gateway:
+    image: nginx:1.27-alpine
+    container_name: turtle-soup-mystery-gateway
+    restart: unless-stopped
+    depends_on:
+      - turtle-soup-mystery
+    environment:
+      APP_UPSTREAM: http://turtle-soup-mystery:8080
+      SSL_CERT_FILE: ${SSL_CERT_FILE:-/etc/nginx/certs/fullchain.pem}
+      SSL_CERT_KEY_FILE: ${SSL_CERT_KEY_FILE:-/etc/nginx/certs/privkey.pem}
+    ports:
+      - "41203:443"
+    volumes:
+      - ./deploy/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - /usr/local/project/cert:/etc/nginx/certs:ro
+      - ${DOCKER_DATA_ROOT:-/usr/local/project/docker/TurtleSoupMyStery}/nginx/logs:/var/log/nginx
