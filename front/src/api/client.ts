@@ -1,10 +1,25 @@
 import axios, { AxiosHeaders } from 'axios';
 import { clearAuthSession, getAuthToken } from '@/lib/auth';
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
+
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  baseURL: API_BASE_URL,
   timeout: 30000
 });
+
+export function buildRealtimeRoomUrl(roomCode: string) {
+  const url = new URL(API_BASE_URL, window.location.origin);
+  const normalizedPath = url.pathname.replace(/\/+$/, '');
+
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.pathname = normalizedPath.endsWith('/api') ? `${normalizedPath.slice(0, -4) || ''}/ws` : `${normalizedPath}/ws`;
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('roomCode', roomCode.trim().toUpperCase());
+
+  return url.toString();
+}
 
 apiClient.interceptors.request.use((config) => {
   const token = getAuthToken();

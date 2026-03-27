@@ -13,6 +13,7 @@ import type {
   Puzzle,
   QuestionRecord,
   RevealedFact,
+  RoomRealtimeEvent,
   RoomContext,
   RoomJoinResult,
   RoomMessage,
@@ -31,21 +32,32 @@ export class ServiceError extends Error {
 }
 
 interface CreateRoomInput {
+  clientId?: string;
   displayName: string;
   difficulty: Difficulty;
   generationPrompt: string;
 }
 
 interface JoinRoomInput {
+  clientId?: string;
   roomCode: string;
   displayName: string;
 }
 
 export class RoomService {
+  private readonly realtimeListeners = new Set<(event: RoomRealtimeEvent) => void>();
+
   constructor(
     private readonly store: StateStore,
     private readonly ollamaService: OllamaService
   ) {}
+
+  onRealtimeEvent(listener: (event: RoomRealtimeEvent) => void) {
+    this.realtimeListeners.add(listener);
+    return () => {
+      this.realtimeListeners.delete(listener);
+    };
+  }
 
   async getOverview() {
     const [state, puzzles] = await Promise.all([this.store.readState(), this.store.loadPuzzles()]);
@@ -97,14 +109,27 @@ export class RoomService {
   }
 
   async deleteRoom(roomId: string) {
+    let deletedRoomId = '';
+    let deletedRoomCode = '';
+    let hasDeletedRoom = false;
+
     await this.store.updateState((current) => {
       const room = this.findRoomOrThrow(current.rooms, roomId);
+      deletedRoomId = room.roomId;
+      deletedRoomCode = room.roomCode;
+      hasDeletedRoom = true;
 
       return {
         ...current,
         rooms: current.rooms.filter((item) => item.roomId !== room.roomId)
       };
     });
+
+    if (!hasDeletedRoom) {
+      return;
+    }
+
+    this.emitRoomDeleted(deletedRoomId, deletedRoomCode);
   }
 
   async getRoomByCode(roomCode: string) {
@@ -118,9 +143,11 @@ export class RoomService {
     const state = await this.store.readState();
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
+    const clientId = this.normalizeClientId(input.clientId);
     const timestamp = nowIso();
     const host: RoomParticipant = {
       participantId: nanoid(),
+      clientId,
       displayName: this.normalizeDisplayName(input.displayName),
       role: 'host',
       joinedAt: timestamp,
@@ -176,8 +203,11 @@ export class RoomService {
       rooms: [room, ...current.rooms]
     }));
 
+    const publicRoom = this.toPublicRoom(room);
+    this.emitRoomUpdated(publicRoom);
+
     return {
-      room: this.toPublicRoom(room),
+      room: publicRoom,
       participant: this.toPublicParticipant(host)
     };
   }
@@ -185,6 +215,7 @@ export class RoomService {
   async joinRoom(input: JoinRoomInput): Promise<RoomJoinResult> {
     const requestedName = this.normalizeDisplayName(input.displayName);
     const normalizedRoomCode = this.normalizeRoomCode(input.roomCode);
+    const clientId = this.normalizeClientId(input.clientId);
     let participant: RoomParticipant | null = null;
     let updatedRoom: GameRoom | null = null;
 
@@ -196,8 +227,31 @@ export class RoomService {
       }
 
       const timestamp = nowIso();
+      const existingParticipant = clientId ? room.participants.find((item) => item.clientId === clientId) ?? null : null;
+
+      if (existingParticipant) {
+        const nextParticipant: RoomParticipant = {
+          ...existingParticipant,
+          lastSeenAt: timestamp
+        };
+        participant = nextParticipant;
+
+        const nextRoom: GameRoom = {
+          ...room,
+          participants: room.participants.map((item) => (item.participantId === existingParticipant.participantId ? nextParticipant : item)),
+          updatedAt: timestamp
+        };
+        updatedRoom = nextRoom;
+
+        return {
+          ...state,
+          rooms: state.rooms.map((item) => (item.roomId === room.roomId ? nextRoom : item))
+        };
+      }
+
       const nextParticipant: RoomParticipant = {
         participantId: nanoid(),
+        clientId,
         displayName: this.makeUniqueDisplayName(room.participants, requestedName),
         role: 'player',
         joinedAt: timestamp,
@@ -232,8 +286,11 @@ export class RoomService {
       throw new ServiceError(500, '加入房间失败。');
     }
 
+    const publicRoom = this.toPublicRoom(updatedRoom);
+    this.emitRoomUpdated(publicRoom);
+
     return {
-      room: this.toPublicRoom(updatedRoom),
+      room: publicRoom,
       participant: this.toPublicParticipant(participant)
     };
   }
@@ -335,7 +392,9 @@ export class RoomService {
       };
     });
 
-    return this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    this.emitRoomUpdated(publicRoom);
+    return publicRoom;
   }
 
   async submitFinalGuess(roomId: string, participantId: string, guess: string) {
@@ -416,7 +475,9 @@ export class RoomService {
       };
     });
 
-    return this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    this.emitRoomUpdated(publicRoom);
+    return publicRoom;
   }
 
   async revealRoom(roomId: string, participantId: string) {
@@ -454,7 +515,9 @@ export class RoomService {
       };
     });
 
-    return this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    this.emitRoomUpdated(publicRoom);
+    return publicRoom;
   }
 
   async heartbeatRoom(roomId: string, participantId: string) {
@@ -664,6 +727,32 @@ export class RoomService {
 
   private normalizeDisplayName(value: string) {
     return value.trim().slice(0, 24);
+  }
+
+  private normalizeClientId(value?: string) {
+    return value?.trim().slice(0, 64) ?? '';
+  }
+
+  private emitRealtimeEvent(event: RoomRealtimeEvent) {
+    for (const listener of this.realtimeListeners) {
+      listener(event);
+    }
+  }
+
+  private emitRoomUpdated(room: PublicGameRoom) {
+    this.emitRealtimeEvent({
+      type: 'room.updated',
+      roomCode: room.roomCode,
+      room
+    });
+  }
+
+  private emitRoomDeleted(roomId: string, roomCode: string) {
+    this.emitRealtimeEvent({
+      type: 'room.deleted',
+      roomCode,
+      roomId
+    });
   }
 
   private resolveGenerationPrompt(difficulty: Difficulty, prompt: string) {

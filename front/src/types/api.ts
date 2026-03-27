@@ -153,3 +153,23 @@ export interface AdminSessionStatus {
   authenticated: boolean;
   session: Omit<AdminSession, 'token'> | null;
 }
+
+export interface RoomConnectionReadyEvent {
+  type: 'connection.ready';
+  roomCode: string;
+  connectedAt: string;
+}
+
+export interface RoomUpdatedEvent {
+  type: 'room.updated';
+  roomCode: string;
+  room: PublicGameRoom;
+}
+
+export interface RoomDeletedEvent {
+  type: 'room.deleted';
+  roomCode: string;
+  roomId: string;
+}
+
+export type RoomRealtimeEvent = RoomConnectionReadyEvent | RoomUpdatedEvent | RoomDeletedEvent;

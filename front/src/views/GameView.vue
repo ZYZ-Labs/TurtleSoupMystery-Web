@@ -319,6 +319,7 @@ import {
 } from '@mdi/js';
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { buildRealtimeRoomUrl } from '@/api/client';
 import AnswerBadge from '@/components/ui/AnswerBadge.vue';
 import {
   askRoomQuestion,
@@ -331,16 +332,26 @@ import {
   revealRoom,
   submitRoomFinalGuess
 } from '@/api/services';
+import { getBrowserClientId, getStoredDisplayName, saveStoredDisplayName } from '@/lib/browserIdentity';
 import { extractErrorMessage } from '@/lib/errors';
 import { formatDateTime, formatDifficulty } from '@/lib/format';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
-import type { Difficulty, OllamaConfig, PublicGameRoom, PublicRoomParticipant, RoomStatus } from '@/types/api';
+import type {
+  Difficulty,
+  OllamaConfig,
+  PublicGameRoom,
+  PublicRoomParticipant,
+  RoomRealtimeEvent,
+  RoomStatus
+} from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
+const browserClientId = getBrowserClientId();
+const rememberedDisplayName = getStoredDisplayName();
 
 const room = ref<PublicGameRoom | null>(null);
 const activeParticipant = ref<PublicRoomParticipant | null>(null);
@@ -363,20 +374,22 @@ const createForm = reactive<{
   difficulty: Difficulty;
   generationPrompt: string;
 }>({
-  displayName: '',
+  displayName: rememberedDisplayName,
   difficulty: 'medium',
   generationPrompt: ''
 });
 
 const joinForm = reactive({
   roomCode: '',
-  displayName: ''
+  displayName: rememberedDisplayName
 });
 
-let pollTimer: number | null = null;
 let heartbeatTimer: number | null = null;
 let creatingStatusTimer: number | null = null;
 let askingStatusTimer: number | null = null;
+let realtimeReconnectTimer: number | null = null;
+let realtimeSocket: WebSocket | null = null;
+let realtimeShouldReconnect = false;
 
 const creatingStatusSteps = ['正在生成汤面...', '正在编织汤底逻辑...', '正在检测汤底可推理性...', '正在整理房间信息...'];
 const askingStatusSteps = ['主持正在理解问题...', '正在比对已知事实...', '正在校验回答边界...', '正在整理最终裁决...'];
@@ -478,6 +491,8 @@ function syncIdentityWithRoom(nextRoom: PublicGameRoom) {
 
   activeParticipant.value = matched;
   joinForm.displayName = matched.displayName;
+  createForm.displayName = matched.displayName;
+  saveStoredDisplayName(matched.displayName);
 }
 
 async function loadRoom(showError = true) {
@@ -508,33 +523,148 @@ async function loadRoom(showError = true) {
 }
 
 function stopSyncTimers() {
-  if (pollTimer !== null) {
-    window.clearInterval(pollTimer);
-    pollTimer = null;
-  }
+  stopRealtimeConnection();
+  stopHeartbeatTimer();
+}
 
+function stopHeartbeatTimer() {
   if (heartbeatTimer !== null) {
     window.clearInterval(heartbeatTimer);
     heartbeatTimer = null;
   }
 }
 
-function restartSyncTimers() {
+function stopRealtimeReconnectTimer() {
+  if (realtimeReconnectTimer !== null) {
+    window.clearTimeout(realtimeReconnectTimer);
+    realtimeReconnectTimer = null;
+  }
+}
+
+function stopRealtimeConnection() {
+  realtimeShouldReconnect = false;
+  stopRealtimeReconnectTimer();
+
+  if (!realtimeSocket) {
+    return;
+  }
+
+  const socket = realtimeSocket;
+  realtimeSocket = null;
+  socket.onopen = null;
+  socket.onmessage = null;
+  socket.onerror = null;
+  socket.onclose = null;
+
+  if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+    socket.close();
+  }
+}
+
+function restartHeartbeatTimer() {
+  stopHeartbeatTimer();
+
+  if (!currentRoomCode.value || !activeParticipant.value) {
+    return;
+  }
+
+  heartbeatTimer = window.setInterval(() => {
+    void sendHeartbeat(false);
+  }, 15000);
+}
+
+function handleRoomDeleted(roomCode: string) {
+  clearStoredIdentity(roomCode);
+  room.value = null;
+  activeParticipant.value = null;
   stopSyncTimers();
+  ui.notify('当前房间已被删除。', 'warning');
+  void router.push(canManageRoom.value ? '/history' : '/game');
+}
+
+function handleRealtimeMessage(rawPayload: string) {
+  try {
+    const event = JSON.parse(rawPayload) as RoomRealtimeEvent;
+
+    if (event.roomCode !== currentRoomCode.value) {
+      return;
+    }
+
+    if (event.type === 'room.updated') {
+      room.value = event.room;
+      joinForm.roomCode = event.room.roomCode;
+      syncIdentityWithRoom(event.room);
+      return;
+    }
+
+    if (event.type === 'room.deleted') {
+      handleRoomDeleted(event.roomCode);
+    }
+  } catch {
+    return;
+  }
+}
+
+function scheduleRealtimeReconnect() {
+  if (!realtimeShouldReconnect || !currentRoomCode.value || realtimeReconnectTimer !== null) {
+    return;
+  }
+
+  realtimeReconnectTimer = window.setTimeout(() => {
+    realtimeReconnectTimer = null;
+    connectRealtime();
+  }, 2000);
+}
+
+function connectRealtime() {
+  if (!currentRoomCode.value || realtimeSocket) {
+    return;
+  }
+
+  const socket = new WebSocket(buildRealtimeRoomUrl(currentRoomCode.value));
+  realtimeSocket = socket;
+
+  socket.onopen = () => {
+    if (realtimeSocket !== socket) {
+      return;
+    }
+
+    void loadRoom(false);
+
+    if (activeParticipant.value) {
+      void sendHeartbeat(false);
+    }
+  };
+
+  socket.onmessage = (event) => {
+    if (typeof event.data === 'string') {
+      handleRealtimeMessage(event.data);
+    }
+  };
+
+  socket.onerror = () => {
+    if (realtimeSocket === socket) {
+      socket.close();
+    }
+  };
+
+  socket.onclose = () => {
+    if (realtimeSocket === socket) {
+      realtimeSocket = null;
+      scheduleRealtimeReconnect();
+    }
+  };
+}
+
+function restartRoomSubscription() {
+  stopRealtimeConnection();
 
   if (!currentRoomCode.value) {
     return;
   }
 
-  pollTimer = window.setInterval(() => {
-    void loadRoom(false);
-  }, 3000);
-
-  if (activeParticipant.value) {
-    heartbeatTimer = window.setInterval(() => {
-      void sendHeartbeat(false);
-    }, 15000);
-  }
+  realtimeShouldReconnect = true;
+  connectRealtime();
 }
 
 function startStatusLoop(target: typeof creatingStatus, steps: string[], timerType: 'creating' | 'asking') {
@@ -603,17 +733,21 @@ async function copyRoomCode() {
 }
 
 async function handleCreateRoom() {
-  if (!createForm.displayName.trim()) {
+  const displayName = createForm.displayName.trim();
+
+  if (!displayName) {
     ui.notify('请先填写昵称。', 'warning');
     return;
   }
 
   creating.value = true;
   startStatusLoop(creatingStatus, creatingStatusSteps, 'creating');
+  saveStoredDisplayName(displayName);
 
   try {
     const created = await createRoom({
-      displayName: createForm.displayName.trim(),
+      clientId: browserClientId,
+      displayName,
       difficulty: createForm.difficulty,
       generationPrompt: createForm.generationPrompt.trim()
     });
@@ -622,8 +756,9 @@ async function handleCreateRoom() {
     activeParticipant.value = created.participant;
     saveStoredIdentity(created.room.roomCode, created.participant);
     joinForm.displayName = created.participant.displayName;
+    createForm.displayName = created.participant.displayName;
     await router.push(`/game/${created.room.roomCode}`);
-    restartSyncTimers();
+    restartHeartbeatTimer();
     void sendHeartbeat(false);
     ui.notify('房间已创建，把房间码发给其他成员即可加入。', 'success');
   } catch (error) {
@@ -636,23 +771,26 @@ async function handleCreateRoom() {
 
 async function handleJoinRoom() {
   const targetRoomCode = (currentRoomCode.value || joinForm.roomCode).trim().toUpperCase();
+  const displayName = joinForm.displayName.trim();
 
   if (!targetRoomCode) {
     ui.notify('请输入房间码。', 'warning');
     return;
   }
 
-  if (!joinForm.displayName.trim()) {
+  if (!displayName) {
     ui.notify('请先填写昵称。', 'warning');
     return;
   }
 
   joining.value = true;
+  saveStoredDisplayName(displayName);
 
   try {
     const joined = await joinRoom({
       roomCode: targetRoomCode,
-      displayName: joinForm.displayName.trim()
+      displayName,
+      clientId: browserClientId
     });
 
     room.value = joined.room;
@@ -660,12 +798,13 @@ async function handleJoinRoom() {
     saveStoredIdentity(joined.room.roomCode, joined.participant);
     joinForm.roomCode = joined.room.roomCode;
     joinForm.displayName = joined.participant.displayName;
+    createForm.displayName = joined.participant.displayName;
 
     if (currentRoomCode.value !== joined.room.roomCode) {
       await router.push(`/game/${joined.room.roomCode}`);
     }
 
-    restartSyncTimers();
+    restartHeartbeatTimer();
     void sendHeartbeat(false);
     ui.notify('已加入房间。', 'success');
   } catch (error) {
@@ -782,7 +921,8 @@ watch(
     }
 
     void loadRoom(true);
-    restartSyncTimers();
+    restartRoomSubscription();
+    restartHeartbeatTimer();
   },
   { immediate: true }
 );
@@ -790,7 +930,7 @@ watch(
 watch(
   () => activeParticipant.value?.participantId,
   () => {
-    restartSyncTimers();
+    restartHeartbeatTimer();
   }
 );
 

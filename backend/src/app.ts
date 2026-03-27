@@ -11,12 +11,14 @@ import { StateStore } from './storage/stateStore.js';
 const roomCreateSchema = z.object({
   displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default('')
+  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default(''),
+  clientId: z.string().trim().max(64).optional().default('')
 });
 
 const roomJoinSchema = z.object({
   roomCode: z.string().trim().min(4, '请输入房间码。').max(12, '房间码格式不正确。'),
-  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。')
+  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。'),
+  clientId: z.string().trim().max(64).optional().default('')
 });
 
 const roomQuestionSchema = z.object({
@@ -350,5 +352,8 @@ export async function createApp() {
     response.status(statusCode).json({ message });
   });
 
-  return app;
+  return {
+    app,
+    roomService
+  };
 }

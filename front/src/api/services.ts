@@ -44,6 +44,7 @@ export async function fetchRoomByCode(roomCode: string) {
 }
 
 export async function createRoom(payload: {
+  clientId: string;
   displayName: string;
   difficulty: 'easy' | 'medium' | 'hard';
   generationPrompt: string;
@@ -52,7 +53,7 @@ export async function createRoom(payload: {
   return data;
 }
 
-export async function joinRoom(payload: { roomCode: string; displayName: string }) {
+export async function joinRoom(payload: { roomCode: string; displayName: string; clientId: string }) {
   const { data } = await apiClient.post<RoomJoinResult>('/rooms/join', payload);
   return data;
 }
