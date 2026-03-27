@@ -436,8 +436,22 @@ async function handleRefreshSupplier(supplierId: string, showToast = true) {
   refreshingSupplierId.value = supplierId;
 
   try {
+    const previousRuntime = {
+      generationSupplierId: runtimeForm.generationSupplierId,
+      generationModelCategory: runtimeForm.generationModelCategory,
+      generationModel: runtimeForm.generationModel,
+      validationSupplierId: runtimeForm.validationSupplierId,
+      validationModelCategory: runtimeForm.validationModelCategory,
+      validationModel: runtimeForm.validationModel
+    };
+
     config.value = await refreshOllamaSupplierModels(supplierId);
-    syncRuntimeForm(config.value);
+    runtimeForm.generationSupplierId = previousRuntime.generationSupplierId;
+    runtimeForm.generationModelCategory = previousRuntime.generationModelCategory;
+    runtimeForm.generationModel = previousRuntime.generationModel;
+    runtimeForm.validationSupplierId = previousRuntime.validationSupplierId;
+    runtimeForm.validationModelCategory = previousRuntime.validationModelCategory;
+    runtimeForm.validationModel = previousRuntime.validationModel;
     ensureRuntimeSelections();
 
     if (selectedSupplierId.value === supplierId) {
