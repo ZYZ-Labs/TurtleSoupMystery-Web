@@ -325,7 +325,7 @@ import {
   askRoomQuestion,
   createRoom,
   deleteRoom,
-  fetchOllamaConfig,
+  fetchOverview,
   fetchRoomByCode,
   heartbeatRoom,
   joinRoom,
@@ -339,7 +339,6 @@ import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import type {
   Difficulty,
-  OllamaConfig,
   PublicGameRoom,
   PublicRoomParticipant,
   RoomRealtimeEvent,
@@ -459,15 +458,8 @@ function statusColor(status: RoomStatus) {
 
 async function loadConfig() {
   try {
-    const config: OllamaConfig = await fetchOllamaConfig();
-    ollamaConfigured.value = Boolean(
-      config.generationSupplierId &&
-        config.generationModel &&
-        config.validationSupplierId &&
-        config.validationModel &&
-        config.suppliers.some((supplier) => supplier.supplierId === config.generationSupplierId) &&
-        config.suppliers.some((supplier) => supplier.supplierId === config.validationSupplierId)
-    );
+    const overview = await fetchOverview();
+    ollamaConfigured.value = overview.ollama.configured;
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
