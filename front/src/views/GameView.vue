@@ -24,7 +24,9 @@
             rows="5"
             auto-grow
             label="汤底主题"
-            placeholder="例如：现代都市、误导性强、围绕一张照片展开。"
+            placeholder="留空即可随机，也可以手动写：例如现代都市、误导性强、围绕一张照片展开。"
+            hint="如果你懒得想主题，直接留空，系统会按难度随机挑一个方向。"
+            persistent-hint
             class="mb-4"
           />
 
@@ -49,7 +51,7 @@
         <v-card-title class="section-title px-6 pt-6">玩法说明</v-card-title>
         <v-card-text class="pt-4">
           <v-list density="comfortable">
-            <v-list-item>房主输入主题后，系统会即时生成一个全新的汤底并开启多人协作推理。</v-list-item>
+            <v-list-item>你现在只要选难度就能开局，主题留空时会自动随机。</v-list-item>
             <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已揭示事实和最终结算结果。</v-list-item>
             <v-list-item>当前版本采用轮询同步，不需要额外消息中间件就能在局域网里多人协作。</v-list-item>
           </v-list>
@@ -517,11 +519,6 @@ async function copyRoomCode() {
 async function handleCreateRoom() {
   if (!createForm.displayName.trim()) {
     ui.notify('请先填写昵称。', 'warning');
-    return;
-  }
-
-  if (!createForm.generationPrompt.trim()) {
-    ui.notify('请先描述想生成的汤底主题。', 'warning');
     return;
   }
 

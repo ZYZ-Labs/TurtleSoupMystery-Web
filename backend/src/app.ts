@@ -10,7 +10,7 @@ import { StateStore } from './storage/stateStore.js';
 const roomCreateSchema = z.object({
   displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称最多 24 个字符。'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  generationPrompt: z.string().trim().min(2, '请描述想生成的汤底主题。').max(200, '生成提示请控制在 200 字以内。')
+  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 字以内。').default('')
 });
 
 const roomJoinSchema = z.object({

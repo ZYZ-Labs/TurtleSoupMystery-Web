@@ -95,6 +95,7 @@ export class RoomService {
 
   async createRoom(input: CreateRoomInput): Promise<RoomJoinResult> {
     const state = await this.store.readState();
+    const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const timestamp = nowIso();
     const host: RoomParticipant = {
       participantId: nanoid(),
@@ -105,15 +106,15 @@ export class RoomService {
     };
     const puzzle = await this.ollamaService.generatePuzzle(state.ollama, {
       difficulty: input.difficulty,
-      prompt: input.generationPrompt
+      prompt: resolvedPrompt
     });
     const roomCode = this.createUniqueRoomCode(state.rooms);
-    const roomTitle = slugifyPrompt(input.generationPrompt) || puzzle.title;
+    const roomTitle = slugifyPrompt(resolvedPrompt) || puzzle.title;
     const room: GameRoom = {
       roomId: nanoid(),
       roomCode,
       title: roomTitle,
-      generationPrompt: input.generationPrompt.trim(),
+      generationPrompt: resolvedPrompt,
       puzzleId: puzzle.puzzleId,
       puzzleTitle: puzzle.title,
       soupSurface: puzzle.soupSurface,
@@ -483,6 +484,38 @@ export class RoomService {
 
   private normalizeDisplayName(value: string) {
     return value.trim().slice(0, 24);
+  }
+
+  private resolveGenerationPrompt(difficulty: Difficulty, prompt: string) {
+    const normalized = prompt.trim();
+
+    if (normalized) {
+      return normalized;
+    }
+
+    const promptPool: Record<Difficulty, string[]> = {
+      easy: [
+        '校园日常、线索直接、现实向',
+        '办公室误会、人物关系清晰、反转温和',
+        '家庭场景、动机明确、容易联想到关键线索',
+        '公共场所小事件、因果链简单、误导较少'
+      ],
+      medium: [
+        '现代都市、误导性适中、围绕一件不起眼的物品',
+        '现实悬疑、人物动机隐藏、需要多步提问',
+        '社交关系、信息差驱动、结局合理但不直白',
+        '职场或校园、表面行为反常、背后另有原因'
+      ],
+      hard: [
+        '强误导现实悬疑、信息缺口大、需要逆向提问',
+        '多重身份误导、因果链较长、结局克制',
+        '心理动机主导、表象与真相反差大',
+        '冷门职业或场景、关键线索隐蔽、适合多人协作拆解'
+      ]
+    };
+
+    const pool = promptPool[difficulty];
+    return pool[Math.floor(Math.random() * pool.length)] ?? promptPool.medium[0];
   }
 
   private normalizeRoomCode(value: string) {
