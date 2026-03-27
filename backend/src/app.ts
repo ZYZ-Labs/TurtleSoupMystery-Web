@@ -9,24 +9,24 @@ import { RoomService, ServiceError } from './services/roomService.js';
 import { StateStore } from './storage/stateStore.js';
 
 const roomCreateSchema = z.object({
-  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称最多 24 个字符。'),
+  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 字以内。').default('')
+  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default('')
 });
 
 const roomJoinSchema = z.object({
   roomCode: z.string().trim().min(4, '请输入房间码。').max(12, '房间码格式不正确。'),
-  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称最多 24 个字符。')
+  displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。')
 });
 
 const roomQuestionSchema = z.object({
   participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
-  question: z.string().trim().min(1, '问题不能为空。').max(280, '单次提问请控制在 280 字以内。')
+  question: z.string().trim().min(1, '问题不能为空。').max(280, '单次提问请控制在 280 个字符内。')
 });
 
 const finalGuessSchema = z.object({
   participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
-  guess: z.string().trim().min(1, '最终猜测不能为空。').max(2000, '最终猜测请控制在 2000 字以内。')
+  guess: z.string().trim().min(1, '最终猜测不能为空。').max(2000, '最终猜测请控制在 2000 个字符内。')
 });
 
 const participantActionSchema = z.object({
@@ -38,15 +38,20 @@ const checkSchema = z.object({
   timeoutMs: z.number().int().min(1000).max(120000).default(30000)
 });
 
-const saveConfigSchema = z.object({
+const supplierSchema = z.object({
+  label: z.string().trim().min(1, '请先填写供应商名称。').max(32, '供应商名称请控制在 32 个字符内。'),
+  provider: z.enum(['ollama']).default('ollama'),
   baseUrl: z.string().trim().min(1, 'Ollama 地址不能为空。'),
-  generationProvider: z.enum(['ollama']).default('ollama'),
+  timeoutMs: z.number().int().min(1000).max(120000).default(30000)
+});
+
+const runtimeConfigSchema = z.object({
+  generationSupplierId: z.string().trim().default(''),
   generationModelCategory: z.enum(['all', 'balanced', 'reasoning', 'lightweight', 'multimodal', 'other']).default('all'),
   generationModel: z.string().trim().default(''),
-  validationProvider: z.enum(['ollama']).default('ollama'),
+  validationSupplierId: z.string().trim().default(''),
   validationModelCategory: z.enum(['all', 'balanced', 'reasoning', 'lightweight', 'multimodal', 'other']).default('all'),
-  validationModel: z.string().trim().default(''),
-  timeoutMs: z.number().int().min(1000).max(120000).default(30000)
+  validationModel: z.string().trim().default('')
 });
 
 const loginSchema = z.object({
@@ -263,12 +268,49 @@ export async function createApp() {
     })
   );
 
-  app.put(
-    '/api/settings/ollama',
+  app.post(
+    '/api/settings/ollama/suppliers',
     requireAuth,
     wrap(async (request, response) => {
-      const body = saveConfigSchema.parse(request.body ?? {});
-      response.json(await roomService.saveOllamaConfig(body));
+      const body = supplierSchema.parse(request.body ?? {});
+      response.status(201).json(await roomService.createOllamaSupplier(body));
+    })
+  );
+
+  app.put(
+    '/api/settings/ollama/suppliers/:supplierId',
+    requireAuth,
+    wrap(async (request, response) => {
+      const supplierId = Array.isArray(request.params.supplierId) ? request.params.supplierId[0] : request.params.supplierId;
+      const body = supplierSchema.parse(request.body ?? {});
+      response.json(await roomService.updateOllamaSupplier(supplierId, body));
+    })
+  );
+
+  app.post(
+    '/api/settings/ollama/suppliers/:supplierId/check',
+    requireAuth,
+    wrap(async (request, response) => {
+      const supplierId = Array.isArray(request.params.supplierId) ? request.params.supplierId[0] : request.params.supplierId;
+      response.json(await roomService.refreshOllamaSupplierModels(supplierId));
+    })
+  );
+
+  app.delete(
+    '/api/settings/ollama/suppliers/:supplierId',
+    requireAuth,
+    wrap(async (request, response) => {
+      const supplierId = Array.isArray(request.params.supplierId) ? request.params.supplierId[0] : request.params.supplierId;
+      response.json(await roomService.deleteOllamaSupplier(supplierId));
+    })
+  );
+
+  app.put(
+    '/api/settings/ollama/runtime',
+    requireAuth,
+    wrap(async (request, response) => {
+      const body = runtimeConfigSchema.parse(request.body ?? {});
+      response.json(await roomService.saveOllamaRuntimeConfig(body));
     })
   );
 

@@ -1,53 +1,125 @@
 <template>
   <v-row>
-    <v-col cols="12" lg="7">
-      <v-card class="glass-card">
-        <v-card-title class="section-title px-6 pt-6">AI 连接与模型配置</v-card-title>
+    <v-col cols="12" lg="5">
+      <v-card class="glass-card mb-4">
+        <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-3 px-6 pt-6">
+          <div class="section-title">供应商列表</div>
+          <v-btn variant="outlined" @click="handleNewSupplier">新增供应商</v-btn>
+        </v-card-title>
         <v-card-text class="pt-4">
-          <v-form @submit.prevent="handleSave">
+          <v-list v-if="config?.suppliers.length" density="comfortable" lines="two">
+            <v-list-item
+              v-for="supplier in config.suppliers"
+              :key="supplier.supplierId"
+              :active="supplier.supplierId === selectedSupplierId"
+              rounded="lg"
+              @click="selectSupplier(supplier.supplierId)"
+            >
+              <v-list-item-title>{{ supplier.label }}</v-list-item-title>
+              <v-list-item-subtitle>{{ supplier.baseUrl || '未配置地址' }}</v-list-item-subtitle>
+              <template #append>
+                <v-chip size="small" :color="statusColor(supplier.lastStatus)" variant="flat">
+                  {{ statusLabel(supplier.lastStatus) }}
+                </v-chip>
+              </template>
+            </v-list-item>
+          </v-list>
+          <v-alert v-else type="info" variant="tonal">还没有供应商，先在这里添加一个 Ollama 供应商。</v-alert>
+        </v-card-text>
+      </v-card>
+
+      <v-card class="glass-card">
+        <v-card-title class="section-title px-6 pt-6">
+          {{ selectedSupplierId ? '编辑供应商' : '新增供应商' }}
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <v-form @submit.prevent="handleSaveSupplier">
             <v-row>
               <v-col cols="12">
+                <v-text-field v-model="supplierForm.label" label="供应商名称" />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="supplierForm.provider"
+                  :items="providerItems"
+                  item-title="title"
+                  item-value="value"
+                  label="供应商类型"
+                />
+              </v-col>
+              <v-col cols="12" md="8">
                 <v-text-field
-                  v-model="form.baseUrl"
+                  v-model="supplierForm.baseUrl"
                   label="Ollama 地址"
-                  hint="例如 http://192.168.1.10:11434 或 http://host.docker.internal:11434"
+                  hint="例如 http://192.168.1.10:11434"
                   persistent-hint
                 />
               </v-col>
-              <v-col cols="12" md="6">
+              <v-col cols="12">
                 <v-text-field
-                  v-model.number="form.timeoutMs"
+                  v-model.number="supplierForm.timeoutMs"
                   label="超时时间（毫秒）"
                   type="number"
                   min="1000"
                   max="120000"
                 />
               </v-col>
-              <v-col cols="12" md="6">
-                <v-btn class="mt-md-2" color="secondary" block :loading="checking" @click.prevent="handleCheck">
-                  检测连接并拉取模型
-                </v-btn>
-              </v-col>
             </v-row>
 
-            <v-divider class="my-4" />
+            <div class="d-flex flex-wrap ga-3 mt-2">
+              <v-btn color="primary" type="submit" :loading="savingSupplier">保存供应商</v-btn>
+              <v-btn
+                variant="outlined"
+                color="secondary"
+                :disabled="!selectedSupplierId"
+                :loading="refreshingSupplierId === selectedSupplierId"
+                @click.prevent="selectedSupplierId && handleRefreshSupplier(selectedSupplierId)"
+              >
+                刷新模型
+              </v-btn>
+              <v-btn variant="text" :disabled="!selectedSupplierId" @click.prevent="handleNewSupplier">清空</v-btn>
+              <v-btn
+                variant="text"
+                color="error"
+                :disabled="!selectedSupplierId"
+                :loading="deletingSupplier"
+                @click.prevent="handleDeleteSupplier"
+              >
+                删除供应商
+              </v-btn>
+            </div>
 
+            <v-alert v-if="selectedSupplier?.lastError" type="error" variant="tonal" class="mt-4">
+              {{ selectedSupplier.lastError }}
+            </v-alert>
+          </v-form>
+        </v-card-text>
+      </v-card>
+    </v-col>
+
+    <v-col cols="12" lg="7">
+      <v-card class="glass-card mb-4">
+        <v-card-title class="section-title px-6 pt-6">运行时模型选择</v-card-title>
+        <v-card-text class="pt-4">
+          <v-form @submit.prevent="handleSaveRuntime">
             <v-row>
               <v-col cols="12">
-                <div class="text-subtitle-1 font-weight-bold mb-2">汤底生成模型</div>
+                <div class="text-subtitle-1 font-weight-bold mb-2">汤底生成</div>
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.generationProvider"
-                  :items="providerItems"
+                  v-model="runtimeForm.generationSupplierId"
+                  :items="supplierItems"
                   item-title="title"
                   item-value="value"
                   label="供应商"
+                  hint="切换后会自动刷新该供应商模型。"
+                  persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.generationModelCategory"
+                  v-model="runtimeForm.generationModelCategory"
                   :items="categoryItems"
                   item-title="title"
                   item-value="value"
@@ -56,34 +128,34 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.generationModel"
+                  v-model="runtimeForm.generationModel"
                   :items="generationModelItems"
                   item-title="title"
                   item-value="value"
                   label="生成模型"
                   :disabled="!generationModelItems.length"
-                  hint="生成过程会走流式传输，但只在服务端聚合，不向前端展示汤底分片。"
-                  persistent-hint
                 />
               </v-col>
             </v-row>
 
             <v-row class="mt-2">
               <v-col cols="12">
-                <div class="text-subtitle-1 font-weight-bold mb-2">文本校验模型</div>
+                <div class="text-subtitle-1 font-weight-bold mb-2">文本校验</div>
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.validationProvider"
-                  :items="providerItems"
+                  v-model="runtimeForm.validationSupplierId"
+                  :items="supplierItems"
                   item-title="title"
                   item-value="value"
                   label="供应商"
+                  hint="切换后会自动刷新该供应商模型。"
+                  persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.validationModelCategory"
+                  v-model="runtimeForm.validationModelCategory"
                   :items="categoryItems"
                   item-title="title"
                   item-value="value"
@@ -92,66 +164,46 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.validationModel"
+                  v-model="runtimeForm.validationModel"
                   :items="validationModelItems"
                   item-title="title"
                   item-value="value"
                   label="校验模型"
                   :disabled="!validationModelItems.length"
-                  hint="问答判定和最终猜测都会使用这套模型，底层同样改成流式调用。"
-                  persistent-hint
                 />
               </v-col>
             </v-row>
 
             <div class="d-flex flex-wrap ga-3 mt-4">
-              <v-btn color="primary" type="submit" :loading="saving">保存配置</v-btn>
+              <v-btn color="primary" type="submit" :loading="savingRuntime">保存运行配置</v-btn>
             </div>
           </v-form>
         </v-card-text>
       </v-card>
-    </v-col>
 
-    <v-col cols="12" lg="5">
-      <v-card class="glass-card mb-4">
-        <v-card-title class="section-title px-6 pt-6">当前状态</v-card-title>
+      <v-card class="glass-card">
+        <v-card-title class="section-title px-6 pt-6">当前摘要</v-card-title>
         <v-card-text class="pt-4">
           <div class="d-flex align-center justify-space-between mb-3">
-            <span class="text-medium-emphasis">连接状态</span>
-            <v-chip :color="statusColor" variant="flat">{{ statusLabel }}</v-chip>
+            <span class="text-medium-emphasis">供应商数量</span>
+            <span>{{ config?.suppliers.length ?? 0 }}</span>
+          </div>
+          <div class="d-flex align-center justify-space-between mb-3">
+            <span class="text-medium-emphasis">生成供应商</span>
+            <span>{{ generationSupplier?.label || '未选择' }}</span>
           </div>
           <div class="d-flex align-center justify-space-between mb-3">
             <span class="text-medium-emphasis">生成模型</span>
-            <span>{{ config?.generationModel || '未配置' }}</span>
+            <span>{{ runtimeForm.generationModel || '未选择' }}</span>
           </div>
           <div class="d-flex align-center justify-space-between mb-3">
-            <span class="text-medium-emphasis">校验模型</span>
-            <span>{{ config?.validationModel || '未配置' }}</span>
-          </div>
-          <div class="d-flex align-center justify-space-between mb-3">
-            <span class="text-medium-emphasis">模型数量</span>
-            <span>{{ config?.availableModels.length ?? 0 }}</span>
+            <span class="text-medium-emphasis">校验供应商</span>
+            <span>{{ validationSupplier?.label || '未选择' }}</span>
           </div>
           <div class="d-flex align-center justify-space-between">
-            <span class="text-medium-emphasis">最近检测</span>
-            <span>{{ formatDateTime(config?.lastCheckedAt) }}</span>
+            <span class="text-medium-emphasis">校验模型</span>
+            <span>{{ runtimeForm.validationModel || '未选择' }}</span>
           </div>
-          <v-alert v-if="config?.lastError" type="error" variant="tonal" class="mt-4">
-            {{ config.lastError }}
-          </v-alert>
-        </v-card-text>
-      </v-card>
-
-      <v-card class="glass-card">
-        <v-card-title class="section-title px-6 pt-6">分类说明</v-card-title>
-        <v-card-text class="pt-4">
-          <v-list density="comfortable">
-            <v-list-item>“平衡”适合一般对话和稳定输出。</v-list-item>
-            <v-list-item>“推理”优先挑带 reasoning / r1 / qwq 特征的模型。</v-list-item>
-            <v-list-item>“轻量”优先小参数模型，适合资源紧张时使用。</v-list-item>
-            <v-list-item>“多模态”主要识别视觉类模型；本项目目前仍以文本玩法为主。</v-list-item>
-            <v-list-item>校验模型与生成模型分开后，可以让出题更稳、判题更克制。</v-list-item>
-          </v-list>
         </v-card-text>
       </v-card>
     </v-col>
@@ -160,16 +212,26 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { checkOllamaConnection, fetchOllamaConfig, saveOllamaConfig } from '@/api/services';
+import {
+  createOllamaSupplier,
+  deleteOllamaSupplier,
+  fetchOllamaConfig,
+  refreshOllamaSupplierModels,
+  saveOllamaRuntimeConfig,
+  updateOllamaSupplier
+} from '@/api/services';
 import { extractErrorMessage } from '@/lib/errors';
-import { formatBytes, formatDateTime } from '@/lib/format';
+import { formatBytes } from '@/lib/format';
 import { useUiStore } from '@/stores/ui';
-import type { AIProvider, ModelCategory, OllamaConfig, OllamaModel } from '@/types/api';
+import type { AIProvider, ConnectionStatus, ModelCategory, OllamaConfig, OllamaModel, OllamaSupplier } from '@/types/api';
 
 const ui = useUiStore();
 const config = ref<OllamaConfig | null>(null);
-const checking = ref(false);
-const saving = ref(false);
+const selectedSupplierId = ref('');
+const savingSupplier = ref(false);
+const deletingSupplier = ref(false);
+const refreshingSupplierId = ref('');
+const savingRuntime = ref(false);
 
 const providerItems = [{ title: 'Ollama（局域网）', value: 'ollama' satisfies AIProvider }];
 const categoryItems = [
@@ -181,31 +243,40 @@ const categoryItems = [
   { title: '其他', value: 'other' satisfies ModelCategory }
 ];
 
-const form = reactive({
+const supplierForm = reactive({
+  label: '',
+  provider: 'ollama' as AIProvider,
   baseUrl: '',
-  timeoutMs: 30000,
-  generationProvider: 'ollama' as AIProvider,
+  timeoutMs: 30000
+});
+
+const runtimeForm = reactive({
+  generationSupplierId: '',
   generationModelCategory: 'all' as ModelCategory,
   generationModel: '',
-  validationProvider: 'ollama' as AIProvider,
+  validationSupplierId: '',
   validationModelCategory: 'all' as ModelCategory,
   validationModel: ''
 });
 
-const emptyConfig: OllamaConfig = {
-  baseUrl: '',
-  timeoutMs: 30000,
-  generationProvider: 'ollama',
-  generationModelCategory: 'all',
-  generationModel: '',
-  validationProvider: 'ollama',
-  validationModelCategory: 'all',
-  validationModel: '',
-  availableModels: [],
-  lastCheckedAt: null,
-  lastStatus: 'idle',
-  lastError: null
-};
+const selectedSupplier = computed(() =>
+  config.value?.suppliers.find((supplier) => supplier.supplierId === selectedSupplierId.value) ?? null
+);
+
+const generationSupplier = computed(() =>
+  config.value?.suppliers.find((supplier) => supplier.supplierId === runtimeForm.generationSupplierId) ?? null
+);
+
+const validationSupplier = computed(() =>
+  config.value?.suppliers.find((supplier) => supplier.supplierId === runtimeForm.validationSupplierId) ?? null
+);
+
+const supplierItems = computed(() =>
+  (config.value?.suppliers ?? []).map((supplier) => ({
+    title: supplier.label,
+    value: supplier.supplierId
+  }))
+);
 
 function categoryLabel(category: Exclude<ModelCategory, 'all'>) {
   return {
@@ -217,153 +288,270 @@ function categoryLabel(category: Exclude<ModelCategory, 'all'>) {
   }[category];
 }
 
-function pickModel(category: ModelCategory, selected: string, models: OllamaModel[]) {
-  const normalizedSelected = selected.trim();
-  const scoped = category === 'all' ? models : models.filter((model) => model.category === category);
-
-  if (normalizedSelected && scoped.some((model) => model.name === normalizedSelected || model.model === normalizedSelected)) {
-    return normalizedSelected;
-  }
-
-  if (scoped.length > 0) {
-    return scoped[0]?.name || scoped[0]?.model || '';
-  }
-
-  if (normalizedSelected && models.some((model) => model.name === normalizedSelected || model.model === normalizedSelected)) {
-    return normalizedSelected;
-  }
-
-  return models[0]?.name || models[0]?.model || '';
+function statusLabel(status: ConnectionStatus) {
+  return {
+    idle: '未检测',
+    connected: '已连接',
+    error: '异常'
+  }[status];
 }
 
-function toModelItems(category: ModelCategory) {
-  const models = config.value?.availableModels ?? [];
-  const scoped = category === 'all' ? models : models.filter((model) => model.category === category);
+function statusColor(status: ConnectionStatus) {
+  return {
+    idle: 'warning',
+    connected: 'success',
+    error: 'error'
+  }[status];
+}
 
-  return scoped.map((item) => ({
+function modelsForSupplier(supplierId: string, category: ModelCategory) {
+  const supplier = config.value?.suppliers.find((item) => item.supplierId === supplierId);
+  const models = supplier?.availableModels ?? [];
+  return category === 'all' ? models : models.filter((model) => model.category === category);
+}
+
+function pickModel(supplierId: string, category: ModelCategory, selected: string) {
+  const supplierModels = modelsForSupplier(supplierId, category);
+  const normalizedSelected = selected.trim();
+
+  if (normalizedSelected && supplierModels.some((model) => model.name === normalizedSelected || model.model === normalizedSelected)) {
+    return normalizedSelected;
+  }
+
+  if (supplierModels.length > 0) {
+    return supplierModels[0]?.name || supplierModels[0]?.model || '';
+  }
+
+  return '';
+}
+
+function toModelItems(models: OllamaModel[]) {
+  return models.map((item) => ({
     title: `${item.name} · ${categoryLabel(item.category)} · ${item.parameterSize || formatBytes(item.size)}`,
     value: item.name
   }));
 }
 
-const generationModelItems = computed(() => toModelItems(form.generationModelCategory));
-const validationModelItems = computed(() => toModelItems(form.validationModelCategory));
+const generationModelItems = computed(() =>
+  toModelItems(modelsForSupplier(runtimeForm.generationSupplierId, runtimeForm.generationModelCategory))
+);
 
-const statusLabel = computed(() => {
-  return {
-    idle: '未检测',
-    connected: '已连接',
-    error: '异常'
-  }[config.value?.lastStatus ?? 'idle'];
-});
+const validationModelItems = computed(() =>
+  toModelItems(modelsForSupplier(runtimeForm.validationSupplierId, runtimeForm.validationModelCategory))
+);
 
-const statusColor = computed(() => {
-  return {
-    idle: 'warning',
-    connected: 'success',
-    error: 'error'
-  }[config.value?.lastStatus ?? 'idle'];
-});
-
-function syncForm(source: OllamaConfig) {
-  form.baseUrl = source.baseUrl;
-  form.timeoutMs = source.timeoutMs;
-  form.generationProvider = source.generationProvider;
-  form.generationModelCategory = source.generationModelCategory;
-  form.generationModel = source.generationModel;
-  form.validationProvider = source.validationProvider;
-  form.validationModelCategory = source.validationModelCategory;
-  form.validationModel = source.validationModel;
+function syncSupplierForm(supplier: OllamaSupplier | null) {
+  supplierForm.label = supplier?.label ?? '';
+  supplierForm.provider = supplier?.provider ?? 'ollama';
+  supplierForm.baseUrl = supplier?.baseUrl ?? '';
+  supplierForm.timeoutMs = supplier?.timeoutMs ?? 30000;
 }
 
-function ensureModelSelections() {
-  const models = config.value?.availableModels ?? [];
-  form.generationModel = pickModel(form.generationModelCategory, form.generationModel, models);
-  form.validationModel = pickModel(form.validationModelCategory, form.validationModel || form.generationModel, models);
+function syncRuntimeForm(source: OllamaConfig) {
+  runtimeForm.generationSupplierId = source.generationSupplierId;
+  runtimeForm.generationModelCategory = source.generationModelCategory;
+  runtimeForm.generationModel = source.generationModel;
+  runtimeForm.validationSupplierId = source.validationSupplierId;
+  runtimeForm.validationModelCategory = source.validationModelCategory;
+  runtimeForm.validationModel = source.validationModel;
+}
+
+function ensureRuntimeSelections() {
+  runtimeForm.generationModel = pickModel(
+    runtimeForm.generationSupplierId,
+    runtimeForm.generationModelCategory,
+    runtimeForm.generationModel
+  );
+  runtimeForm.validationModel = pickModel(
+    runtimeForm.validationSupplierId,
+    runtimeForm.validationModelCategory,
+    runtimeForm.validationModel
+  );
+}
+
+function selectSupplier(supplierId: string) {
+  selectedSupplierId.value = supplierId;
+  syncSupplierForm(config.value?.suppliers.find((supplier) => supplier.supplierId === supplierId) ?? null);
+}
+
+function handleNewSupplier() {
+  selectedSupplierId.value = '';
+  syncSupplierForm(null);
 }
 
 async function loadConfig() {
   try {
     config.value = await fetchOllamaConfig();
-    syncForm(config.value);
-    ensureModelSelections();
+    syncRuntimeForm(config.value);
+    ensureRuntimeSelections();
+
+    if (config.value.suppliers.length > 0) {
+      selectSupplier(config.value.suppliers[0]?.supplierId ?? '');
+    } else {
+      handleNewSupplier();
+    }
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
 }
 
-async function handleCheck() {
-  checking.value = true;
+async function handleSaveSupplier() {
+  savingSupplier.value = true;
 
   try {
-    const result = await checkOllamaConnection(form.baseUrl, form.timeoutMs);
-    const models = result.models;
+    const previousIds = new Set(config.value?.suppliers.map((supplier) => supplier.supplierId) ?? []);
+    config.value = selectedSupplierId.value
+      ? await updateOllamaSupplier(selectedSupplierId.value, supplierForm)
+      : await createOllamaSupplier(supplierForm);
 
-    config.value = {
-      ...(config.value ?? emptyConfig),
-      baseUrl: result.normalizedBaseUrl,
-      timeoutMs: form.timeoutMs,
-      generationProvider: form.generationProvider,
-      generationModelCategory: form.generationModelCategory,
-      generationModel: pickModel(form.generationModelCategory, form.generationModel, models),
-      validationProvider: form.validationProvider,
-      validationModelCategory: form.validationModelCategory,
-      validationModel: pickModel(form.validationModelCategory, form.validationModel || form.generationModel, models),
-      availableModels: models,
-      lastCheckedAt: new Date().toISOString(),
-      lastStatus: result.reachable ? 'connected' : 'error',
-      lastError: result.reachable ? null : result.message
-    };
+    syncRuntimeForm(config.value);
+    ensureRuntimeSelections();
 
-    syncForm(config.value);
-    ensureModelSelections();
-    ui.notify(result.message, result.reachable ? 'success' : 'warning');
+    if (selectedSupplierId.value) {
+      selectSupplier(selectedSupplierId.value);
+    } else {
+      const createdSupplier =
+        config.value.suppliers.find((supplier) => !previousIds.has(supplier.supplierId)) ??
+        config.value.suppliers.at(-1) ??
+        null;
+
+      if (createdSupplier) {
+        selectSupplier(createdSupplier.supplierId);
+      }
+    }
+
+    ui.notify('供应商已保存。', 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
-    checking.value = false;
+    savingSupplier.value = false;
   }
 }
 
-async function handleSave() {
-  saving.value = true;
+async function handleRefreshSupplier(supplierId: string, showToast = true) {
+  if (!supplierId || refreshingSupplierId.value === supplierId) {
+    return;
+  }
+
+  refreshingSupplierId.value = supplierId;
 
   try {
-    config.value = await saveOllamaConfig({
-      baseUrl: form.baseUrl,
-      timeoutMs: form.timeoutMs,
-      generationProvider: form.generationProvider,
-      generationModelCategory: form.generationModelCategory,
-      generationModel: form.generationModel,
-      validationProvider: form.validationProvider,
-      validationModelCategory: form.validationModelCategory,
-      validationModel: form.validationModel
+    config.value = await refreshOllamaSupplierModels(supplierId);
+    syncRuntimeForm(config.value);
+    ensureRuntimeSelections();
+
+    if (selectedSupplierId.value === supplierId) {
+      selectSupplier(supplierId);
+    }
+
+    if (showToast) {
+      ui.notify('模型列表已刷新。', 'success');
+    }
+  } catch (error) {
+    if (showToast) {
+      ui.notify(extractErrorMessage(error), 'error');
+    }
+  } finally {
+    refreshingSupplierId.value = '';
+  }
+}
+
+async function handleDeleteSupplier() {
+  if (!selectedSupplierId.value) {
+    return;
+  }
+
+  const supplier = selectedSupplier.value;
+  const confirmed = window.confirm(`确定要删除供应商 ${supplier?.label ?? ''} 吗？`);
+
+  if (!confirmed) {
+    return;
+  }
+
+  deletingSupplier.value = true;
+
+  try {
+    config.value = await deleteOllamaSupplier(selectedSupplierId.value);
+    syncRuntimeForm(config.value);
+    ensureRuntimeSelections();
+
+    if (config.value.suppliers.length > 0) {
+      selectSupplier(config.value.suppliers[0]?.supplierId ?? '');
+    } else {
+      handleNewSupplier();
+    }
+
+    ui.notify('供应商已删除。', 'success');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    deletingSupplier.value = false;
+  }
+}
+
+async function handleSaveRuntime() {
+  savingRuntime.value = true;
+
+  try {
+    config.value = await saveOllamaRuntimeConfig({
+      generationSupplierId: runtimeForm.generationSupplierId,
+      generationModelCategory: runtimeForm.generationModelCategory,
+      generationModel: runtimeForm.generationModel,
+      validationSupplierId: runtimeForm.validationSupplierId,
+      validationModelCategory: runtimeForm.validationModelCategory,
+      validationModel: runtimeForm.validationModel
     });
 
-    syncForm(config.value);
-    ensureModelSelections();
-    ui.notify('AI 配置已保存。', 'success');
+    syncRuntimeForm(config.value);
+    ensureRuntimeSelections();
+    ui.notify('运行配置已保存。', 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
-    saving.value = false;
+    savingRuntime.value = false;
   }
 }
 
 watch(
-  () => [form.generationModelCategory, config.value?.availableModels.length ?? 0],
-  () => {
-    form.generationModel = pickModel(form.generationModelCategory, form.generationModel, config.value?.availableModels ?? []);
+  () => runtimeForm.generationSupplierId,
+  (supplierId, previousSupplierId) => {
+    runtimeForm.generationModel = pickModel(supplierId, runtimeForm.generationModelCategory, runtimeForm.generationModel);
+
+    if (supplierId && supplierId !== previousSupplierId) {
+      void handleRefreshSupplier(supplierId, false);
+    }
   }
 );
 
 watch(
-  () => [form.validationModelCategory, config.value?.availableModels.length ?? 0, form.generationModel],
+  () => runtimeForm.validationSupplierId,
+  (supplierId, previousSupplierId) => {
+    runtimeForm.validationModel = pickModel(supplierId, runtimeForm.validationModelCategory, runtimeForm.validationModel);
+
+    if (supplierId && supplierId !== previousSupplierId) {
+      void handleRefreshSupplier(supplierId, false);
+    }
+  }
+);
+
+watch(
+  () => runtimeForm.generationModelCategory,
   () => {
-    form.validationModel = pickModel(
-      form.validationModelCategory,
-      form.validationModel || form.generationModel,
-      config.value?.availableModels ?? []
+    runtimeForm.generationModel = pickModel(
+      runtimeForm.generationSupplierId,
+      runtimeForm.generationModelCategory,
+      runtimeForm.generationModel
+    );
+  }
+);
+
+watch(
+  () => runtimeForm.validationModelCategory,
+  () => {
+    runtimeForm.validationModel = pickModel(
+      runtimeForm.validationSupplierId,
+      runtimeForm.validationModelCategory,
+      runtimeForm.validationModel
     );
   }
 );

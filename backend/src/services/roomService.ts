@@ -7,6 +7,7 @@ import type {
   FinalGuessRecord,
   GameRoom,
   OllamaConfig,
+  OllamaSupplier,
   PublicGameRoom,
   PublicPuzzle,
   Puzzle,
@@ -65,13 +66,21 @@ export class RoomService {
         onlineParticipantCount
       },
       ollama: {
-        configured: Boolean(state.ollama.baseUrl && state.ollama.generationModel && state.ollama.validationModel),
+        configured: Boolean(
+          this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId) &&
+            state.ollama.generationModel &&
+            this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId) &&
+            state.ollama.validationModel
+        ),
+        supplierCount: state.ollama.suppliers.length,
+        generationSupplierLabel: this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId)?.label ?? '',
         generationModel: state.ollama.generationModel,
+        validationSupplierLabel: this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId)?.label ?? '',
         validationModel: state.ollama.validationModel,
-        modelCount: state.ollama.availableModels.length,
-        lastStatus: state.ollama.lastStatus,
-        lastError: state.ollama.lastError,
-        lastCheckedAt: state.ollama.lastCheckedAt
+        modelCount: state.ollama.suppliers.reduce((total, supplier) => total + supplier.availableModels.length, 0),
+        lastStatus: this.resolveOverviewStatus(state.ollama),
+        lastError: this.resolveOverviewError(state.ollama),
+        lastCheckedAt: this.resolveOverviewLastCheckedAt(state.ollama)
       },
       latestRooms: rooms.slice(0, 6).map((room) => this.toPublicRoom(room))
     };
@@ -108,6 +117,7 @@ export class RoomService {
   async createRoom(input: CreateRoomInput): Promise<RoomJoinResult> {
     const state = await this.store.readState();
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
+    const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
     const timestamp = nowIso();
     const host: RoomParticipant = {
       participantId: nanoid(),
@@ -116,7 +126,7 @@ export class RoomService {
       joinedAt: timestamp,
       lastSeenAt: timestamp
     };
-    const puzzle = await this.ollamaService.generatePuzzle(state.ollama, {
+    const puzzle = await this.ollamaService.generatePuzzle(generationSupplier, state.ollama.generationModel, {
       difficulty: input.difficulty,
       prompt: resolvedPrompt
     });
@@ -237,8 +247,10 @@ export class RoomService {
     }
 
     const participant = this.findParticipantOrThrow(room, participantId);
+    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
     const evaluation = await this.ollamaService.evaluateQuestion(
-      state.ollama,
+      validationSupplier,
+      state.ollama.validationModel,
       this.toPuzzle(room),
       this.toRoomContext(room),
       question
@@ -335,8 +347,10 @@ export class RoomService {
     }
 
     const participant = this.findParticipantOrThrow(room, participantId);
+    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
     const evaluation = await this.ollamaService.evaluateFinalGuess(
-      state.ollama,
+      validationSupplier,
+      state.ollama.validationModel,
       this.toPuzzle(room),
       this.toRoomContext(room),
       guess
@@ -470,51 +484,178 @@ export class RoomService {
     return state.ollama;
   }
 
-  async checkOllamaConnection(baseUrl: string, timeoutMs: number) {
-    return this.ollamaService.checkConnection(baseUrl, timeoutMs);
-  }
-
-  async saveOllamaConfig(
-    nextConfig: Pick<
-      OllamaConfig,
-      | 'baseUrl'
-      | 'timeoutMs'
-      | 'generationProvider'
-      | 'generationModelCategory'
-      | 'generationModel'
-      | 'validationProvider'
-      | 'validationModelCategory'
-      | 'validationModel'
-    >
-  ) {
-    const checkResult = await this.ollamaService.checkConnection(nextConfig.baseUrl, nextConfig.timeoutMs);
-    const generationModel = this.resolveModelSelection(
-      checkResult.models,
-      nextConfig.generationModelCategory,
-      nextConfig.generationModel
-    );
-    const validationModel = this.resolveModelSelection(
-      checkResult.models,
-      nextConfig.validationModelCategory,
-      nextConfig.validationModel || generationModel
-    );
+  async createOllamaSupplier(input: { label: string; provider: OllamaSupplier['provider']; baseUrl: string; timeoutMs: number }) {
+    const checkResult = await this.ollamaService.checkConnection(input.baseUrl, input.timeoutMs);
+    const supplier: OllamaSupplier = {
+      supplierId: nanoid(),
+      label: this.normalizeSupplierLabel(input.label),
+      provider: input.provider,
+      baseUrl: checkResult.normalizedBaseUrl,
+      timeoutMs: input.timeoutMs,
+      availableModels: checkResult.models,
+      lastCheckedAt: nowIso(),
+      lastStatus: checkResult.reachable ? 'connected' : 'error',
+      lastError: checkResult.reachable ? null : checkResult.message
+    };
 
     const nextState = await this.store.updateState((state) => ({
       ...state,
       ollama: {
         ...state.ollama,
+        suppliers: [...state.ollama.suppliers, supplier],
+        generationSupplierId: state.ollama.generationSupplierId || supplier.supplierId,
+        validationSupplierId: state.ollama.validationSupplierId || supplier.supplierId
+      }
+    }));
+
+    return nextState.ollama;
+  }
+
+  async updateOllamaSupplier(
+    supplierId: string,
+    input: { label: string; provider: OllamaSupplier['provider']; baseUrl: string; timeoutMs: number }
+  ) {
+    const checkResult = await this.ollamaService.checkConnection(input.baseUrl, input.timeoutMs);
+
+    const nextState = await this.store.updateState((state) => {
+      const supplier = this.findSupplierOrThrow(state.ollama.suppliers, supplierId);
+      const nextSupplier: OllamaSupplier = {
+        ...supplier,
+        label: this.normalizeSupplierLabel(input.label),
+        provider: input.provider,
         baseUrl: checkResult.normalizedBaseUrl,
-        timeoutMs: nextConfig.timeoutMs,
-        generationProvider: nextConfig.generationProvider,
-        generationModelCategory: nextConfig.generationModelCategory,
-        generationModel,
-        validationProvider: nextConfig.validationProvider,
-        validationModelCategory: nextConfig.validationModelCategory,
-        validationModel,
+        timeoutMs: input.timeoutMs,
         availableModels: checkResult.models,
         lastCheckedAt: nowIso(),
         lastStatus: checkResult.reachable ? 'connected' : 'error',
         lastError: checkResult.reachable ? null : checkResult.message
+      };
+
+      return {
+        ...state,
+        ollama: {
+          ...state.ollama,
+          suppliers: state.ollama.suppliers.map((item) => (item.supplierId === supplierId ? nextSupplier : item)),
+          generationModel: state.ollama.generationSupplierId === supplierId
+            ? this.resolveModelSelection(checkResult.models, state.ollama.generationModelCategory, state.ollama.generationModel)
+            : state.ollama.generationModel,
+          validationModel: state.ollama.validationSupplierId === supplierId
+            ? this.resolveModelSelection(checkResult.models, state.ollama.validationModelCategory, state.ollama.validationModel)
+            : state.ollama.validationModel
+        }
+      };
+    });
+
+    return nextState.ollama;
+  }
+
+  async deleteOllamaSupplier(supplierId: string) {
+    const nextState = await this.store.updateState((state) => {
+      this.findSupplierOrThrow(state.ollama.suppliers, supplierId);
+      const nextSuppliers = state.ollama.suppliers.filter((item) => item.supplierId !== supplierId);
+      const fallbackSupplierId = nextSuppliers[0]?.supplierId ?? '';
+      const generationSupplierId =
+        state.ollama.generationSupplierId === supplierId ? fallbackSupplierId : state.ollama.generationSupplierId;
+      const validationSupplierId =
+        state.ollama.validationSupplierId === supplierId ? fallbackSupplierId : state.ollama.validationSupplierId;
+
+      return {
+        ...state,
+        ollama: {
+          ...state.ollama,
+          suppliers: nextSuppliers,
+          generationSupplierId,
+          generationModel: generationSupplierId
+            ? this.resolveModelSelection(
+                this.findSupplier(nextSuppliers, generationSupplierId)?.availableModels ?? [],
+                state.ollama.generationModelCategory,
+                state.ollama.generationModel
+              )
+            : '',
+          validationSupplierId,
+          validationModel: validationSupplierId
+            ? this.resolveModelSelection(
+                this.findSupplier(nextSuppliers, validationSupplierId)?.availableModels ?? [],
+                state.ollama.validationModelCategory,
+                state.ollama.validationModel
+              )
+            : ''
+        }
+      };
+    });
+
+    return nextState.ollama;
+  }
+
+  async refreshOllamaSupplierModels(supplierId: string) {
+    const state = await this.store.readState();
+    const supplier = this.findSupplierOrThrow(state.ollama.suppliers, supplierId);
+    const checkResult = await this.ollamaService.checkConnection(supplier.baseUrl, supplier.timeoutMs);
+
+    const nextState = await this.store.updateState((current) => {
+      const currentSupplier = this.findSupplierOrThrow(current.ollama.suppliers, supplierId);
+      const nextSupplier: OllamaSupplier = {
+        ...currentSupplier,
+        baseUrl: checkResult.normalizedBaseUrl,
+        availableModels: checkResult.models,
+        lastCheckedAt: nowIso(),
+        lastStatus: checkResult.reachable ? 'connected' : 'error',
+        lastError: checkResult.reachable ? null : checkResult.message
+      };
+
+      return {
+        ...current,
+        ollama: {
+          ...current.ollama,
+          suppliers: current.ollama.suppliers.map((item) => (item.supplierId === supplierId ? nextSupplier : item)),
+          generationModel:
+            current.ollama.generationSupplierId === supplierId
+              ? this.resolveModelSelection(checkResult.models, current.ollama.generationModelCategory, current.ollama.generationModel)
+              : current.ollama.generationModel,
+          validationModel:
+            current.ollama.validationSupplierId === supplierId
+              ? this.resolveModelSelection(checkResult.models, current.ollama.validationModelCategory, current.ollama.validationModel)
+              : current.ollama.validationModel
+        }
+      };
+    });
+
+    return nextState.ollama;
+  }
+
+  async checkOllamaConnection(baseUrl: string, timeoutMs: number) {
+    return this.ollamaService.checkConnection(baseUrl, timeoutMs);
+  }
+
+  async saveOllamaRuntimeConfig(
+    nextConfig: Pick<
+      OllamaConfig,
+      | 'generationSupplierId'
+      | 'generationModelCategory'
+      | 'generationModel'
+      | 'validationSupplierId'
+      | 'validationModelCategory'
+      | 'validationModel'
+    >
+  ) {
+    const nextState = await this.store.updateState((state) => ({
+      ...state,
+      ollama: {
+        ...state.ollama,
+        generationSupplierId: nextConfig.generationSupplierId,
+        generationModelCategory: nextConfig.generationModelCategory,
+        generationModel: this.resolveModelSelection(
+          this.findSupplier(state.ollama.suppliers, nextConfig.generationSupplierId)?.availableModels ?? [],
+          nextConfig.generationModelCategory,
+          nextConfig.generationModel
+        ),
+        validationSupplierId: nextConfig.validationSupplierId,
+        validationModelCategory: nextConfig.validationModelCategory,
+        validationModel: this.resolveModelSelection(
+          this.findSupplier(state.ollama.suppliers, nextConfig.validationSupplierId)?.availableModels ?? [],
+          nextConfig.validationModelCategory,
+          nextConfig.validationModel
+        )
       }
     }));
 
@@ -561,7 +702,11 @@ export class RoomService {
     return value.trim().toUpperCase();
   }
 
-  private resolveModelSelection(models: OllamaConfig['availableModels'], category: OllamaConfig['generationModelCategory'], selected: string) {
+  private normalizeSupplierLabel(value: string) {
+    return value.trim().slice(0, 32) || '未命名供应商';
+  }
+
+  private resolveModelSelection(models: OllamaSupplier['availableModels'], category: OllamaConfig['generationModelCategory'], selected: string) {
     const normalizedSelected = selected.trim();
     const scopedModels = category === 'all' ? models : models.filter((model) => model.category === category);
 
@@ -578,6 +723,59 @@ export class RoomService {
     }
 
     return models[0]?.name || models[0]?.model || '';
+  }
+
+  private findSupplier(suppliers: OllamaSupplier[], supplierId: string) {
+    return suppliers.find((item) => item.supplierId === supplierId) ?? null;
+  }
+
+  private findSupplierOrThrow(suppliers: OllamaSupplier[], supplierId: string) {
+    const supplier = this.findSupplier(suppliers, supplierId);
+
+    if (!supplier) {
+      throw new ServiceError(404, 'AI 供应商不存在。');
+    }
+
+    return supplier;
+  }
+
+  private resolveOverviewStatus(config: OllamaConfig) {
+    const selectedSuppliers = [
+      this.findSupplier(config.suppliers, config.generationSupplierId),
+      this.findSupplier(config.suppliers, config.validationSupplierId)
+    ].filter((item): item is OllamaSupplier => Boolean(item));
+
+    if (selectedSuppliers.some((supplier) => supplier.lastStatus === 'error')) {
+      return 'error';
+    }
+
+    if (selectedSuppliers.some((supplier) => supplier.lastStatus === 'connected')) {
+      return 'connected';
+    }
+
+    return 'idle';
+  }
+
+  private resolveOverviewError(config: OllamaConfig) {
+    const selectedSuppliers = [
+      this.findSupplier(config.suppliers, config.generationSupplierId),
+      this.findSupplier(config.suppliers, config.validationSupplierId)
+    ].filter((item): item is OllamaSupplier => Boolean(item));
+
+    return selectedSuppliers.find((supplier) => supplier.lastError)?.lastError ?? null;
+  }
+
+  private resolveOverviewLastCheckedAt(config: OllamaConfig) {
+    const selectedSuppliers = [
+      this.findSupplier(config.suppliers, config.generationSupplierId),
+      this.findSupplier(config.suppliers, config.validationSupplierId)
+    ].filter((item): item is OllamaSupplier => Boolean(item));
+
+    return selectedSuppliers
+      .map((supplier) => supplier.lastCheckedAt)
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1) ?? null;
   }
 
   private makeUniqueDisplayName(participants: RoomParticipant[], requestedName: string) {

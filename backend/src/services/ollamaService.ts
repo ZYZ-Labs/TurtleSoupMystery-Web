@@ -5,8 +5,8 @@ import { buildOllamaApiUrl, normalizeOllamaBaseUrl, normalizeText, unique } from
 import type {
   GuessEvaluation,
   ModelCategory,
-  OllamaConfig,
   OllamaModel,
+  OllamaSupplier,
   Puzzle,
   PuzzleGenerationRequest,
   QuestionEvaluation,
@@ -120,16 +120,16 @@ export class OllamaService {
     }
   }
 
-  async generatePuzzle(config: OllamaConfig, request: PuzzleGenerationRequest): Promise<Puzzle> {
-    const model = config.generationModel.trim();
+  async generatePuzzle(supplier: OllamaSupplier | null, model: string, request: PuzzleGenerationRequest): Promise<Puzzle> {
+    const selectedModel = model.trim();
 
-    if (!config.baseUrl || !model) {
+    if (!supplier?.baseUrl || !selectedModel) {
       return this.generateFallbackPuzzle(request);
     }
 
     try {
-      const { content } = await this.streamChat(config, {
-        model,
+      const { content } = await this.streamChat(supplier, {
+        model: selectedModel,
         messages: [
           {
             role: 'system',
@@ -197,16 +197,16 @@ export class OllamaService {
     }
   }
 
-  async evaluateQuestion(config: OllamaConfig, puzzle: Puzzle, context: RoomContext, question: string) {
-    const model = config.validationModel.trim();
+  async evaluateQuestion(supplier: OllamaSupplier | null, model: string, puzzle: Puzzle, context: RoomContext, question: string) {
+    const selectedModel = model.trim();
 
-    if (!config.baseUrl || !model) {
+    if (!supplier?.baseUrl || !selectedModel) {
       return this.evaluateQuestionHeuristically(puzzle, context, question);
     }
 
     try {
-      const { content } = await this.streamChat(config, {
-        model,
+      const { content } = await this.streamChat(supplier, {
+        model: selectedModel,
         messages: [
           {
             role: 'system',
@@ -264,16 +264,16 @@ export class OllamaService {
     }
   }
 
-  async evaluateFinalGuess(config: OllamaConfig, puzzle: Puzzle, context: RoomContext, guess: string) {
-    const model = config.validationModel.trim();
+  async evaluateFinalGuess(supplier: OllamaSupplier | null, model: string, puzzle: Puzzle, context: RoomContext, guess: string) {
+    const selectedModel = model.trim();
 
-    if (!config.baseUrl || !model) {
+    if (!supplier?.baseUrl || !selectedModel) {
       return this.evaluateGuessHeuristically(puzzle, guess);
     }
 
     try {
-      const { content } = await this.streamChat(config, {
-        model,
+      const { content } = await this.streamChat(supplier, {
+        model: selectedModel,
         messages: [
           {
             role: 'system',
@@ -316,12 +316,12 @@ export class OllamaService {
     }
   }
 
-  private async streamChat(config: OllamaConfig, options: { model: string; messages: OllamaChatMessage[] }): Promise<StreamChatResult> {
+  private async streamChat(supplier: OllamaSupplier, options: { model: string; messages: OllamaChatMessage[] }): Promise<StreamChatResult> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), config.timeoutMs);
+    const timeoutId = setTimeout(() => controller.abort(), supplier.timeoutMs);
 
     try {
-      const response = await fetch(buildOllamaApiUrl(config.baseUrl, 'chat'), {
+      const response = await fetch(buildOllamaApiUrl(supplier.baseUrl, 'chat'), {
         method: 'POST',
         headers: {
           'content-type': 'application/json'

@@ -4,10 +4,14 @@ import { access, mkdir, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { DEFAULT_APP_STATE } from '../lib/constants.js';
 import type {
+  AIProvider,
   AppState,
+  ConnectionStatus,
   GameRoom,
+  ModelCategory,
   OllamaConfig,
   OllamaModel,
+  OllamaSupplier,
   Puzzle,
   PuzzleFact,
   QuestionRecord,
@@ -160,40 +164,21 @@ export class StateStore {
       const parsed = JSON.parse(row.value) as AppState & {
         ollama?: Partial<OllamaConfig> & {
           defaultModel?: string;
+          baseUrl?: string;
+          timeoutMs?: number;
+          generationProvider?: AIProvider;
+          validationProvider?: AIProvider;
+          availableModels?: Array<Partial<OllamaModel>>;
+          lastCheckedAt?: string | null;
+          lastStatus?: ConnectionStatus;
+          lastError?: string | null;
         };
       };
-      const legacyOllama = parsed.ollama ?? {};
-      const legacyDefaultModel = legacyOllama.defaultModel?.trim() ?? '';
-      const availableModels = (legacyOllama.availableModels ?? []).map((model) => {
-        const name = typeof model.name === 'string' ? model.name : String(model.model ?? '');
-        const modelName = typeof model.model === 'string' ? model.model : name;
-
-        return {
-          name,
-          model: modelName,
-          family: typeof model.family === 'string' && model.family.trim() ? model.family : this.deriveModelFamily(name, modelName),
-          category: this.normalizeModelCategory(model.category, name, modelName),
-          size: Number(model.size ?? 0),
-          modifiedAt: typeof model.modifiedAt === 'string' ? model.modifiedAt : '',
-          parameterSize: typeof model.parameterSize === 'string' ? model.parameterSize : undefined,
-          quantizationLevel: typeof model.quantizationLevel === 'string' ? model.quantizationLevel : undefined
-        };
-      }) satisfies OllamaModel[];
 
       return {
         ...DEFAULT_APP_STATE,
         ...parsed,
-        ollama: {
-          ...DEFAULT_APP_STATE.ollama,
-          ...legacyOllama,
-          generationProvider: legacyOllama.generationProvider === 'ollama' ? 'ollama' : 'ollama',
-          generationModelCategory: this.normalizeSelectedCategory(legacyOllama.generationModelCategory),
-          generationModel: legacyOllama.generationModel?.trim() || legacyDefaultModel,
-          validationProvider: legacyOllama.validationProvider === 'ollama' ? 'ollama' : 'ollama',
-          validationModelCategory: this.normalizeSelectedCategory(legacyOllama.validationModelCategory),
-          validationModel: legacyOllama.validationModel?.trim() || legacyDefaultModel,
-          availableModels
-        },
+        ollama: this.normalizeOllamaConfig(parsed.ollama),
         rooms: (parsed.rooms ?? []).map((room) => ({
           ...room,
           facts: room.facts ?? [],
@@ -379,10 +364,7 @@ export class StateStore {
 
       nextState = {
         ...nextState,
-        ollama: {
-          ...nextState.ollama,
-          ...parsed.ollama
-        },
+        ollama: this.normalizeOllamaConfig(parsed.ollama),
         rooms: (parsed.sessions ?? []).map((session) =>
           this.convertLegacySessionToRoom({
             ...session,
@@ -396,6 +378,95 @@ export class StateStore {
     }
 
     this.writeStateSync(nextState);
+  }
+
+  private normalizeOllamaConfig(raw: Partial<OllamaConfig> | undefined) {
+    const source = raw ?? {};
+    const legacySource = source as Partial<OllamaConfig> & {
+      defaultModel?: string;
+      baseUrl?: string;
+      timeoutMs?: number;
+      generationProvider?: AIProvider;
+      validationProvider?: AIProvider;
+      availableModels?: Array<Partial<OllamaModel>>;
+      lastCheckedAt?: string | null;
+      lastStatus?: ConnectionStatus;
+      lastError?: string | null;
+    };
+    const legacyDefaultModel = legacySource.defaultModel?.trim() ?? '';
+    const legacyBaseUrl = legacySource.baseUrl?.trim() ?? '';
+    const legacyTimeoutMs = Number(legacySource.timeoutMs ?? 30000);
+    const normalizedLegacyModels = (legacySource.availableModels ?? []).map((model) => this.normalizeModel(model));
+    const normalizedSuppliers = (source.suppliers ?? []).map((supplier) => this.normalizeSupplier(supplier));
+
+    if (!normalizedSuppliers.length && legacyBaseUrl) {
+      normalizedSuppliers.push({
+        supplierId: 'supplier-legacy',
+        label: '默认 Ollama',
+        provider: 'ollama',
+        baseUrl: legacyBaseUrl,
+        timeoutMs: Number.isFinite(legacyTimeoutMs) && legacyTimeoutMs > 0 ? legacyTimeoutMs : 30000,
+        availableModels: normalizedLegacyModels,
+        lastCheckedAt: legacySource.lastCheckedAt ?? null,
+        lastStatus: this.normalizeConnectionStatus(legacySource.lastStatus),
+        lastError: legacySource.lastError ?? null
+      });
+    }
+
+    const generationSupplierId =
+      (typeof source.generationSupplierId === 'string' && source.generationSupplierId) || normalizedSuppliers[0]?.supplierId || '';
+    const validationSupplierId =
+      (typeof source.validationSupplierId === 'string' && source.validationSupplierId) ||
+      generationSupplierId ||
+      normalizedSuppliers[0]?.supplierId ||
+      '';
+
+    return {
+      ...DEFAULT_APP_STATE.ollama,
+      suppliers: normalizedSuppliers,
+      generationSupplierId,
+      generationModelCategory: this.normalizeSelectedCategory(source.generationModelCategory),
+      generationModel: typeof source.generationModel === 'string' && source.generationModel.trim() ? source.generationModel.trim() : legacyDefaultModel,
+      validationSupplierId,
+      validationModelCategory: this.normalizeSelectedCategory(source.validationModelCategory),
+      validationModel: typeof source.validationModel === 'string' && source.validationModel.trim() ? source.validationModel.trim() : legacyDefaultModel
+    } satisfies OllamaConfig;
+  }
+
+  private normalizeSupplier(raw: Partial<OllamaSupplier>) {
+    const models = (raw.availableModels ?? []).map((model) => this.normalizeModel(model));
+
+    return {
+      supplierId: typeof raw.supplierId === 'string' && raw.supplierId.trim() ? raw.supplierId : 'supplier-legacy',
+      label: typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : '未命名供应商',
+      provider: raw.provider === 'ollama' ? 'ollama' : 'ollama',
+      baseUrl: typeof raw.baseUrl === 'string' ? raw.baseUrl.trim() : '',
+      timeoutMs: Number.isFinite(raw.timeoutMs) && Number(raw.timeoutMs) > 0 ? Number(raw.timeoutMs) : 30000,
+      availableModels: models,
+      lastCheckedAt: typeof raw.lastCheckedAt === 'string' ? raw.lastCheckedAt : null,
+      lastStatus: this.normalizeConnectionStatus(raw.lastStatus),
+      lastError: typeof raw.lastError === 'string' ? raw.lastError : null
+    } satisfies OllamaSupplier;
+  }
+
+  private normalizeModel(raw: Partial<OllamaModel>) {
+    const name = typeof raw.name === 'string' ? raw.name : String(raw.model ?? '');
+    const modelName = typeof raw.model === 'string' ? raw.model : name;
+
+    return {
+      name,
+      model: modelName,
+      family: typeof raw.family === 'string' && raw.family.trim() ? raw.family : this.deriveModelFamily(name, modelName),
+      category: this.normalizeModelCategory(raw.category, name, modelName),
+      size: Number(raw.size ?? 0),
+      modifiedAt: typeof raw.modifiedAt === 'string' ? raw.modifiedAt : '',
+      parameterSize: typeof raw.parameterSize === 'string' ? raw.parameterSize : undefined,
+      quantizationLevel: typeof raw.quantizationLevel === 'string' ? raw.quantizationLevel : undefined
+    } satisfies OllamaModel;
+  }
+
+  private normalizeConnectionStatus(value: unknown): ConnectionStatus {
+    return value === 'connected' || value === 'error' || value === 'idle' ? value : 'idle';
   }
 
   private convertLegacySessionToRoom(session: {
@@ -537,7 +608,7 @@ export class StateStore {
     }
   }
 
-  private normalizeSelectedCategory(value: unknown): OllamaConfig['generationModelCategory'] {
+  private normalizeSelectedCategory(value: unknown): ModelCategory {
     return value === 'all' ||
       value === 'balanced' ||
       value === 'reasoning' ||

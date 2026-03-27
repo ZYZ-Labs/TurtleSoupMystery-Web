@@ -6,6 +6,7 @@ export type ParticipantRole = 'host' | 'player';
 export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
 export type AIProvider = 'ollama';
 export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | 'multimodal' | 'other';
+export type ConnectionStatus = 'idle' | 'connected' | 'error';
 
 export interface PuzzleFact {
   factId: string;
@@ -109,19 +110,26 @@ export interface OllamaModel {
   quantizationLevel?: string;
 }
 
-export interface OllamaConfig {
+export interface OllamaSupplier {
+  supplierId: string;
+  label: string;
+  provider: AIProvider;
   baseUrl: string;
   timeoutMs: number;
-  generationProvider: AIProvider;
-  generationModelCategory: ModelCategory;
-  generationModel: string;
-  validationProvider: AIProvider;
-  validationModelCategory: ModelCategory;
-  validationModel: string;
   availableModels: OllamaModel[];
   lastCheckedAt: string | null;
-  lastStatus: 'idle' | 'connected' | 'error';
+  lastStatus: ConnectionStatus;
   lastError: string | null;
+}
+
+export interface OllamaConfig {
+  suppliers: OllamaSupplier[];
+  generationSupplierId: string;
+  generationModelCategory: ModelCategory;
+  generationModel: string;
+  validationSupplierId: string;
+  validationModelCategory: ModelCategory;
+  validationModel: string;
 }
 
 export interface AppState {

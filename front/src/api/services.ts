@@ -4,6 +4,7 @@ import type {
   AdminSessionStatus,
   OllamaCheckResult,
   OllamaConfig,
+  OllamaSupplier,
   OverviewPayload,
   PublicGameRoom,
   RoomJoinResult
@@ -99,19 +100,40 @@ export async function checkOllamaConnection(baseUrl: string, timeoutMs: number) 
   return data;
 }
 
-export async function saveOllamaConfig(
+export async function createOllamaSupplier(payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'timeoutMs'>) {
+  const { data } = await apiClient.post<OllamaConfig>('/settings/ollama/suppliers', payload);
+  return data;
+}
+
+export async function updateOllamaSupplier(
+  supplierId: string,
+  payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'timeoutMs'>
+) {
+  const { data } = await apiClient.put<OllamaConfig>(`/settings/ollama/suppliers/${supplierId}`, payload);
+  return data;
+}
+
+export async function refreshOllamaSupplierModels(supplierId: string) {
+  const { data } = await apiClient.post<OllamaConfig>(`/settings/ollama/suppliers/${supplierId}/check`);
+  return data;
+}
+
+export async function deleteOllamaSupplier(supplierId: string) {
+  const { data } = await apiClient.delete<OllamaConfig>(`/settings/ollama/suppliers/${supplierId}`);
+  return data;
+}
+
+export async function saveOllamaRuntimeConfig(
   payload: Pick<
     OllamaConfig,
-    | 'baseUrl'
-    | 'timeoutMs'
-    | 'generationProvider'
+    | 'generationSupplierId'
     | 'generationModelCategory'
     | 'generationModel'
-    | 'validationProvider'
+    | 'validationSupplierId'
     | 'validationModelCategory'
     | 'validationModel'
   >
 ) {
-  const { data } = await apiClient.put<OllamaConfig>('/settings/ollama', payload);
+  const { data } = await apiClient.put<OllamaConfig>('/settings/ollama/runtime', payload);
   return data;
 }

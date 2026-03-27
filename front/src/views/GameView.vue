@@ -447,7 +447,14 @@ function statusColor(status: RoomStatus) {
 async function loadConfig() {
   try {
     const config: OllamaConfig = await fetchOllamaConfig();
-    ollamaConfigured.value = Boolean(config.baseUrl && config.generationModel && config.validationModel);
+    ollamaConfigured.value = Boolean(
+      config.generationSupplierId &&
+        config.generationModel &&
+        config.validationSupplierId &&
+        config.validationModel &&
+        config.suppliers.some((supplier) => supplier.supplierId === config.generationSupplierId) &&
+        config.suppliers.some((supplier) => supplier.supplierId === config.validationSupplierId)
+    );
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
