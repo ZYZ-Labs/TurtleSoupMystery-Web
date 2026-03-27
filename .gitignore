@@ -5,6 +5,9 @@ backend/node_modules/
 backend/dist/
 backend/public/
 backend/data/runtime/*.json
+backend/data/runtime/*.db
+backend/data/runtime/*.db-shm
+backend/data/runtime/*.db-wal
 !backend/data/runtime/.gitkeep
 .deploy/
 .DS_Store

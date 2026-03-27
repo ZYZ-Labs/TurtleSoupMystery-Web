@@ -4,10 +4,10 @@
 
 当前版本是一个前后端一体的 MVP：
 
-- 前端基于 `Vue 3 + Vuetify`，界面组织参考 Berry Free Vuetify Vue Admin Template 的侧边栏 + 顶栏管理台结构
+- 前端基于 `Vue 3 + Vuetify`，界面组织参考 Berry Free Vuetify Vue Admin Template 的后台布局风格
 - 后端基于 `Node.js + TypeScript + Express`
 - AI 接入走局域网 Ollama
-- 会话、配置、历史记录先使用本地 JSON 持久化
+- 持久化改为 `SQLite`
 - Docker 使用单镜像打包，便于直接推送到阿里云 ACR
 
 ## 目录结构
@@ -15,11 +15,31 @@
 ```text
 front/                 前端管理台
 backend/               后端 API 与静态资源承载
-backend/data/puzzles/  固定谜题
-backend/data/runtime/  运行时持久化数据
+backend/data/puzzles/  谜题种子文件
+backend/data/runtime/  SQLite 数据与运行时文件
 scripts/               初始化与发布脚本
 TURTLE_SOUP_SPEC.md    需求规格
 ```
+
+## 当前存储方案
+
+项目已经接入 SQLite，不再使用 JSON 作为正式运行存储。
+
+默认数据库文件：
+
+```text
+backend/data/runtime/turtle-soup.db
+```
+
+当前会进入 SQLite 的内容：
+
+- Ollama 配置
+- Ollama 模型列表缓存
+- 对局会话
+- 问答记录
+- 最终猜测结果
+
+谜题仍以 JSON 种子文件维护在 `backend/data/puzzles/`，服务启动时会自动同步进 SQLite。
 
 ## 本地开发
 
@@ -34,7 +54,7 @@ TURTLE_SOUP_SPEC.md    需求规格
 npm install
 ```
 
-初始化运行时数据：
+初始化 SQLite：
 
 ```bash
 npm run init:data
@@ -57,7 +77,7 @@ npm run dev
 
 1. 填写局域网 Ollama 地址，例如 `http://192.168.1.20:11434`
 2. 点击“检测连接并拉取模型”
-3. 若连通成功，模型下拉会自动从接口获取
+3. 如果连通成功，模型下拉会自动从接口获取
 4. 选择默认模型并保存
 
 如果应用跑在 Docker 中而 Ollama 跑在宿主机上，可以尝试：
@@ -67,8 +87,6 @@ http://host.docker.internal:11434
 ```
 
 ## 构建
-
-本地构建：
 
 ```bash
 npm run build
@@ -84,21 +102,41 @@ npm run build
 docker build -t turtle-soup-mystery:local .
 ```
 
-### 本地运行
+### Compose 运行
 
 ```bash
 docker compose up --build
 ```
 
-服务默认监听：
+默认容器端口：
 
 ```text
 http://localhost:8080
 ```
 
+### Compose 数据目录
+
+`docker-compose.yml` 已经默认把宿主机数据目录指向：
+
+```text
+/usr/local/project/docker/TurtleSoupMyStery/runtime
+```
+
+也就是说，容器中的 SQLite 文件会落在：
+
+```text
+/usr/local/project/docker/TurtleSoupMyStery/runtime/turtle-soup.db
+```
+
+如果你要临时改路径，也可以在执行前覆盖环境变量：
+
+```bash
+DOCKER_DATA_ROOT=/usr/local/project/docker/TurtleSoupMyStery docker compose up -d
+```
+
 ## 阿里云 ACR 推送教程
 
-你的目标仓库：
+目标仓库：
 
 ```text
 crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_soup_mystery
@@ -170,6 +208,7 @@ chmod +x scripts/deploy.sh
 - 最终猜测结算
 - 会话历史存档
 - 系统设置中的连通性检测与模型自动拉取
+- SQLite 持久化
 
 ## 后续可继续做
 

@@ -4,7 +4,7 @@ setlocal
 set "ROOT_DIR=%~dp0.."
 
 echo ========================================
-echo Turtle Soup Mystery 数据存储初始化
+echo Turtle Soup Mystery SQLite 初始化
 echo ========================================
 
 where npm >nul 2>nul
@@ -19,8 +19,8 @@ if not exist "%ROOT_DIR%\node_modules" (
   if errorlevel 1 exit /b 1
 )
 
-echo [INFO] 初始化运行时数据文件...
+echo [INFO] 正在初始化 SQLite 数据文件...
 call npm run init:data
 if errorlevel 1 exit /b 1
 
-echo [INFO] 完成。运行时状态文件位于 backend\data\runtime\app-state.json
+echo [INFO] 完成。数据库文件位于 backend\data\runtime\turtle-soup.db

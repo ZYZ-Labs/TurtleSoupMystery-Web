@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "========================================"
-echo "Turtle Soup Mystery 数据存储初始化"
+echo "Turtle Soup Mystery SQLite 初始化"
 echo "========================================"
 
 command -v npm >/dev/null 2>&1 || {
@@ -19,7 +19,7 @@ if [ ! -d "$ROOT_DIR/node_modules" ]; then
   (cd "$ROOT_DIR" && npm install)
 fi
 
-echo "[INFO] 初始化运行时数据文件..."
+echo "[INFO] 正在初始化 SQLite 数据文件..."
 (cd "$ROOT_DIR" && npm run init:data)
 
-echo "[INFO] 完成。运行时状态文件位于 backend/data/runtime/app-state.json"
+echo "[INFO] 完成。数据库文件位于 backend/data/runtime/turtle-soup.db"

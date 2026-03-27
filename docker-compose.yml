@@ -9,7 +9,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 8080
+      APP_RUNTIME_DIR: /app/data/runtime
+      APP_SQLITE_PATH: /app/data/runtime/turtle-soup.db
+      NODE_OPTIONS: --disable-warning=ExperimentalWarning
     ports:
       - "8080:8080"
     volumes:
-      - ./backend/data/runtime:/app/data/runtime
+      - ${DOCKER_DATA_ROOT:-/usr/local/project/docker/TurtleSoupMyStery}/runtime:/app/data/runtime

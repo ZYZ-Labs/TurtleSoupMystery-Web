@@ -3,4 +3,4 @@ import { StateStore } from '../storage/stateStore.js';
 const store = new StateStore();
 await store.ensureInitialized();
 
-console.log('Initialized runtime storage at backend/data/runtime/app-state.json');
+console.log('Initialized SQLite runtime storage at backend/data/runtime/turtle-soup.db');
