@@ -1,25 +1,24 @@
 {
-  "name": "turtlesoupmystery",
+  "name": "turtle-soup-mystery",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "front",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
-    "axios": "^1.7.2",
-    "element-plus": "^2.7.7",
-    "vue": "^3.4.31",
-    "vue-router": "^4.4.0"
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:front\"",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:front": "npm run dev --workspace front",
+    "build": "npm run build --workspace front && node scripts/copy-frontend-dist.mjs && npm run build --workspace backend",
+    "start": "npm run start --workspace backend",
+    "init:data": "npm run init:data --workspace backend"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.5",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.4",
-    "vue-tsc": "^2.0.24",
-    "vuex": "^4.0.2"
+    "concurrently": "9.2.1"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

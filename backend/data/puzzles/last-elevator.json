@@ -1,0 +1,39 @@
+{
+  "puzzleId": "last-elevator",
+  "title": "最后一层",
+  "soupSurface": "一个人每天只按到十楼，但周末总会按到二十楼。",
+  "truthStory": "这个人身材矮小，平日里拿着长伞可以按到二十楼，但雨天收起伞时只能按到十楼，再走楼梯上去。周末他通常会带长柄雨伞或行李，因此能直接按到二十楼。",
+  "facts": [
+    {
+      "factId": "short-height",
+      "statement": "这个人身高较矮，按不到高处按钮。",
+      "importance": 10,
+      "discoverable": true,
+      "keywords": ["矮", "身高", "够不到", "按钮"]
+    },
+    {
+      "factId": "weekday-umbrella",
+      "statement": "他平日会借助雨伞之类的长物按更高楼层按钮。",
+      "importance": 8,
+      "discoverable": true,
+      "keywords": ["雨伞", "长物", "借助工具", "够按钮"]
+    },
+    {
+      "factId": "weekend-direct",
+      "statement": "周末他带的物品能让他直接按到目标楼层。",
+      "importance": 7,
+      "discoverable": true,
+      "keywords": ["周末", "直接按到", "行李", "长柄伞"]
+    }
+  ],
+  "misleadingPoints": [
+    "看上去像习惯问题，实际上是身体条件问题。",
+    "周末差异来自物品变化，而不是心情变化。"
+  ],
+  "keyTriggers": [
+    "是否和身高有关？",
+    "是否借助了工具？"
+  ],
+  "difficulty": "easy",
+  "tags": ["日常", "观察"]
+}

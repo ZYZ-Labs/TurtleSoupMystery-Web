@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', 'Microsoft YaHei', sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(31, 111, 235, 0.14), transparent 28%),
+    radial-gradient(circle at left bottom, rgba(15, 118, 110, 0.12), transparent 26%),
+    #f3f7fb;
+  color: #18212f;
+}
+
+.brand-heading {
+  font-family: 'Space Grotesk', 'Microsoft YaHei', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.page-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(214, 225, 237, 0.88);
+  box-shadow: 0 18px 55px rgba(18, 33, 53, 0.08);
+}
+
+.section-title {
+  font-family: 'Space Grotesk', 'Microsoft YaHei', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}

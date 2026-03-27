@@ -1,0 +1,15 @@
+services:
+  turtle-soup-mystery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: turtle-soup-mystery:local
+    container_name: turtle-soup-mystery
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/data/runtime:/app/data/runtime

@@ -1,0 +1,26 @@
+{
+  "name": "turtle-soup-mystery-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "init:data": "tsx src/scripts/initData.ts"
+  },
+  "dependencies": {
+    "axios": "1.13.6",
+    "cors": "2.8.6",
+    "express": "5.2.1",
+    "nanoid": "5.1.7",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "2.8.19",
+    "@types/express": "5.0.6",
+    "@types/node": "25.5.0",
+    "tsx": "4.21.0",
+    "typescript": "6.0.2"
+  }
+}

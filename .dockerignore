@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+front/node_modules
+front/dist
+backend/node_modules
+backend/dist
+backend/public
+backend/data/runtime/*.json
+.deploy
+.git

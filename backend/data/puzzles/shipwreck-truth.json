@@ -1,0 +1,63 @@
+{
+  "puzzleId": "shipwreck-truth",
+  "title": "海龟汤经典重构",
+  "soupSurface": "一个男人走进餐厅，喝了一口海龟汤后自杀了。",
+  "truthStory": "男人曾在海难中与几个人一起漂流。极端饥饿时，同伴给了他一碗所谓的海龟汤让他活了下来。多年后他在餐厅真正喝到海龟汤，意识到当年自己喝的根本不是海龟汤，而是人肉，于是因崩溃和愧疚自杀。",
+  "facts": [
+    {
+      "factId": "shipwreck",
+      "statement": "男人曾经遭遇海难并在海上漂流。",
+      "importance": 10,
+      "discoverable": true,
+      "keywords": ["海难", "船难", "漂流", "海上", "遇难"]
+    },
+    {
+      "factId": "survival-soup",
+      "statement": "男人曾经喝过一碗被告知是海龟汤的汤并因此活下来。",
+      "importance": 9,
+      "discoverable": true,
+      "keywords": ["以前喝过", "之前喝过", "海龟汤", "汤", "活下来"]
+    },
+    {
+      "factId": "false-ingredient",
+      "statement": "那碗救命的汤实际上并不是海龟汤。",
+      "importance": 9,
+      "discoverable": true,
+      "keywords": ["不是海龟", "不是真的", "假海龟汤", "汤的材料"]
+    },
+    {
+      "factId": "human-flesh",
+      "statement": "救命的汤真正的材料是人肉。",
+      "importance": 10,
+      "discoverable": true,
+      "keywords": ["人肉", "同伴", "吃人", "尸体"]
+    },
+    {
+      "factId": "restaurant-realization",
+      "statement": "男人在餐厅喝到真正的海龟汤后意识到真相。",
+      "importance": 8,
+      "discoverable": true,
+      "keywords": ["餐厅", "真正的海龟汤", "意识到", "发现真相"]
+    },
+    {
+      "factId": "guilt",
+      "statement": "男人因震惊和愧疚而自杀。",
+      "importance": 8,
+      "discoverable": true,
+      "keywords": ["愧疚", "崩溃", "自杀原因", "受刺激"]
+    }
+  ],
+  "misleadingPoints": [
+    "餐厅不是案发现场而是触发真相的地点。",
+    "自杀不是一时冲动，而是迟来的真相打击。",
+    "关键不在海龟汤本身，而在男人曾经喝过的汤。"
+  ],
+  "keyTriggers": [
+    "是否与海难有关？",
+    "他以前是否喝过类似的汤？",
+    "那碗汤真的海龟汤吗？",
+    "是否涉及同伴或人肉？"
+  ],
+  "difficulty": "medium",
+  "tags": ["经典", "心理冲击", "海难"]
+}
