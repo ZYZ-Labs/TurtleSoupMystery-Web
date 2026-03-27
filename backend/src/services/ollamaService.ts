@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { buildOllamaApiUrl, normalizeOllamaBaseUrl, normalizeText, unique } from '../lib/utils.js';
 import type {
   GuessEvaluation,
+  ModelCategory,
   OllamaConfig,
   OllamaModel,
   Puzzle,
@@ -55,6 +56,24 @@ interface CheckResult {
   message: string;
 }
 
+interface OllamaChatMessage {
+  role: 'system' | 'user';
+  content: string;
+}
+
+interface OllamaChatChunk {
+  error?: string;
+  done?: boolean;
+  message?: {
+    role?: string;
+    content?: string;
+  };
+}
+
+interface StreamChatResult {
+  content: string;
+}
+
 export class OllamaService {
   async checkConnection(baseUrl: string, timeoutMs: number): Promise<CheckResult> {
     const normalizedBaseUrl = normalizeOllamaBaseUrl(baseUrl);
@@ -76,20 +95,7 @@ export class OllamaService {
         }
       );
 
-      const models = (response.data.models ?? []).map((item) => ({
-        name: String(item.name ?? item.model ?? ''),
-        model: String(item.model ?? item.name ?? ''),
-        size: Number(item.size ?? 0),
-        modifiedAt: String(item.modified_at ?? ''),
-        parameterSize:
-          item.details && typeof item.details === 'object'
-            ? String((item.details as Record<string, unknown>).parameter_size ?? '')
-            : undefined,
-        quantizationLevel:
-          item.details && typeof item.details === 'object'
-            ? String((item.details as Record<string, unknown>).quantization_level ?? '')
-            : undefined
-      }));
+      const models = (response.data.models ?? []).map((item) => this.mapOllamaModel(item));
 
       return {
         reachable: true,
@@ -115,66 +121,59 @@ export class OllamaService {
   }
 
   async generatePuzzle(config: OllamaConfig, request: PuzzleGenerationRequest): Promise<Puzzle> {
-    if (!config.baseUrl || !config.defaultModel) {
+    const model = config.generationModel.trim();
+
+    if (!config.baseUrl || !model) {
       return this.generateFallbackPuzzle(request);
     }
 
     try {
-      const response = await axios.post(
-        buildOllamaApiUrl(config.baseUrl, 'chat'),
-        {
-          model: config.defaultModel,
-          stream: false,
-          format: 'json',
-          messages: [
-            {
-              role: 'system',
-              content: [
-                'You are generating a turtle soup mystery puzzle.',
-                'Return only JSON.',
-                'The puzzle must be logically solvable through yes/no questions.',
-                'Do not use supernatural answers unless explicitly requested.',
-                'Facts must stay internally consistent and should support later judging.'
-              ].join('\n')
-            },
-            {
-              role: 'user',
-              content: JSON.stringify(
-                {
-                  task: 'generate-puzzle',
-                  request,
-                  outputShape: {
-                    title: 'string',
-                    soupSurface: 'string',
-                    truthStory: 'string',
-                    facts: [
-                      {
-                        factId: 'string',
-                        statement: 'string',
-                        importance: 1,
-                        discoverable: true,
-                        keywords: ['string']
-                      }
-                    ],
-                    misleadingPoints: ['string'],
-                    keyTriggers: ['string'],
-                    difficulty: request.difficulty,
-                    tags: ['string']
-                  }
-                },
-                null,
-                2
-              )
-            }
-          ]
-        },
-        {
-          timeout: config.timeoutMs
-        }
-      );
+      const { content } = await this.streamChat(config, {
+        model,
+        messages: [
+          {
+            role: 'system',
+            content: [
+              'You are generating a turtle soup mystery puzzle.',
+              'Return JSON only.',
+              'The puzzle must be logically solvable through yes/no questions.',
+              'Do not use supernatural answers unless explicitly requested.',
+              'Facts must stay internally consistent and should support later judging.'
+            ].join('\n')
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(
+              {
+                task: 'generate-puzzle',
+                request,
+                outputShape: {
+                  title: 'string',
+                  soupSurface: 'string',
+                  truthStory: 'string',
+                  facts: [
+                    {
+                      factId: 'string',
+                      statement: 'string',
+                      importance: 1,
+                      discoverable: true,
+                      keywords: ['string']
+                    }
+                  ],
+                  misleadingPoints: ['string'],
+                  keyTriggers: ['string'],
+                  difficulty: request.difficulty,
+                  tags: ['string']
+                }
+              },
+              null,
+              2
+            )
+          }
+        ]
+      });
 
-      const content = response.data?.message?.content ?? '{}';
-      const parsed = generatedPuzzleSchema.parse(JSON.parse(content));
+      const parsed = this.parseStructuredJson(content, generatedPuzzleSchema);
 
       return {
         puzzleId: `generated-${nanoid(12)}`,
@@ -199,63 +198,56 @@ export class OllamaService {
   }
 
   async evaluateQuestion(config: OllamaConfig, puzzle: Puzzle, context: RoomContext, question: string) {
-    if (!config.baseUrl || !config.defaultModel) {
+    const model = config.validationModel.trim();
+
+    if (!config.baseUrl || !model) {
       return this.evaluateQuestionHeuristically(puzzle, context, question);
     }
 
     try {
-      const response = await axios.post(
-        buildOllamaApiUrl(config.baseUrl, 'chat'),
-        {
-          model: config.defaultModel,
-          stream: false,
-          format: 'json',
-          messages: [
-            {
-              role: 'system',
-              content: [
-                'You are the strict host of a turtle soup mystery.',
-                'You must judge only from the supplied truth.',
-                'Never invent new facts.',
-                'Return JSON only.'
-              ].join('\n')
-            },
-            {
-              role: 'user',
-              content: JSON.stringify(
-                {
-                  task: 'judge-question',
-                  question,
-                  puzzle,
-                  context,
-                  rules: [
-                    'If the question aligns with known truth, answer yes.',
-                    'If it contradicts known truth, answer no.',
-                    'If it only partially overlaps with truth, answer partial.',
-                    'If it does not help solve the mystery, answer irrelevant.',
-                    'Use unknown only when the wording is impossible to disambiguate.'
-                  ],
-                  outputShape: {
-                    answerCode: 'yes|no|irrelevant|partial|unknown',
-                    matchedFactIds: ['fact-id'],
-                    revealedFactIds: ['fact-id'],
-                    progressDelta: 0,
-                    reasoning: 'short reason'
-                  }
-                },
-                null,
-                2
-              )
-            }
-          ]
-        },
-        {
-          timeout: config.timeoutMs
-        }
-      );
+      const { content } = await this.streamChat(config, {
+        model,
+        messages: [
+          {
+            role: 'system',
+            content: [
+              'You are the strict host of a turtle soup mystery.',
+              'You must judge only from the supplied truth.',
+              'Never invent new facts.',
+              'Return JSON only.'
+            ].join('\n')
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(
+              {
+                task: 'judge-question',
+                question,
+                puzzle,
+                context,
+                rules: [
+                  'If the question aligns with known truth, answer yes.',
+                  'If it contradicts known truth, answer no.',
+                  'If it only partially overlaps with truth, answer partial.',
+                  'If it does not help solve the mystery, answer irrelevant.',
+                  'Use unknown only when the wording is impossible to disambiguate.'
+                ],
+                outputShape: {
+                  answerCode: 'yes|no|irrelevant|partial|unknown',
+                  matchedFactIds: ['fact-id'],
+                  revealedFactIds: ['fact-id'],
+                  progressDelta: 0,
+                  reasoning: 'short reason'
+                }
+              },
+              null,
+              2
+            )
+          }
+        ]
+      });
 
-      const content = response.data?.message?.content ?? '{}';
-      const parsed = questionSchema.parse(JSON.parse(content));
+      const parsed = this.parseStructuredJson(content, questionSchema);
 
       return {
         ...parsed,
@@ -273,54 +265,47 @@ export class OllamaService {
   }
 
   async evaluateFinalGuess(config: OllamaConfig, puzzle: Puzzle, context: RoomContext, guess: string) {
-    if (!config.baseUrl || !config.defaultModel) {
+    const model = config.validationModel.trim();
+
+    if (!config.baseUrl || !model) {
       return this.evaluateGuessHeuristically(puzzle, guess);
     }
 
     try {
-      const response = await axios.post(
-        buildOllamaApiUrl(config.baseUrl, 'chat'),
-        {
-          model: config.defaultModel,
-          stream: false,
-          format: 'json',
-          messages: [
-            {
-              role: 'system',
-              content: [
-                'You are evaluating the final answer in a turtle soup game.',
-                'Judge only against the supplied truth story and facts.',
-                'Return JSON only.'
-              ].join('\n')
-            },
-            {
-              role: 'user',
-              content: JSON.stringify(
-                {
-                  task: 'judge-final-guess',
-                  guess,
-                  puzzle,
-                  context,
-                  outputShape: {
-                    accepted: true,
-                    score: 0,
-                    missingPoints: ['point'],
-                    reasoning: 'short reason'
-                  }
-                },
-                null,
-                2
-              )
-            }
-          ]
-        },
-        {
-          timeout: config.timeoutMs
-        }
-      );
+      const { content } = await this.streamChat(config, {
+        model,
+        messages: [
+          {
+            role: 'system',
+            content: [
+              'You are evaluating the final answer in a turtle soup game.',
+              'Judge only against the supplied truth story and facts.',
+              'Return JSON only.'
+            ].join('\n')
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(
+              {
+                task: 'judge-final-guess',
+                guess,
+                puzzle,
+                context,
+                outputShape: {
+                  accepted: true,
+                  score: 0,
+                  missingPoints: ['point'],
+                  reasoning: 'short reason'
+                }
+              },
+              null,
+              2
+            )
+          }
+        ]
+      });
 
-      const content = response.data?.message?.content ?? '{}';
-      const parsed = guessSchema.parse(JSON.parse(content));
+      const parsed = this.parseStructuredJson(content, guessSchema);
 
       return {
         ...parsed,
@@ -329,6 +314,160 @@ export class OllamaService {
     } catch {
       return this.evaluateGuessHeuristically(puzzle, guess);
     }
+  }
+
+  private async streamChat(config: OllamaConfig, options: { model: string; messages: OllamaChatMessage[] }): Promise<StreamChatResult> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.timeoutMs);
+
+    try {
+      const response = await fetch(buildOllamaApiUrl(config.baseUrl, 'chat'), {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: options.model,
+          stream: true,
+          format: 'json',
+          messages: options.messages
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || `Ollama stream request failed with ${response.status}.`);
+      }
+
+      if (!response.body) {
+        throw new Error('Ollama did not return a readable stream.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let content = '';
+
+      const processLine = (line: string) => {
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+          return;
+        }
+
+        const chunk = JSON.parse(trimmed) as OllamaChatChunk;
+
+        if (typeof chunk.error === 'string' && chunk.error.trim()) {
+          throw new Error(chunk.error);
+        }
+
+        if (typeof chunk.message?.content === 'string') {
+          content += chunk.message.content;
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+
+        let newlineIndex = buffer.indexOf('\n');
+
+        while (newlineIndex !== -1) {
+          const line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          processLine(line);
+          newlineIndex = buffer.indexOf('\n');
+        }
+
+        if (done) {
+          break;
+        }
+      }
+
+      if (buffer.trim()) {
+        processLine(buffer);
+      }
+
+      return {
+        content: content.trim()
+      };
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  private parseStructuredJson<T>(raw: string, schema: z.ZodType<T>) {
+    const normalized = raw.trim();
+    const candidates = [
+      normalized,
+      normalized.replace(/^```json\s*/iu, '').replace(/^```\s*/u, '').replace(/\s*```$/u, '').trim(),
+      this.extractJsonBlock(normalized)
+    ].filter((item): item is string => Boolean(item));
+
+    for (const candidate of candidates) {
+      try {
+        return schema.parse(JSON.parse(candidate));
+      } catch {
+        // Keep trying with the next normalized candidate.
+      }
+    }
+
+    throw new Error('Unable to parse structured JSON from Ollama stream output.');
+  }
+
+  private extractJsonBlock(value: string) {
+    const firstBrace = value.indexOf('{');
+    const lastBrace = value.lastIndexOf('}');
+
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      return value.slice(firstBrace, lastBrace + 1);
+    }
+
+    return '';
+  }
+
+  private mapOllamaModel(item: Record<string, unknown>): OllamaModel {
+    const name = String(item.name ?? item.model ?? '');
+    const model = String(item.model ?? item.name ?? '');
+    const details =
+      item.details && typeof item.details === 'object' ? (item.details as Record<string, unknown>) : undefined;
+
+    return {
+      name,
+      model,
+      family: this.deriveModelFamily(name, model),
+      category: this.deriveModelCategory(name, model),
+      size: Number(item.size ?? 0),
+      modifiedAt: String(item.modified_at ?? ''),
+      parameterSize: details ? String(details.parameter_size ?? '') : undefined,
+      quantizationLevel: details ? String(details.quantization_level ?? '') : undefined
+    };
+  }
+
+  private deriveModelFamily(name: string, model: string) {
+    return (name || model).split(':')[0]?.trim() || name || model || 'unknown';
+  }
+
+  private deriveModelCategory(name: string, model: string): Exclude<ModelCategory, 'all'> {
+    const normalized = `${name} ${model}`.toLowerCase();
+
+    if (/embed|embedding|rerank/u.test(normalized)) {
+      return 'other';
+    }
+
+    if (/vision|llava|vl\b|moondream|minicpm-v|bakllava/u.test(normalized)) {
+      return 'multimodal';
+    }
+
+    if (/r1\b|qwq|reason|thinking|think/u.test(normalized)) {
+      return 'reasoning';
+    }
+
+    if (/\b0\.5b\b|\b1\.5b\b|\b1b\b|\b2b\b|\b3b\b|\b4b\b|\b7b\b|mini|small|tiny/u.test(normalized)) {
+      return 'lightweight';
+    }
+
+    return 'balanced';
   }
 
   private evaluateQuestionHeuristically(puzzle: Puzzle, context: RoomContext, question: string): QuestionEvaluation {
@@ -347,13 +486,13 @@ export class OllamaService {
         matchedFactIds: [],
         revealedFactIds: [],
         progressDelta: 0,
-        reasoning: '没有找到与问题明显对应的事实。',
+        reasoning: '没有找到与问题明确对应的事实。',
         source: 'heuristic'
       };
     }
 
     const importance = matchedFacts.reduce((total, fact) => total + fact.importance, 0);
-    const answerCode = /\b(no|not|never|without)\b|不是|并非|没有|没\b/u.test(question) ? 'partial' : 'yes';
+    const answerCode = /\b(no|not|never|without)\b|不是|并非|没有/u.test(question) ? 'partial' : 'yes';
 
     return {
       answerCode,
@@ -388,6 +527,7 @@ export class OllamaService {
 
   private ensureKeywords(statement: string, keywords: string[]) {
     const explicit = keywords.filter((item) => item.trim().length > 0);
+
     if (explicit.length > 0) {
       return unique(explicit);
     }
@@ -453,7 +593,7 @@ export class OllamaService {
           '有人冒充学生父亲进入了学校。',
           '学生报警是因为意识到存在冒名者。'
         ],
-        misleadingPoints: ['表面像是学生心虚，实际是老师在暗中保护他。'],
+        misleadingPoints: ['表面像是学生心虚，实际上是老师在暗中保护他。'],
         keyTriggers: ['请假条上是否还有别的信息？', '报警和父亲有关吗？'],
         tags: ['校园', '身份伪装']
       },
@@ -478,7 +618,7 @@ export class OllamaService {
         title: '被退回的照片',
         soupSurface: '女人把刚洗出来的照片全部退回，却对老板说“谢谢你救了我”。',
         truthStory:
-          '女人长期被前男友跟踪，对方一直不知道她已经结婚。照相馆老板发现照片里的反光处总是出现同一个陌生男人，而且每张照片的拍摄角度都像是被远距离偷窥，于是故意说底片损坏，阻止照片外流，并提醒她注意安全。女人回家复盘后意识到自己被跟踪，这才明白老板是在保护她。',
+          '女人长期被前男友跟踪，对方一直不知道她已经结婚。照相馆老板发现照片里的反光处总是出现同一个陌生男人，而且每张照片的拍摄角度都像是被远距离偷拍，于是故意说底片损坏，阻止照片外流，并提醒她注意安全。女人回家复盘后意识到自己被跟踪，这才明白老板是在保护她。',
         facts: [
           '女人处在被跟踪的危险中。',
           '照片反光里反复出现同一个陌生男人。',

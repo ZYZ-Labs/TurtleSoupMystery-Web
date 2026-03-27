@@ -10,8 +10,13 @@ export const ANSWER_LABELS: Record<AnswerCode, string> = {
 
 export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
   baseUrl: '',
-  defaultModel: '',
   timeoutMs: 30000,
+  generationProvider: 'ollama',
+  generationModelCategory: 'all',
+  generationModel: '',
+  validationProvider: 'ollama',
+  validationModelCategory: 'all',
+  validationModel: '',
   availableModels: [],
   lastCheckedAt: null,
   lastStatus: 'idle',
@@ -19,7 +24,7 @@ export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
 };
 
 export const DEFAULT_APP_STATE: AppState = {
-  version: 2,
+  version: 3,
   ollama: DEFAULT_OLLAMA_CONFIG,
   rooms: []
 };

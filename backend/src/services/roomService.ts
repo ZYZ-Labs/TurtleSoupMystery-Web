@@ -65,8 +65,9 @@ export class RoomService {
         onlineParticipantCount
       },
       ollama: {
-        configured: Boolean(state.ollama.baseUrl && state.ollama.defaultModel),
-        defaultModel: state.ollama.defaultModel,
+        configured: Boolean(state.ollama.baseUrl && state.ollama.generationModel && state.ollama.validationModel),
+        generationModel: state.ollama.generationModel,
+        validationModel: state.ollama.validationModel,
         modelCount: state.ollama.availableModels.length,
         lastStatus: state.ollama.lastStatus,
         lastError: state.ollama.lastError,
@@ -84,6 +85,17 @@ export class RoomService {
   async listRooms() {
     const state = await this.store.readState();
     return sortByUpdatedAt(state.rooms).map((room) => this.toPublicRoom(room));
+  }
+
+  async deleteRoom(roomId: string) {
+    await this.store.updateState((current) => {
+      const room = this.findRoomOrThrow(current.rooms, roomId);
+
+      return {
+        ...current,
+        rooms: current.rooms.filter((item) => item.roomId !== room.roomId)
+      };
+    });
   }
 
   async getRoomByCode(roomCode: string) {
@@ -244,7 +256,8 @@ export class RoomService {
       revealedFactIds: evaluation.revealedFactIds,
       progressDelta: evaluation.progressDelta,
       createdAt: timestamp,
-      source: evaluation.source
+      source: evaluation.source,
+      reasoning: evaluation.reasoning
     };
 
     const nextState = await this.store.updateState((current) => {
@@ -338,7 +351,8 @@ export class RoomService {
       score: evaluation.score,
       missingPoints: evaluation.missingPoints,
       createdAt: timestamp,
-      source: evaluation.source
+      source: evaluation.source,
+      reasoning: evaluation.reasoning
     };
 
     const nextState = await this.store.updateState((current) => {
@@ -460,18 +474,43 @@ export class RoomService {
     return this.ollamaService.checkConnection(baseUrl, timeoutMs);
   }
 
-  async saveOllamaConfig(nextConfig: Pick<OllamaConfig, 'baseUrl' | 'defaultModel' | 'timeoutMs'>) {
+  async saveOllamaConfig(
+    nextConfig: Pick<
+      OllamaConfig,
+      | 'baseUrl'
+      | 'timeoutMs'
+      | 'generationProvider'
+      | 'generationModelCategory'
+      | 'generationModel'
+      | 'validationProvider'
+      | 'validationModelCategory'
+      | 'validationModel'
+    >
+  ) {
     const checkResult = await this.ollamaService.checkConnection(nextConfig.baseUrl, nextConfig.timeoutMs);
-    const defaultModel =
-      nextConfig.defaultModel.trim() || checkResult.models[0]?.name || checkResult.models[0]?.model || '';
+    const generationModel = this.resolveModelSelection(
+      checkResult.models,
+      nextConfig.generationModelCategory,
+      nextConfig.generationModel
+    );
+    const validationModel = this.resolveModelSelection(
+      checkResult.models,
+      nextConfig.validationModelCategory,
+      nextConfig.validationModel || generationModel
+    );
 
     const nextState = await this.store.updateState((state) => ({
       ...state,
       ollama: {
         ...state.ollama,
         baseUrl: checkResult.normalizedBaseUrl,
-        defaultModel,
         timeoutMs: nextConfig.timeoutMs,
+        generationProvider: nextConfig.generationProvider,
+        generationModelCategory: nextConfig.generationModelCategory,
+        generationModel,
+        validationProvider: nextConfig.validationProvider,
+        validationModelCategory: nextConfig.validationModelCategory,
+        validationModel,
         availableModels: checkResult.models,
         lastCheckedAt: nowIso(),
         lastStatus: checkResult.reachable ? 'connected' : 'error',
@@ -520,6 +559,25 @@ export class RoomService {
 
   private normalizeRoomCode(value: string) {
     return value.trim().toUpperCase();
+  }
+
+  private resolveModelSelection(models: OllamaConfig['availableModels'], category: OllamaConfig['generationModelCategory'], selected: string) {
+    const normalizedSelected = selected.trim();
+    const scopedModels = category === 'all' ? models : models.filter((model) => model.category === category);
+
+    if (normalizedSelected && scopedModels.some((model) => model.name === normalizedSelected || model.model === normalizedSelected)) {
+      return normalizedSelected;
+    }
+
+    if (scopedModels.length > 0) {
+      return scopedModels[0]?.name || scopedModels[0]?.model || '';
+    }
+
+    if (normalizedSelected && models.some((model) => model.name === normalizedSelected || model.model === normalizedSelected)) {
+      return normalizedSelected;
+    }
+
+    return models[0]?.name || models[0]?.model || '';
   }
 
   private makeUniqueDisplayName(participants: RoomParticipant[], requestedName: string) {

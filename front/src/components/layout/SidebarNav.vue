@@ -31,12 +31,31 @@
     </v-list>
 
     <template #append>
-      <div class="pa-4">
+      <div class="pa-4 d-grid ga-4">
         <v-sheet rounded="xl" color="rgba(31,111,235,0.08)" class="pa-4">
           <div class="text-subtitle-2 font-weight-bold mb-1">当前模式</div>
           <div class="text-body-2 text-medium-emphasis">
             动态出题、多人房间、轮询同步、Ollama 主持裁决。
           </div>
+        </v-sheet>
+
+        <v-sheet rounded="xl" color="rgba(15,118,110,0.08)" class="pa-4">
+          <div class="text-subtitle-2 font-weight-bold mb-1">管理员状态</div>
+          <div class="text-body-2 text-medium-emphasis mb-3">
+            {{ auth.isAuthenticated ? `已登录：${auth.username}` : '未登录，历史管理和系统设置需要先登录。' }}
+          </div>
+          <v-btn
+            v-if="auth.isAuthenticated"
+            color="secondary"
+            variant="flat"
+            block
+            @click="handleLogout"
+          >
+            退出登录
+          </v-btn>
+          <v-btn v-else color="primary" variant="flat" block to="/login">
+            去登录
+          </v-btn>
         </v-sheet>
       </div>
     </template>
@@ -45,7 +64,10 @@
 
 <script setup lang="ts">
 import { mdiCogOutline, mdiHistory, mdiPlayBoxMultipleOutline, mdiViewDashboardOutline } from '@mdi/js';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { extractErrorMessage } from '@/lib/errors';
+import { useAuthStore } from '@/stores/auth';
+import { useUiStore } from '@/stores/ui';
 import BrandMark from './BrandMark.vue';
 
 defineProps<{
@@ -58,6 +80,9 @@ defineEmits<{
 }>();
 
 const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
+const ui = useUiStore();
 
 const items = [
   {
@@ -85,6 +110,16 @@ const items = [
     icon: mdiCogOutline
   }
 ];
+
+async function handleLogout() {
+  try {
+    await auth.logout();
+    ui.notify('已退出登录。', 'success');
+    await router.push('/dashboard');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  }
+}
 </script>
 
 <style scoped>

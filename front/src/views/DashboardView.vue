@@ -21,8 +21,12 @@
               <v-chip :color="ollamaColor" variant="flat">{{ ollamaLabel }}</v-chip>
             </div>
             <div class="d-flex align-center justify-space-between mb-3">
-              <span class="text-body-2 text-medium-emphasis">默认模型</span>
-              <span class="text-body-2">{{ overview?.ollama.defaultModel || '未选择' }}</span>
+              <span class="text-body-2 text-medium-emphasis">生成模型</span>
+              <span class="text-body-2">{{ overview?.ollama.generationModel || '未选择' }}</span>
+            </div>
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-body-2 text-medium-emphasis">校验模型</span>
+              <span class="text-body-2">{{ overview?.ollama.validationModel || '未选择' }}</span>
             </div>
             <div class="d-flex align-center justify-space-between">
               <span class="text-body-2 text-medium-emphasis">最近检测</span>

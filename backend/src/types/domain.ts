@@ -4,6 +4,8 @@ export type AnswerCode = 'yes' | 'no' | 'irrelevant' | 'partial' | 'unknown';
 export type AnswerSource = 'ollama' | 'heuristic';
 export type ParticipantRole = 'host' | 'player';
 export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
+export type AIProvider = 'ollama';
+export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | 'multimodal' | 'other';
 
 export interface PuzzleFact {
   factId: string;
@@ -56,6 +58,7 @@ export interface QuestionRecord {
   progressDelta: number;
   createdAt: string;
   source: AnswerSource;
+  reasoning?: string;
 }
 
 export interface FinalGuessRecord {
@@ -67,6 +70,7 @@ export interface FinalGuessRecord {
   missingPoints: string[];
   createdAt: string;
   source: AnswerSource;
+  reasoning?: string;
 }
 
 export interface GameRoom {
@@ -97,6 +101,8 @@ export interface GameRoom {
 export interface OllamaModel {
   name: string;
   model: string;
+  family: string;
+  category: Exclude<ModelCategory, 'all'>;
   size: number;
   modifiedAt: string;
   parameterSize?: string;
@@ -105,8 +111,13 @@ export interface OllamaModel {
 
 export interface OllamaConfig {
   baseUrl: string;
-  defaultModel: string;
   timeoutMs: number;
+  generationProvider: AIProvider;
+  generationModelCategory: ModelCategory;
+  generationModel: string;
+  validationProvider: AIProvider;
+  validationModelCategory: ModelCategory;
+  validationModel: string;
   availableModels: OllamaModel[];
   lastCheckedAt: string | null;
   lastStatus: 'idle' | 'connected' | 'error';

@@ -1,24 +1,46 @@
 # Turtle Soup Mystery
 
-基于 `TURTLE_SOUP_SPEC.md` 重建的海龟汤项目，当前版本已经改为：
+基于 `TURTLE_SOUP_SPEC.md` 重建的海龟汤项目，当前版本已经支持：
 
-- 前端：`Vue 3 + Vuetify`，界面参考 Berry Free Vuetify Vue Admin Template 的后台风格
+- 动态生成汤底
+- 多人房间聊天室
+- Ollama 局域网接入
+- SQLite 持久化
+- 管理员登录后访问房间历史和系统设置
+- Docker / Compose / 阿里云 ACR 发布
+
+## 技术栈
+
+- 前端：`Vue 3 + Vuetify`
 - 后端：`Node.js + TypeScript + Express`
-- AI：接入局域网 `Ollama`
-- 持久化：`SQLite`
-- 玩法：动态生成汤底 + 多人可加入的聊天室房间
-- 部署：支持 `Dockerfile`、`docker-compose.yml`、阿里云 ACR 推送脚本
+- AI：`Ollama`
+- 存储：`SQLite`
 
 ## 当前能力
 
-- 房主输入主题后，系统动态生成汤底
+- 房主只选难度也能开局，主题可留空随机
 - 成员通过房间码加入同一房间
 - 所有成员共享提问记录、主持回答、揭示事实与最终结算
-- 设置页支持：
-  - 检测 Ollama 连通性
-  - 自动拉取模型列表
-  - 保存默认模型
-- 数据写入 SQLite，房间历史会持续保留
+- 聊天室消息区固定高度，可滚动查看历史消息
+- 管理员登录后才能访问：
+  - 房间历史
+  - 系统设置
+
+## 默认管理员账号
+
+默认登录信息：
+
+```text
+username: admin
+password: admin123456
+```
+
+可通过环境变量覆盖：
+
+```text
+ADMIN_USERNAME
+ADMIN_PASSWORD
+```
 
 ## 目录结构
 
@@ -80,15 +102,13 @@ backend/data/runtime/turtle-soup.db
 - 问答记录
 - 最终猜测结果
 
-内置谜题种子仍保留在 `backend/data/puzzles/`，服务启动时会自动同步进 SQLite。
-
 ## Ollama 配置
 
 进入前端“系统设置”页面后：
 
-1. 填写 Ollama 地址，例如 `http://192.168.1.20:11434`
-2. 点击“检测连接并拉取模型”
-3. 连通成功后，模型下拉会自动从接口加载
+1. 先使用管理员账号登录
+2. 填写 Ollama 地址，例如 `http://192.168.1.20:11434`
+3. 点击“检测连接并拉取模型”
 4. 选择默认模型并保存
 
 如果应用跑在 Docker 中，而 Ollama 跑在宿主机上，可以尝试：
@@ -126,13 +146,13 @@ docker compose up -d --build
 当前 `docker-compose.yml` 默认行为：
 
 - 对外 HTTPS 端口：`41203`
-- 应用数据目录映射到：
+- 应用数据目录：
 
 ```text
 /usr/local/project/docker/TurtleSoupMyStery/runtime
 ```
 
-- Nginx 日志目录映射到：
+- Nginx 日志目录：
 
 ```text
 /usr/local/project/docker/TurtleSoupMyStery/nginx/logs
@@ -160,19 +180,19 @@ docker compose up -d --build
 crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_soup_mystery
 ```
 
-### 1. 登录仓库
+登录：
 
 ```bash
 docker login --username=z516798599@qq.com crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com
 ```
 
-### 2. 打 tag
+打 tag：
 
 ```bash
 docker tag [ImageId] crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_soup_mystery:[镜像版本号]
 ```
 
-### 3. 推送镜像
+推送：
 
 ```bash
 docker push crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com/silvericekey/turtle_soup_mystery:[镜像版本号]
@@ -205,28 +225,6 @@ chmod +x scripts/deploy.sh
 ./scripts/deploy.sh --reconfigure
 ```
 
-脚本默认使用以下发布配置：
-
-- Registry host: `crpi-2iicgf8z27uyvaq1.cn-hangzhou.personal.cr.aliyuncs.com`
-- Namespace: `silvericekey`
-- Image name: `turtle_soup_mystery`
-- Login username: `z516798599@qq.com`
-
-首次执行会把配置保存到：
-
-```text
-.deploy/registry.env
-```
-
-## 当前 MVP 范围
-
-- 动态生成汤底
-- 多人聊天室房间
-- Ollama 主持裁决
-- 轮询同步
-- 最终猜测结算
-- SQLite 持久化
-
 ## 已验证
 
 本地已完成：
@@ -234,9 +232,9 @@ chmod +x scripts/deploy.sh
 - `npm run init:data`
 - `npm run build`
 - API 烟测：
-  - 创建房间
-  - 加入房间
-  - 提问
-  - 最终猜测结算
+  - 未登录访问历史接口返回 `401`
+  - 管理员登录成功
+  - 登录后可访问房间历史接口
+  - 登录后可访问系统设置接口
 
 当前环境没有安装 Docker，因此没有办法在这里直接跑 `docker build` / `docker compose up` / `docker push`。

@@ -31,8 +31,15 @@
           />
 
           <div class="d-flex flex-wrap ga-3">
-            <v-btn color="primary" size="large" :loading="creating" @click="handleCreateRoom">创建并进入房间</v-btn>
+            <v-btn color="primary" size="large" :loading="creating" :disabled="creating" @click="handleCreateRoom">
+              {{ creating ? '正在构建房间...' : '创建并进入房间' }}
+            </v-btn>
           </div>
+
+          <v-alert v-if="creating" type="info" variant="tonal" class="mt-4">
+            <div class="font-weight-medium mb-2">{{ creatingStatus }}</div>
+            <v-progress-linear indeterminate color="primary" rounded />
+          </v-alert>
         </v-card-text>
       </v-card>
     </v-col>
@@ -104,6 +111,18 @@
 
           <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
           <p class="text-body-2 mb-0">{{ room.generationPrompt }}</p>
+
+          <div v-if="canManageRoom" class="mt-4">
+            <v-btn
+              block
+              variant="outlined"
+              color="error"
+              :loading="deletingRoom"
+              @click="handleDeleteCurrentRoom"
+            >
+              删除当前房间
+            </v-btn>
+          </div>
         </v-card-text>
       </v-card>
 
@@ -218,16 +237,26 @@
               auto-grow
               label="提出一个共享问题"
               placeholder="例如：这件事和受害者主动做出的选择有关吗？"
-              :disabled="!isJoined"
+              :disabled="!isJoined || asking"
               class="mb-4"
             />
 
+            <v-alert v-if="asking" type="info" variant="tonal" class="mb-4">
+              <div class="font-weight-medium mb-2">{{ askingStatus }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-3">
+                正在校验问题并整理最终裁决，结果会在完成后一次性返回到聊天室。
+              </div>
+              <v-progress-linear indeterminate color="primary" rounded />
+            </v-alert>
+
             <div class="d-flex flex-wrap ga-3 mb-2">
-              <v-btn color="primary" :loading="asking" :disabled="!isJoined" @click="handleAskQuestion">发送问题</v-btn>
-              <v-btn variant="outlined" color="secondary" :disabled="!isJoined" @click="guessDialog = true">
+              <v-btn color="primary" :loading="asking" :disabled="!isJoined || asking" @click="handleAskQuestion">
+                {{ asking ? '校验中...' : '发送问题' }}
+              </v-btn>
+              <v-btn variant="outlined" color="secondary" :disabled="!isJoined || asking" @click="guessDialog = true">
                 提交最终猜测
               </v-btn>
-              <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" @click="handleReveal">
+              <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" :disabled="asking" @click="handleReveal">
                 公开汤底并结束
               </v-btn>
             </div>
@@ -294,6 +323,7 @@ import AnswerBadge from '@/components/ui/AnswerBadge.vue';
 import {
   askRoomQuestion,
   createRoom,
+  deleteRoom,
   fetchOllamaConfig,
   fetchRoomByCode,
   heartbeatRoom,
@@ -303,11 +333,13 @@ import {
 } from '@/api/services';
 import { extractErrorMessage } from '@/lib/errors';
 import { formatDateTime, formatDifficulty } from '@/lib/format';
+import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import type { Difficulty, OllamaConfig, PublicGameRoom, PublicRoomParticipant, RoomStatus } from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
 const ui = useUiStore();
 
 const room = ref<PublicGameRoom | null>(null);
@@ -318,10 +350,13 @@ const joining = ref(false);
 const asking = ref(false);
 const guessing = ref(false);
 const revealing = ref(false);
+const deletingRoom = ref(false);
 const guessDialog = ref(false);
 const question = ref('');
 const finalGuess = ref('');
 const ollamaConfigured = ref(false);
+const creatingStatus = ref('');
+const askingStatus = ref('');
 
 const createForm = reactive<{
   displayName: string;
@@ -340,6 +375,11 @@ const joinForm = reactive({
 
 let pollTimer: number | null = null;
 let heartbeatTimer: number | null = null;
+let creatingStatusTimer: number | null = null;
+let askingStatusTimer: number | null = null;
+
+const creatingStatusSteps = ['正在生成汤面...', '正在编织汤底逻辑...', '正在检测汤底可推理性...', '正在整理房间信息...'];
+const askingStatusSteps = ['主持正在理解问题...', '正在比对已知事实...', '正在校验回答边界...', '正在整理最终裁决...'];
 
 const difficultyItems = [
   { title: '简单', value: 'easy' },
@@ -361,6 +401,7 @@ const isJoined = computed(() => {
 });
 
 const isHost = computed(() => activeParticipant.value?.role === 'host');
+const canManageRoom = computed(() => auth.isAuthenticated);
 
 function identityStorageKey(roomCode: string) {
   return `turtle-soup-room:${roomCode}`;
@@ -406,7 +447,7 @@ function statusColor(status: RoomStatus) {
 async function loadConfig() {
   try {
     const config: OllamaConfig = await fetchOllamaConfig();
-    ollamaConfigured.value = Boolean(config.baseUrl && config.defaultModel);
+    ollamaConfigured.value = Boolean(config.baseUrl && config.generationModel && config.validationModel);
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
@@ -489,6 +530,44 @@ function restartSyncTimers() {
   }
 }
 
+function startStatusLoop(target: typeof creatingStatus, steps: string[], timerType: 'creating' | 'asking') {
+  stopStatusLoop(timerType);
+
+  let index = 0;
+  target.value = steps[0] ?? '';
+
+  const timerId = window.setInterval(() => {
+    index = (index + 1) % steps.length;
+    target.value = steps[index] ?? '';
+  }, 1200);
+
+  if (timerType === 'creating') {
+    creatingStatusTimer = timerId;
+    return;
+  }
+
+  askingStatusTimer = timerId;
+}
+
+function stopStatusLoop(timerType: 'creating' | 'asking') {
+  if (timerType === 'creating') {
+    if (creatingStatusTimer !== null) {
+      window.clearInterval(creatingStatusTimer);
+      creatingStatusTimer = null;
+    }
+
+    creatingStatus.value = '';
+    return;
+  }
+
+  if (askingStatusTimer !== null) {
+    window.clearInterval(askingStatusTimer);
+    askingStatusTimer = null;
+  }
+
+  askingStatus.value = '';
+}
+
 async function sendHeartbeat(showError = false) {
   if (!room.value || !activeParticipant.value) {
     return;
@@ -523,6 +602,7 @@ async function handleCreateRoom() {
   }
 
   creating.value = true;
+  startStatusLoop(creatingStatus, creatingStatusSteps, 'creating');
 
   try {
     const created = await createRoom({
@@ -543,6 +623,7 @@ async function handleCreateRoom() {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
     creating.value = false;
+    stopStatusLoop('creating');
   }
 }
 
@@ -598,6 +679,7 @@ async function handleAskQuestion() {
   }
 
   asking.value = true;
+  startStatusLoop(askingStatus, askingStatusSteps, 'asking');
 
   try {
     room.value = await askRoomQuestion(room.value.roomId, activeParticipant.value.participantId, question.value.trim());
@@ -606,6 +688,7 @@ async function handleAskQuestion() {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
     asking.value = false;
+    stopStatusLoop('asking');
   }
 }
 
@@ -650,6 +733,35 @@ async function handleReveal() {
   }
 }
 
+async function handleDeleteCurrentRoom() {
+  if (!room.value) {
+    return;
+  }
+
+  const current = room.value;
+  const confirmed = window.confirm(`确定要删除房间 ${current.roomCode} 吗？删除后无法恢复。`);
+
+  if (!confirmed) {
+    return;
+  }
+
+  deletingRoom.value = true;
+
+  try {
+    await deleteRoom(current.roomId);
+    clearStoredIdentity(current.roomCode);
+    room.value = null;
+    activeParticipant.value = null;
+    stopSyncTimers();
+    ui.notify('房间已删除。', 'success');
+    await router.push('/history');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    deletingRoom.value = false;
+  }
+}
+
 watch(
   currentRoomCode,
   (nextRoomCode) => {
@@ -681,6 +793,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopSyncTimers();
+  stopStatusLoop('creating');
+  stopStatusLoop('asking');
 });
 </script>
 

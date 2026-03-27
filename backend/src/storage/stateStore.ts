@@ -6,6 +6,7 @@ import { DEFAULT_APP_STATE } from '../lib/constants.js';
 import type {
   AppState,
   GameRoom,
+  OllamaConfig,
   OllamaModel,
   Puzzle,
   PuzzleFact,
@@ -156,22 +157,41 @@ export class StateStore {
     }
 
     try {
-      const parsed = JSON.parse(row.value) as AppState;
-      const availableModels = (parsed.ollama?.availableModels ?? []).map((model) => ({
-        name: model.name,
-        model: model.model,
-        size: model.size,
-        modifiedAt: model.modifiedAt,
-        parameterSize: model.parameterSize,
-        quantizationLevel: model.quantizationLevel
-      })) satisfies OllamaModel[];
+      const parsed = JSON.parse(row.value) as AppState & {
+        ollama?: Partial<OllamaConfig> & {
+          defaultModel?: string;
+        };
+      };
+      const legacyOllama = parsed.ollama ?? {};
+      const legacyDefaultModel = legacyOllama.defaultModel?.trim() ?? '';
+      const availableModels = (legacyOllama.availableModels ?? []).map((model) => {
+        const name = typeof model.name === 'string' ? model.name : String(model.model ?? '');
+        const modelName = typeof model.model === 'string' ? model.model : name;
+
+        return {
+          name,
+          model: modelName,
+          family: typeof model.family === 'string' && model.family.trim() ? model.family : this.deriveModelFamily(name, modelName),
+          category: this.normalizeModelCategory(model.category, name, modelName),
+          size: Number(model.size ?? 0),
+          modifiedAt: typeof model.modifiedAt === 'string' ? model.modifiedAt : '',
+          parameterSize: typeof model.parameterSize === 'string' ? model.parameterSize : undefined,
+          quantizationLevel: typeof model.quantizationLevel === 'string' ? model.quantizationLevel : undefined
+        };
+      }) satisfies OllamaModel[];
 
       return {
         ...DEFAULT_APP_STATE,
         ...parsed,
         ollama: {
           ...DEFAULT_APP_STATE.ollama,
-          ...parsed.ollama,
+          ...legacyOllama,
+          generationProvider: legacyOllama.generationProvider === 'ollama' ? 'ollama' : 'ollama',
+          generationModelCategory: this.normalizeSelectedCategory(legacyOllama.generationModelCategory),
+          generationModel: legacyOllama.generationModel?.trim() || legacyDefaultModel,
+          validationProvider: legacyOllama.validationProvider === 'ollama' ? 'ollama' : 'ollama',
+          validationModelCategory: this.normalizeSelectedCategory(legacyOllama.validationModelCategory),
+          validationModel: legacyOllama.validationModel?.trim() || legacyDefaultModel,
           availableModels
         },
         rooms: (parsed.rooms ?? []).map((room) => ({
@@ -515,6 +535,48 @@ export class StateStore {
     } catch {
       return fallback;
     }
+  }
+
+  private normalizeSelectedCategory(value: unknown): OllamaConfig['generationModelCategory'] {
+    return value === 'all' ||
+      value === 'balanced' ||
+      value === 'reasoning' ||
+      value === 'lightweight' ||
+      value === 'multimodal' ||
+      value === 'other'
+      ? value
+      : 'all';
+  }
+
+  private normalizeModelCategory(value: unknown, name: string, modelName: string): OllamaModel['category'] {
+    if (value === 'balanced' || value === 'reasoning' || value === 'lightweight' || value === 'multimodal' || value === 'other') {
+      return value;
+    }
+
+    const normalized = `${name} ${modelName}`.toLowerCase();
+
+    if (/embed|embedding|rerank/u.test(normalized)) {
+      return 'other';
+    }
+
+    if (/vision|llava|vl\b|moondream|minicpm-v|bakllava/u.test(normalized)) {
+      return 'multimodal';
+    }
+
+    if (/r1\b|qwq|reason|thinking|think/u.test(normalized)) {
+      return 'reasoning';
+    }
+
+    if (/\b0\.5b\b|\b1\.5b\b|\b1b\b|\b2b\b|\b3b\b|\b4b\b|\b7b\b|mini|small|tiny/u.test(normalized)) {
+      return 'lightweight';
+    }
+
+    return 'balanced';
+  }
+
+  private deriveModelFamily(name: string, modelName: string) {
+    const primary = (name || modelName).split(':')[0]?.trim();
+    return primary || name || modelName || 'unknown';
   }
 
   private runInTransaction<T>(action: () => T) {

@@ -1,11 +1,27 @@
 import { apiClient } from './client';
 import type {
+  AdminSession,
+  AdminSessionStatus,
   OllamaCheckResult,
   OllamaConfig,
   OverviewPayload,
   PublicGameRoom,
   RoomJoinResult
 } from '@/types/api';
+
+export async function loginAdmin(username: string, password: string) {
+  const { data } = await apiClient.post<AdminSession>('/auth/login', { username, password });
+  return data;
+}
+
+export async function fetchAdminSession() {
+  const { data } = await apiClient.get<AdminSessionStatus>('/auth/session');
+  return data;
+}
+
+export async function logoutAdmin() {
+  await apiClient.post('/auth/logout');
+}
 
 export async function fetchOverview() {
   const { data } = await apiClient.get<OverviewPayload>('/overview');
@@ -15,6 +31,10 @@ export async function fetchOverview() {
 export async function fetchRooms() {
   const { data } = await apiClient.get<PublicGameRoom[]>('/rooms');
   return data;
+}
+
+export async function deleteRoom(roomId: string) {
+  await apiClient.delete(`/rooms/${roomId}`);
 }
 
 export async function fetchRoomByCode(roomCode: string) {
@@ -79,7 +99,19 @@ export async function checkOllamaConnection(baseUrl: string, timeoutMs: number) 
   return data;
 }
 
-export async function saveOllamaConfig(payload: Pick<OllamaConfig, 'baseUrl' | 'defaultModel' | 'timeoutMs'>) {
+export async function saveOllamaConfig(
+  payload: Pick<
+    OllamaConfig,
+    | 'baseUrl'
+    | 'timeoutMs'
+    | 'generationProvider'
+    | 'generationModelCategory'
+    | 'generationModel'
+    | 'validationProvider'
+    | 'validationModelCategory'
+    | 'validationModel'
+  >
+) {
   const { data } = await apiClient.put<OllamaConfig>('/settings/ollama', payload);
   return data;
 }

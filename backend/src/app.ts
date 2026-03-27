@@ -3,6 +3,7 @@ import express from 'express';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { AuthService } from './services/authService.js';
 import { OllamaService } from './services/ollamaService.js';
 import { RoomService, ServiceError } from './services/roomService.js';
 import { StateStore } from './storage/stateStore.js';
@@ -39,14 +40,25 @@ const checkSchema = z.object({
 
 const saveConfigSchema = z.object({
   baseUrl: z.string().trim().min(1, 'Ollama 地址不能为空。'),
-  defaultModel: z.string().trim().default(''),
+  generationProvider: z.enum(['ollama']).default('ollama'),
+  generationModelCategory: z.enum(['all', 'balanced', 'reasoning', 'lightweight', 'multimodal', 'other']).default('all'),
+  generationModel: z.string().trim().default(''),
+  validationProvider: z.enum(['ollama']).default('ollama'),
+  validationModelCategory: z.enum(['all', 'balanced', 'reasoning', 'lightweight', 'multimodal', 'other']).default('all'),
+  validationModel: z.string().trim().default(''),
   timeoutMs: z.number().int().min(1000).max(120000).default(30000)
+});
+
+const loginSchema = z.object({
+  username: z.string().trim().min(1, '请输入用户名。'),
+  password: z.string().trim().min(1, '请输入密码。')
 });
 
 export async function createApp() {
   const store = new StateStore();
   await store.ensureInitialized();
   const roomService = new RoomService(store, new OllamaService());
+  const authService = new AuthService();
 
   const app = express();
   app.use(cors());
@@ -63,6 +75,29 @@ export async function createApp() {
     (request, response, next) =>
       Promise.resolve(handler(request, response, next)).catch(next);
 
+  function getBearerToken(request: express.Request) {
+    const header = request.header('authorization')?.trim() ?? '';
+
+    if (!header.toLowerCase().startsWith('bearer ')) {
+      return '';
+    }
+
+    return header.slice(7).trim();
+  }
+
+  const requireAuth: express.RequestHandler = (request, response, next) => {
+    const token = getBearerToken(request);
+    const session = authService.verify(token);
+
+    if (!session) {
+      response.status(401).json({ message: '请先登录。' });
+      return;
+    }
+
+    request.auth = session;
+    next();
+  };
+
   app.get(
     '/api/health',
     wrap(async (_request, response) => {
@@ -70,6 +105,45 @@ export async function createApp() {
         status: 'ok',
         timestamp: new Date().toISOString()
       });
+    })
+  );
+
+  app.post(
+    '/api/auth/login',
+    wrap(async (request, response) => {
+      const body = loginSchema.parse(request.body ?? {});
+      const session = authService.login(body.username, body.password);
+
+      if (!session) {
+        response.status(401).json({ message: '用户名或密码错误。' });
+        return;
+      }
+
+      response.json(session);
+    })
+  );
+
+  app.get(
+    '/api/auth/session',
+    wrap(async (request, response) => {
+      const session = authService.verify(getBearerToken(request));
+      response.json({
+        authenticated: Boolean(session),
+        session
+      });
+    })
+  );
+
+  app.post(
+    '/api/auth/logout',
+    wrap(async (request, response) => {
+      const token = getBearerToken(request);
+
+      if (token) {
+        authService.logout(token);
+      }
+
+      response.status(204).send();
     })
   );
 
@@ -89,8 +163,19 @@ export async function createApp() {
 
   app.get(
     '/api/rooms',
+    requireAuth,
     wrap(async (_request, response) => {
       response.json(await roomService.listRooms());
+    })
+  );
+
+  app.delete(
+    '/api/rooms/:roomId',
+    requireAuth,
+    wrap(async (request, response) => {
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      await roomService.deleteRoom(roomId);
+      response.status(204).send();
     })
   );
 
@@ -163,6 +248,7 @@ export async function createApp() {
 
   app.get(
     '/api/settings/ollama',
+    requireAuth,
     wrap(async (_request, response) => {
       response.json(await roomService.getOllamaConfig());
     })
@@ -170,6 +256,7 @@ export async function createApp() {
 
   app.post(
     '/api/settings/ollama/check',
+    requireAuth,
     wrap(async (request, response) => {
       const body = checkSchema.parse(request.body ?? {});
       response.json(await roomService.checkOllamaConnection(body.baseUrl, body.timeoutMs));
@@ -178,6 +265,7 @@ export async function createApp() {
 
   app.put(
     '/api/settings/ollama',
+    requireAuth,
     wrap(async (request, response) => {
       const body = saveConfigSchema.parse(request.body ?? {});
       response.json(await roomService.saveOllamaConfig(body));
