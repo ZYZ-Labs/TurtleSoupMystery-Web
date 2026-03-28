@@ -11,6 +11,8 @@ services:
       PORT: 8080
       APP_RUNTIME_DIR: /app/data/runtime
       APP_SQLITE_PATH: /app/data/runtime/turtle-soup.db
+      AI_DEBUG_LOGS: "true"
+      AI_DEBUG_LOG_MAX_CHARS: "20000"
       NODE_OPTIONS: --disable-warning=ExperimentalWarning
     expose:
       - "8080"

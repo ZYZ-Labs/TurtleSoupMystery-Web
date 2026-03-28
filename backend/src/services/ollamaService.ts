@@ -109,6 +109,12 @@ interface StreamChatOptions {
   options?: Record<string, unknown>;
 }
 
+interface AiTraceMeta {
+  traceId: string;
+  operation: string;
+  stage?: string;
+}
+
 interface GenerationBlueprint {
   noveltyToken: string;
   setting: string;
@@ -151,6 +157,9 @@ const REVEAL_ANCHORS = ['背景反光', '时间点对不上', '物件位置异�
 type FallbackBuilder = (request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) => Puzzle;
 
 export class OllamaService {
+  private readonly debugLogsEnabled = /^(1|true|yes|on)$/iu.test(process.env.AI_DEBUG_LOGS ?? '');
+  private readonly debugLogMaxChars = this.resolveDebugLogMaxChars(process.env.AI_DEBUG_LOG_MAX_CHARS);
+
   async checkConnection(
     provider: OllamaSupplier['provider'],
     baseUrl: string,
@@ -213,6 +222,7 @@ export class OllamaService {
   ): Promise<Puzzle> {
     const selectedModel = model.trim();
     const blueprint = this.createGenerationBlueprint(request);
+    const traceId = `puzzle-${nanoid(8)}`;
     const auditSupplier =
       auditOptions?.supplier?.baseUrl && auditOptions.model?.trim()
         ? auditOptions.supplier
@@ -223,8 +233,26 @@ export class OllamaService {
       : null;
 
     if (!supplier?.baseUrl || !selectedModel) {
+      this.logDebug('warn', {
+        traceId,
+        operation: 'generate_puzzle',
+        message: 'No active AI supplier/model. Falling back to local puzzle template.',
+        request
+      });
       return this.generateFallbackPuzzle(request, blueprint);
     }
+
+    this.logDebug('info', {
+      traceId,
+      operation: 'generate_puzzle',
+      message: 'Starting puzzle generation.',
+      request,
+      blueprint,
+      generationProvider: supplier.provider,
+      generationModel: selectedModel,
+      auditProvider: auditSupplier?.provider ?? null,
+      auditModel
+    });
 
     let lastFailureReason = 'AI 生成题目未通过校验，请重试。';
 
@@ -237,15 +265,29 @@ export class OllamaService {
           generatedPuzzleSchema,
           this.buildGenerationMessages(request, blueprint, attempt > 0),
           {
-          temperature: 0.95,
-          top_p: 0.92,
-          repeat_penalty: 1.08,
-          num_ctx: 12_288,
-          num_predict: 1_400
+            temperature: 0.95,
+            top_p: 0.92,
+            repeat_penalty: 1.08,
+            num_ctx: 12_288,
+            num_predict: 1_400
+          },
+          {
+            traceId,
+            operation: 'generate_puzzle',
+            stage: `generation_attempt_${attempt + 1}`
           }
         );
         const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
         const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Local audit finished.',
+          attempt: attempt + 1,
+          localAudit,
+          candidate: puzzle
+        });
 
         if (!localAudit.valid) {
           lastFailureReason = localAudit.reasons[0] ?? lastFailureReason;
@@ -258,25 +300,58 @@ export class OllamaService {
           request,
           blueprint,
           puzzle,
-          generationDeadline
+          generationDeadline,
+          traceId,
+          attempt + 1
         );
 
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Remote audit finished.',
+          attempt: attempt + 1,
+          remoteAudit
+        });
+
         if (remoteAudit.valid) {
+          this.logDebug('info', {
+            traceId,
+            operation: 'generate_puzzle',
+            message: 'Puzzle accepted.',
+            attempt: attempt + 1,
+            candidate: puzzle
+          });
           return puzzle;
         }
 
         lastFailureReason = remoteAudit.reasons[0] ?? lastFailureReason;
       } catch (error) {
         lastFailureReason = error instanceof Error ? error.message : lastFailureReason;
+        this.logDebug('error', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Puzzle generation attempt failed.',
+          attempt: attempt + 1,
+          error: this.describeUnknownError(error)
+        });
       }
     }
 
+    this.logDebug('error', {
+      traceId,
+      operation: 'generate_puzzle',
+      message: 'Puzzle generation rejected after all attempts.',
+      reason: lastFailureReason,
+      request,
+      blueprint
+    });
     throw new Error(lastFailureReason);
   }
 
   async generateHint(supplier: OllamaSupplier | null, model: string, puzzle: Puzzle, context: RoomContext) {
     const selectedModel = model.trim();
     const fallbackHint = this.buildFallbackHint(puzzle, context);
+    const traceId = `hint-${nanoid(8)}`;
 
     if (!supplier?.baseUrl || !selectedModel) {
       return {
@@ -297,6 +372,10 @@ export class OllamaService {
           repeat_penalty: 1.03,
           num_ctx: 12_288,
           num_predict: 220
+        },
+        {
+          traceId,
+          operation: 'generate_hint'
         }
       );
       const normalizedHint = parsed.hint.trim();
@@ -326,6 +405,7 @@ export class OllamaService {
     question: string
   ) {
     const selectedModel = model.trim();
+    const traceId = `question-${nanoid(8)}`;
 
     if (!supplier?.baseUrl || !selectedModel) {
       return this.evaluateQuestionHeuristically(puzzle, context, question);
@@ -343,6 +423,10 @@ export class OllamaService {
           repeat_penalty: 1.02,
           num_ctx: 12_288,
           num_predict: 500
+        },
+        {
+          traceId,
+          operation: 'evaluate_question'
         }
       );
 
@@ -367,6 +451,7 @@ export class OllamaService {
     guess: string
   ) {
     const selectedModel = model.trim();
+    const traceId = `final-guess-${nanoid(8)}`;
 
     if (!supplier?.baseUrl || !selectedModel) {
       return this.evaluateGuessHeuristically(puzzle, guess);
@@ -384,6 +469,10 @@ export class OllamaService {
           repeat_penalty: 1.02,
           num_ctx: 12_288,
           num_predict: 650
+        },
+        {
+          traceId,
+          operation: 'evaluate_final_guess'
         }
       );
 
@@ -402,7 +491,8 @@ export class OllamaService {
     model: string,
     schema: z.ZodType<T>,
     messages: OllamaChatMessage[],
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
+    traceMeta?: AiTraceMeta
   ) {
     let lastError: unknown = null;
     const attempts: OllamaChatMessage[][] = [
@@ -422,6 +512,20 @@ export class OllamaService {
 
     for (const attemptMessages of attempts) {
       try {
+        this.logDebug('info', {
+          traceId: traceMeta?.traceId ?? '',
+          operation: traceMeta?.operation ?? 'structured_output',
+          stage: traceMeta?.stage ?? 'request',
+          provider: supplier.provider,
+          model,
+          supplierLabel: supplier.label,
+          baseUrl: supplier.baseUrl,
+          attempt: attempts.indexOf(attemptMessages) + 1,
+          messages: attemptMessages,
+          options,
+          format: 'json'
+        });
+
         const { content } = await this.streamChat(supplier, {
           model,
           messages: attemptMessages,
@@ -429,9 +533,38 @@ export class OllamaService {
           options
         });
 
-        return this.parseStructuredJson(content, schema);
+        this.logDebug('info', {
+          traceId: traceMeta?.traceId ?? '',
+          operation: traceMeta?.operation ?? 'structured_output',
+          stage: traceMeta?.stage ?? 'response',
+          provider: supplier.provider,
+          model,
+          attempt: attempts.indexOf(attemptMessages) + 1,
+          rawContent: content
+        });
+
+        const parsed = this.parseStructuredJson(content, schema);
+        this.logDebug('info', {
+          traceId: traceMeta?.traceId ?? '',
+          operation: traceMeta?.operation ?? 'structured_output',
+          stage: traceMeta?.stage ?? 'parsed',
+          provider: supplier.provider,
+          model,
+          attempt: attempts.indexOf(attemptMessages) + 1,
+          parsed
+        });
+        return parsed;
       } catch (error) {
         lastError = error;
+        this.logDebug('warn', {
+          traceId: traceMeta?.traceId ?? '',
+          operation: traceMeta?.operation ?? 'structured_output',
+          stage: traceMeta?.stage ?? 'error',
+          provider: supplier.provider,
+          model,
+          attempt: attempts.indexOf(attemptMessages) + 1,
+          error: this.describeUnknownError(error)
+        });
       }
     }
 
@@ -455,6 +588,8 @@ export class OllamaService {
           'Do not use supernatural explanations, dream endings, or pure coincidence.',
           'Soup surface, truth story, facts, and key triggers must all be mutually consistent.',
           'The soup surface must describe the same event that the truth story fully explains.',
+          'Use exactly one central incident, one hidden cause, and one visible outcome.',
+          'Do not switch to another event, another victim, another plan, or another timeline halfway through.',
           'Use the same concrete anchors across the entire puzzle, not different unrelated stories.',
           'The truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.',
           'Reject vague templates such as "the protagonist noticed something was wrong and interrupted the process" unless you explain the exact event in detail.',
@@ -492,12 +627,16 @@ export class OllamaService {
           '- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler',
           '- truthStory: complete causal chain, clearly explain why the surface happened',
           '- soupSurface and truthStory must point to the same people, event, and hidden mechanism',
+          '- the soupSurface must be the visible climax scene of the same incident described in truthStory',
           '- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory',
           '- truthStory must include a concrete trigger, a concrete action, and a concrete outcome',
           '- truthStory must not stop at abstract phrases like "the protagonist knew a rule" or "there was risk in the process"',
           '- explain what actually happened to whom, where, and why',
           '- facts: 5-8 canonical facts with concrete wording',
           '- every fact must support the same story, not introduce a separate subplot',
+          '- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident',
+          '- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory',
+          '- never output facts that only say someone "noticed risk", "understood a rule", or "made a judgment" without describing the concrete event',
           '- misleadingPoints: 2-4 believable but wrong assumptions players may make',
           '- keyTriggers: 2-4 good yes/no question directions',
           '- difficulty must match the requested difficulty',
@@ -544,7 +683,9 @@ export class OllamaService {
           'Return JSON only.',
           'Be strict: reject any puzzle whose soup surface, truth story, and facts do not describe the same event chain.',
           'Reject abstract truth stories that only summarize reasoning, profession, or vague risk without a concrete incident.',
-          'Reject any puzzle where facts drift away from the soup surface or introduce a different story.'
+          'Reject any puzzle where facts drift away from the soup surface or introduce a different story.',
+          'Reject any puzzle where facts talk about abstract judgment instead of concrete event details.',
+          'Reject any puzzle whose soup surface is not the visible scene caused by the truth story.'
         ].join('\n')
       },
       {
@@ -566,6 +707,8 @@ export class OllamaService {
           '2. Truth story must contain specific event details, not only abstract explanation.',
           '3. Facts must support the same incident and should not feel like a different story.',
           '4. If the truth story could not be acted out as a specific scene, reject it.',
+          '5. If the soup surface is not the visible climax scene of the truth story, reject it.',
+          '6. If most facts cannot be pointed to a single incident timeline, reject it.',
           '',
           'JSON shape:',
           JSON.stringify(
@@ -815,7 +958,9 @@ export class OllamaService {
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
     puzzle: Puzzle,
-    deadline: number | null = null
+    deadline: number | null = null,
+    traceId?: string,
+    attempt?: number
   ) {
     const selectedModel = model.trim();
 
@@ -836,6 +981,11 @@ export class OllamaService {
           repeat_penalty: 1.01,
           num_ctx: 12_288,
           num_predict: 300
+        },
+        {
+          traceId: traceId ?? `audit-${nanoid(8)}`,
+          operation: 'audit_generated_puzzle',
+          stage: attempt ? `audit_attempt_${attempt}` : 'audit'
         }
       );
 
@@ -1777,5 +1927,68 @@ export class OllamaService {
 
   private pickRandom<T>(items: T[]) {
     return items[Math.floor(Math.random() * items.length)] as T;
+  }
+
+  private logDebug(level: 'info' | 'warn' | 'error', payload: Record<string, unknown>) {
+    if (!this.debugLogsEnabled) {
+      return;
+    }
+
+    const logger = level === 'error' ? console.error : level === 'warn' ? console.warn : console.info;
+    logger(
+      JSON.stringify(
+        {
+          scope: 'ai',
+          level,
+          timestamp: new Date().toISOString(),
+          ...(this.sanitizeForLog(payload) as Record<string, unknown>)
+        },
+        null,
+        2
+      )
+    );
+  }
+
+  private sanitizeForLog(value: unknown): unknown {
+    if (typeof value === 'string') {
+      return value.length > this.debugLogMaxChars ? `${value.slice(0, this.debugLogMaxChars)}...<truncated>` : value;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.sanitizeForLog(item));
+    }
+
+    if (!value || typeof value !== 'object') {
+      return value;
+    }
+
+    const entries = Object.entries(value).map(([key, current]) => {
+      if (/apiKey|authorization|token|password/iu.test(key)) {
+        return [key, '<redacted>'] as const;
+      }
+
+      return [key, this.sanitizeForLog(current)] as const;
+    });
+
+    return Object.fromEntries(entries);
+  }
+
+  private resolveDebugLogMaxChars(value: string | undefined) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 500 ? Math.round(parsed) : 12_000;
+  }
+
+  private describeUnknownError(error: unknown) {
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+        stack: error.stack ?? ''
+      };
+    }
+
+    return {
+      message: String(error)
+    };
   }
 }
