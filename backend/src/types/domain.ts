@@ -177,6 +177,9 @@ export interface OllamaConfig {
   generationSupplierId: string;
   generationModelCategory: ModelCategory;
   generationModel: string;
+  presetSupplierId: string;
+  presetModelCategory: ModelCategory;
+  presetModel: string;
   validationSupplierId: string;
   validationModelCategory: ModelCategory;
   validationModel: string;

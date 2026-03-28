@@ -895,177 +895,6 @@ export class OllamaService {
     ];
   }
 
-  private buildSurfaceDraftMessages(
-    request: PuzzleGenerationRequest,
-    blueprint: GenerationBlueprint,
-    truthBlueprint: TruthBlueprint
-  ): OllamaChatMessage[] {
-    const stageOneMessages = this.buildTruthBlueprintMessages(request, blueprint, false);
-
-    return [
-      stageOneMessages[0] as OllamaChatMessage,
-      stageOneMessages[1] as OllamaChatMessage,
-      {
-        role: 'assistant',
-        content: JSON.stringify(truthBlueprint, null, 2)
-      },
-      {
-        role: 'user',
-        content: [
-          '上面这份 JSON 已经是确认通过的汤底蓝图，不允许改动它的核心事件。',
-          '现在请只基于这份汤底蓝图，生成题面和事实链。',
-          '仍然必须使用简体中文。',
-          '仍然只能返回一个 JSON 对象。',
-          '',
-          `当前难度：${this.toChineseDifficulty(request.difficulty)}`,
-          '难度要求：',
-          ...this.buildDifficultyGuidance(request.difficulty),
-          '',
-          '输出要求：',
-          '1. soupSurface：1 到 2 句题面，必须是同一事件里玩家眼前看到的奇怪场景，不能换场景，不能剧透。',
-          '2. facts：5 到 8 条正式事实链，必须都服务于同一条因果链，不能引入第二个故事。',
-          '3. misleadingPoints：2 到 4 条误导方向，可以沿用或优化汤底蓝图里的误导。',
-          '4. keyTriggers：2 到 4 条提问方向，必须能帮助玩家逼近这份汤底。',
-          '5. tags：短中文标签。',
-          '',
-          '硬性限制：',
-          '- 题面必须依赖上面的汤底，不能另起炉灶。',
-          '- facts 里至少 4 条要复用汤底中的具体名词、人物、物件或动作。',
-          '- 不要输出“主角知道规则”“发现风险”这种抽象句子，必须写清楚具体细节。',
-          '- 不允许在 facts 里偷偷改写汤底。',
-          '',
-          'JSON 结构：',
-          JSON.stringify(
-            {
-              soupSurface: '字符串',
-              facts: [
-                {
-                  factId: 'fact-1',
-                  statement: '字符串',
-                  importance: 8,
-                  discoverable: true,
-                  keywords: ['字符串']
-                }
-              ],
-              misleadingPoints: ['字符串'],
-              keyTriggers: ['字符串'],
-              tags: ['字符串']
-            },
-            null,
-            2
-          )
-        ].join('\n')
-      }
-    ];
-  }
-
-  private buildGenerationMessages(
-    request: PuzzleGenerationRequest,
-    blueprint: GenerationBlueprint,
-    scenario: PuzzleScenario,
-    retryMode = false,
-    rejectionReason = ''
-  ): OllamaChatMessage[] {
-    return [
-      {
-        role: 'system',
-        content: [
-          'You design original turtle soup mysteries for Chinese-speaking players.',
-          'Write all natural-language fields in Simplified Chinese.',
-          'Return JSON only.',
-          'The puzzle must be solvable through careful yes/no questioning.',
-          'Avoid stale stock plots unless they are clearly subverted.',
-          'Do not use supernatural explanations, dream endings, or pure coincidence.',
-          'The approved scenario is the single source of truth.',
-          'Soup surface, truth story, facts, and key triggers must all be mutually consistent.',
-          'The soup surface must describe the same event that the truth story fully explains.',
-          'Do not invent any second story, second timeline, second culprit, or second hidden cause.',
-          'Use the same concrete anchors across the entire puzzle, not different unrelated stories.',
-          'The truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.',
-          'Reject vague templates such as "the protagonist noticed something was wrong and interrupted the process" unless you explain the exact event in detail.',
-          ...(retryMode
-            ? [
-                'The previous draft was rejected for inconsistency.',
-                'Rebuild the puzzle from scratch and keep every field tied to one single causal chain.',
-                'Make the truth story more concrete, more event-driven, and less generic than before.',
-                ...(rejectionReason ? [`Most recent rejection reason: ${rejectionReason}`] : [])
-              ]
-            : [])
-        ].join('\n')
-      },
-      {
-        role: 'user',
-        content: [
-          'Task: generate one original turtle soup puzzle.',
-          '',
-          `Difficulty: ${request.difficulty}`,
-          `User theme preference: ${request.prompt.trim() || '随机主题，用户没有额外要求'}`,
-          '',
-          'Creative brief:',
-          `- Setting: ${blueprint.setting}`,
-          `- Atmosphere: ${blueprint.atmosphere}`,
-          `- Relationship focus: ${blueprint.relationship}`,
-          `- Surface contradiction: ${blueprint.contradiction}`,
-          `- Hidden mechanism: ${blueprint.hiddenMechanism}`,
-          `- Immediate pressure: ${blueprint.pressure}`,
-          `- Key object: ${blueprint.keyObject}`,
-          `- Red-herring flavor: ${blueprint.redHerring}`,
-          `- Reveal anchor: ${blueprint.revealAnchor}`,
-          `- Novelty token: ${blueprint.noveltyToken}`,
-          '',
-          'Approved incident skeleton:',
-          this.buildScenarioDossier(scenario),
-          '',
-          'Output requirements:',
-          '- title: memorable, not generic',
-          '- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler',
-          '- truthStory: complete causal chain, clearly explain why the surface happened',
-          '- soupSurface and truthStory must point to the same people, event, and hidden mechanism',
-          '- the soupSurface must be the visible climax scene of the same incident described in truthStory',
-          '- soupSurface must be a concise rewrite of visibleScene, not a different scene',
-          '- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario',
-          '- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory',
-          '- truthStory must include a concrete trigger, a concrete action, and a concrete outcome',
-          '- truthStory must not stop at abstract phrases like "the protagonist knew a rule" or "there was risk in the process"',
-          '- explain what actually happened to whom, where, and why',
-          '- facts: 5-8 canonical facts with concrete wording',
-          '- every fact must support the same story, not introduce a separate subplot',
-          '- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident',
-          '- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory',
-          '- never output facts that only say someone "noticed risk", "understood a rule", or "made a judgment" without describing the concrete event',
-          '- misleadingPoints: 2-4 believable but wrong assumptions players may make',
-          '- keyTriggers: 2-4 good yes/no question directions',
-          '- difficulty must match the requested difficulty',
-          '- tags should be short Chinese labels',
-          '',
-          'JSON shape:',
-          JSON.stringify(
-            {
-              title: 'string',
-              soupSurface: 'string',
-              truthStory: 'string',
-              facts: [
-                {
-                  factId: 'fact-1',
-                  statement: 'string',
-                  importance: 8,
-                  discoverable: true,
-                  keywords: ['string']
-                }
-              ],
-              misleadingPoints: ['string'],
-              keyTriggers: ['string'],
-              difficulty: request.difficulty,
-              tags: ['string']
-            },
-            null,
-            2
-          )
-        ].join('\n')
-      }
-    ];
-  }
-
   private buildTruthBlueprintMessagesV2(
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
@@ -2296,9 +2125,41 @@ export class OllamaService {
 
   private async streamOllamaChat(supplier: OllamaSupplier, options: StreamChatOptions): Promise<StreamChatResult> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), supplier.timeoutMs);
+
+    const firstChunkTimeoutMs = Math.max(60_000, Math.min(supplier.timeoutMs, 120_000));
+    const idleTimeoutMs = Math.max(120_000, supplier.timeoutMs);
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let hasReceivedAnyChunk = false;
+    let hasReceivedAnyContent = false;
+
+    const startTime = Date.now();
+    let firstChunkTime = 0;
+    let lastChunkTime = 0;
+    let chunkCount = 0;
+
+    const clearTimer = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const resetTimer = (ms: number) => {
+      clearTimer();
+      timeoutId = setTimeout(() => controller.abort(), ms);
+    };
 
     try {
+      this.logDebug?.('info', {
+        operation: 'ollama_stream_start',
+        model: options.model,
+        baseUrl: supplier.baseUrl,
+        timeoutMs: supplier.timeoutMs
+      });
+
+      resetTimer(firstChunkTimeoutMs);
+
       const response = await fetch(buildOllamaApiUrl(supplier.baseUrl, 'chat'), {
         method: 'POST',
         headers: {
@@ -2329,55 +2190,132 @@ export class OllamaService {
 
       const processLine = (line: string) => {
         const trimmed = line.trim();
+        if (!trimmed) return;
 
-        if (!trimmed) {
+        let chunk: OllamaChatChunk;
+
+        try {
+          chunk = JSON.parse(trimmed);
+        } catch {
+          this.logDebug?.('warn', {
+            operation: 'ollama_chunk_parse_failed',
+            raw: trimmed
+          });
           return;
         }
-
-        const chunk = JSON.parse(trimmed) as OllamaChatChunk;
 
         if (typeof chunk.error === 'string' && chunk.error.trim()) {
           throw new Error(chunk.error);
         }
 
-        if (typeof chunk.message?.content === 'string') {
-          content += chunk.message.content;
+        const now = Date.now();
+
+        if (!hasReceivedAnyChunk) {
+          firstChunkTime = now;
+          this.logDebug?.('info', {
+            operation: 'ollama_first_chunk',
+            delayMs: firstChunkTime - startTime
+          });
+        }
+
+        hasReceivedAnyChunk = true;
+        resetTimer(idleTimeoutMs);
+
+        const piece = chunk.message?.content;
+        if (typeof piece === 'string' && piece.length > 0) {
+          hasReceivedAnyContent = true;
+          content += piece;
+
+          chunkCount++;
+          const delta = lastChunkTime ? now - lastChunkTime : 0;
+          lastChunkTime = now;
+
+          this.logDebug?.('info', {
+            operation: 'ollama_chunk',
+            chunkIndex: chunkCount,
+            size: piece.length,
+            intervalMs: delta,
+            preview: piece.slice(0, 80)
+          });
+        }
+
+        if (chunk.done) {
+          this.logDebug?.('info', {
+            operation: 'ollama_done_flag_received'
+          });
+          clearTimer();
         }
       };
 
       while (true) {
         const { done, value } = await reader.read();
-        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+
+        if (done) break;
+
+        if (!hasReceivedAnyChunk) {
+          resetTimer(idleTimeoutMs);
+        }
+
+        buffer += decoder.decode(value, { stream: true });
 
         let newlineIndex = buffer.indexOf('\n');
-
         while (newlineIndex !== -1) {
           const line = buffer.slice(0, newlineIndex);
           buffer = buffer.slice(newlineIndex + 1);
           processLine(line);
           newlineIndex = buffer.indexOf('\n');
         }
-
-        if (done) {
-          break;
-        }
       }
+
+      buffer += decoder.decode();
 
       if (buffer.trim()) {
         processLine(buffer);
       }
+
+      clearTimer();
+
+      const totalTime = Date.now() - startTime;
+
+      this.logDebug?.('info', {
+        operation: 'ollama_stream_complete',
+        totalMs: totalTime,
+        chunks: chunkCount,
+        receivedContent: hasReceivedAnyContent
+      });
 
       return {
         content: content.trim()
       };
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Ollama 请求超时，已等待 ${Math.round(supplier.timeoutMs / 1000)} 秒。`);
+        const now = Date.now();
+
+        if (!hasReceivedAnyChunk) {
+          this.logDebug?.('error', {
+            operation: 'ollama_timeout_first_chunk',
+            waitedMs: now - startTime
+          });
+
+          throw new Error(`Ollama 首包超时`);
+        }
+
+        this.logDebug?.('error', {
+          operation: 'ollama_timeout_idle',
+          idleMs: now - lastChunkTime
+        });
+
+        throw new Error(`Ollama 流空闲超时`);
       }
+
+      this.logDebug?.('error', {
+        operation: 'ollama_stream_error',
+        error: error instanceof Error ? error.message : String(error)
+      });
 
       throw error;
     } finally {
-      clearTimeout(timeoutId);
+      clearTimer();
     }
   }
 
