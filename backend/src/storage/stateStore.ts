@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { constants as fsConstants } from 'node:fs';
 import { access, mkdir, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { DEFAULT_APP_STATE } from '../lib/constants.js';
+import { DEFAULT_APP_STATE, HARD_DIFFICULTY_MAX_QUESTION_COUNT } from '../lib/constants.js';
 import type {
   AIProvider,
   AppState,
@@ -186,12 +186,23 @@ export class StateStore {
             room.generationSource ?? (Array.isArray(room.tags) && room.tags.includes('fallback-local') ? 'fallback' : 'unknown'),
           generationFailureReason: room.generationFailureReason ?? null,
           facts: room.facts ?? [],
+          includesDeath: typeof room.includesDeath === 'boolean' ? room.includesDeath : this.inferIncludesDeath(room.truthStory ?? ''),
           misleadingPoints: room.misleadingPoints ?? [],
           keyTriggers: room.keyTriggers ?? [],
           participants: room.participants ?? [],
           messages: room.messages ?? [],
-          questions: room.questions ?? [],
+          questions: (room.questions ?? []).map((question) => ({
+            ...question,
+            clueStatement: question.clueStatement ?? null
+          })),
+          maxQuestionCount:
+            typeof room.maxQuestionCount === 'number'
+              ? room.maxQuestionCount
+              : room.difficulty === 'hard'
+                ? HARD_DIFFICULTY_MAX_QUESTION_COUNT
+                : null,
           revealedFactIds: room.revealedFactIds ?? [],
+          clues: room.clues ?? [],
           hintUsageCount: room.hintUsageCount ?? 0,
           maxHintCount: room.maxHintCount ?? 2,
           hintVote: room.hintVote ?? null,
@@ -257,6 +268,7 @@ export class StateStore {
       soupSurface: row.soup_surface,
       truthStory: row.truth_story,
       facts: factsByPuzzle.get(row.puzzle_id) ?? [],
+      includesDeath: this.inferIncludesDeath(row.truth_story),
       misleadingPoints: this.parseJson<string[]>(row.misleading_points_json, []),
       keyTriggers: this.parseJson<string[]>(row.key_triggers_json, []),
       difficulty: row.difficulty,
@@ -354,6 +366,7 @@ export class StateStore {
             progressDelta: number;
             createdAt: string;
             source: QuestionRecord['source'];
+            clueStatement?: string | null;
           }>;
           revealedFactIds?: string[];
           progressScore: number;
@@ -501,6 +514,7 @@ export class StateStore {
       progressDelta: number;
       createdAt: string;
       source: QuestionRecord['source'];
+      clueStatement?: string | null;
     }>;
     revealedFactIds: string[];
     progressScore: number;
@@ -559,7 +573,8 @@ export class StateStore {
       return {
         ...item,
         askedByParticipantId: participant.participantId,
-        askedByName: participant.displayName
+        askedByName: participant.displayName,
+        clueStatement: item.clueStatement ?? null
       };
     });
 
@@ -587,6 +602,7 @@ export class StateStore {
       soupSurface: session.soupSurface,
       truthStory: session.truthStory,
       facts: [],
+      includesDeath: this.inferIncludesDeath(session.truthStory),
       misleadingPoints: [],
       keyTriggers: [],
       difficulty: session.difficulty,
@@ -594,7 +610,9 @@ export class StateStore {
       participants: [participant],
       messages,
       questions,
+      maxQuestionCount: session.difficulty === 'hard' ? HARD_DIFFICULTY_MAX_QUESTION_COUNT : null,
       revealedFactIds: session.revealedFactIds,
+      clues: [],
       hintUsageCount: 0,
       maxHintCount: 2,
       hintVote: null,
@@ -617,6 +635,10 @@ export class StateStore {
       createdAt: session.createdAt,
       updatedAt: session.updatedAt
     };
+  }
+
+  private inferIncludesDeath(text: string) {
+    return /死亡|死去|尸体|尸检|被杀|自杀|他杀|遇害|丧命|身亡|遗体/u.test(text);
   }
 
   private parseJson<T>(raw: string | null | undefined, fallback: T): T {

@@ -54,6 +54,7 @@ export async function createRoom(payload: {
   clientId: string;
   displayName: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  includesDeath: boolean;
   generationPrompt: string;
 }, timeoutMs?: number) {
   const { data } = await apiClient.post<RoomJoinResult>('/rooms', payload, timeoutMs ? { timeout: timeoutMs } : undefined);
@@ -107,6 +108,7 @@ export async function restartRoom(
   participantId: string,
   payload: {
     difficulty: 'easy' | 'medium' | 'hard';
+    includesDeath: boolean;
     generationPrompt: string;
   },
   timeoutMs?: number

@@ -19,6 +19,16 @@
             class="mb-4"
           />
 
+          <v-switch
+            v-model="createForm.includesDeath"
+            color="error"
+            inset
+            label="汤底包含死亡"
+            hint="开启后会优先生成带死亡事件的海龟汤"
+            persistent-hint
+            class="mb-4"
+          />
+
           <div class="d-flex flex-wrap ga-3">
             <v-btn color="primary" size="large" :loading="creating" :disabled="creating" @click="handleCreateRoom">
               {{ creating ? '正在构建房间...' : '创建并进入房间' }}
@@ -55,8 +65,8 @@
         <v-card-title class="section-title px-6 pt-6">玩法说明</v-card-title>
         <v-card-text class="pt-4">
           <v-list density="comfortable">
-            <v-list-item>你现在只要选难度就能开局，每一局都会完全随机生成。</v-list-item>
-            <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已揭示事实和最终结算结果。</v-list-item>
+            <v-list-item>你现在只要选难度和是否含死亡就能开局，每一局都会完全随机生成。</v-list-item>
+            <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已确认线索和最终结算结果。</v-list-item>
             <v-list-item>当前版本采用实时推送同步，局域网里多人协作时会更顺滑。</v-list-item>
           </v-list>
         </v-card-text>
@@ -102,11 +112,17 @@
 
           <div class="d-flex flex-wrap ga-2 mb-4">
             <v-chip size="small" color="primary" variant="tonal">{{ formatDifficulty(room.difficulty) }}</v-chip>
+            <v-chip size="small" :color="room.includesDeath ? 'error' : 'success'" variant="tonal">
+              {{ room.includesDeath ? '含死亡' : '无死亡' }}
+            </v-chip>
             <v-chip size="small" :color="generationSourceColor(room.generationSource)" variant="tonal">
               {{ generationSourceLabel(room.generationSource) }}
             </v-chip>
             <v-chip size="small" variant="outlined">{{ room.participants.length }} 人</v-chip>
             <v-chip size="small" variant="outlined">{{ room.questionCount }} 次提问</v-chip>
+            <v-chip v-if="room.maxQuestionCount !== null" size="small" variant="outlined" color="warning">
+              提问剩余 {{ remainingQuestionCount }}
+            </v-chip>
             <v-chip size="small" variant="outlined">已用提示 {{ room.hintUsageCount }}/{{ room.maxHintCount }}</v-chip>
             <v-chip size="small" variant="outlined">生成耗时 {{ formatDuration(room.generationDurationMs) }}</v-chip>
           </div>
@@ -184,17 +200,17 @@
       </v-card>
 
       <v-card class="glass-card mb-4">
-        <v-card-title class="section-title px-6 pt-6">已揭示事实</v-card-title>
+        <v-card-title class="section-title px-6 pt-6">已确认线索</v-card-title>
         <v-card-text class="pt-4">
-          <v-list v-if="room.revealedFacts.length" density="compact">
-            <v-list-item v-for="fact in room.revealedFacts" :key="fact.factId">
+          <v-list v-if="room.clues.length" density="compact">
+            <v-list-item v-for="clue in room.clues" :key="clue.clueId">
               <template #prepend>
                 <v-icon :icon="mdiCheckCircleOutline" color="success" />
               </template>
-              <div class="revealed-fact-text">{{ fact.statement }}</div>
+              <div class="revealed-fact-text">{{ clue.statement }}</div>
             </v-list-item>
           </v-list>
-          <v-alert v-else type="info" variant="tonal">还没有揭示事实，先从高质量的 Yes / No 问题开始。</v-alert>
+          <v-alert v-else type="info" variant="tonal">还没有沉淀出公开线索，先从高质量的 Yes / No 问题开始。</v-alert>
         </v-card-text>
       </v-card>
 
@@ -277,6 +293,13 @@
                 {{ pendingSubmissionHint }}
               </div>
               <v-progress-linear indeterminate color="primary" rounded />
+            </v-alert>
+
+            <v-alert v-else-if="hasReachedQuestionLimit" type="warning" variant="tonal" class="mb-4">
+              <div class="font-weight-medium mb-2">最高难度提问次数已用完</div>
+              <div class="text-body-2 text-medium-emphasis">
+                本局最多只能提问 {{ room.maxQuestionCount }} 次。你们现在可以继续申请提示、提交最终猜测，或由房主开锅结束。
+              </div>
             </v-alert>
 
             <div class="d-flex flex-wrap ga-3 mb-2">
@@ -385,6 +408,13 @@
           label="新一局难度"
           class="mb-4"
         />
+        <v-switch
+          v-model="restartForm.includesDeath"
+          color="error"
+          inset
+          label="新一局汤底包含死亡"
+          class="mb-2"
+        />
         <v-alert v-if="restarting" type="info" variant="tonal" class="mt-4">
           <div class="font-weight-medium mb-2">{{ creatingStatus }}</div>
           <div class="text-body-2 text-medium-emphasis mb-3">
@@ -483,9 +513,11 @@ const generationLogs = ref<string[]>([]);
 const createForm = reactive<{
   displayName: string;
   difficulty: Difficulty;
+  includesDeath: boolean;
 }>({
   displayName: rememberedDisplayName,
-  difficulty: 'medium'
+  difficulty: 'medium',
+  includesDeath: false
 });
 
 const joinForm = reactive({
@@ -495,8 +527,10 @@ const joinForm = reactive({
 
 const restartForm = reactive<{
   difficulty: Difficulty;
+  includesDeath: boolean;
 }>({
-  difficulty: 'medium'
+  difficulty: 'medium',
+  includesDeath: false
 });
 
 let heartbeatTimer: number | null = null;
@@ -542,13 +576,27 @@ const remainingHints = computed(() => {
 
   return Math.max(0, room.value.maxHintCount - room.value.hintUsageCount);
 });
+const remainingQuestionCount = computed(() => {
+  if (!room.value || room.value.maxQuestionCount === null) {
+    return 0;
+  }
+
+  return Math.max(0, room.value.maxQuestionCount - room.value.questionCount);
+});
+const hasReachedQuestionLimit = computed(
+  () =>
+    room.value?.status === 'playing' &&
+    room.value.maxQuestionCount !== null &&
+    room.value.questionCount >= room.value.maxQuestionCount
+);
 const hasApprovedHintVote = computed(() =>
   Boolean(activeParticipant.value && roomHintVote.value?.approvals.includes(activeParticipant.value.participantId))
 );
-const questionInputDisabled = computed(() => !isJoined.value || asking.value);
+const questionInputDisabled = computed(() => !isJoined.value || asking.value || hasReachedQuestionLimit.value);
 const canSubmitQuestion = computed(
   () =>
     isJoined.value &&
+    !hasReachedQuestionLimit.value &&
     !asking.value &&
     !guessing.value &&
     !revealing.value &&
@@ -764,6 +812,7 @@ async function loadRoom(showError = true) {
 
 function syncRestartForm() {
   restartForm.difficulty = room.value?.difficulty ?? 'medium';
+  restartForm.includesDeath = room.value?.includesDeath ?? false;
 }
 
 function appendGenerationLog(message: string) {
@@ -1084,6 +1133,7 @@ async function handleCreateRoom() {
       clientId: browserClientId,
       displayName,
       difficulty: createForm.difficulty,
+      includesDeath: createForm.includesDeath,
       generationPrompt: ''
     }, resolveGenerationRequestTimeout());
 
@@ -1157,6 +1207,9 @@ async function handleJoinRoom() {
 
 async function handleAskQuestion() {
   if (!canSubmitQuestion.value || !room.value || !activeParticipant.value) {
+    if (hasReachedQuestionLimit.value) {
+      ui.notify(`本局提问次数已用完，最高难度最多只能提问 ${room.value?.maxQuestionCount ?? 0} 次。`, 'warning');
+    }
     return;
   }
 
@@ -1275,6 +1328,7 @@ async function handleRestartRoom() {
   try {
     room.value = await restartRoom(room.value.roomId, activeParticipant.value.participantId, {
       difficulty: restartForm.difficulty,
+      includesDeath: restartForm.includesDeath,
       generationPrompt: ''
     }, resolveGenerationRequestTimeout());
     restartDialog.value = false;

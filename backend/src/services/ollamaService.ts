@@ -37,13 +37,13 @@ const generatedPuzzleSchema = z.object({
 
 const truthBlueprintSchema = z.object({
   title: z.string().min(4),
-  truthStory: z.string().min(40),
+  truthStory: z.string().min(90),
   trigger: z.string().min(8),
   decisiveAction: z.string().min(8),
   outcome: z.string().min(8),
   involvedRoles: z.array(z.string().min(1)).min(2).max(5),
   keyObjects: z.array(z.string().min(1)).min(1).max(5),
-  factSeeds: z.array(z.string().min(6)).min(5).max(8),
+  factSeeds: z.array(z.string().min(6)).max(8).default([]),
   misleadingPoints: z.array(z.string()).default([]),
   keyTriggers: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([])
@@ -65,19 +65,7 @@ const puzzleScenarioSchema = z.object({
 });
 
 const surfaceDraftSchema = z.object({
-  soupSurface: z.string().min(8),
-  facts: z
-    .array(
-      z.object({
-        factId: z.string().optional(),
-        statement: z.string().min(4),
-        importance: z.number().int().min(1).max(10).default(6),
-        discoverable: z.boolean().default(true),
-        keywords: z.array(z.string()).default([])
-      })
-    )
-    .min(5)
-    .max(8),
+  soupSurface: z.string().min(20),
   misleadingPoints: z.array(z.string()).default([]),
   keyTriggers: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([])
@@ -87,6 +75,7 @@ const questionSchema = z.object({
   answerCode: z.enum(['yes', 'no', 'irrelevant', 'partial', 'unknown']),
   matchedFactIds: z.array(z.string()).default([]),
   revealedFactIds: z.array(z.string()).default([]),
+  clueStatement: z.string().trim().max(80).nullable().optional(),
   progressDelta: z.number().int().min(0).max(30).default(0),
   reasoning: z.string().default('')
 });
@@ -319,7 +308,7 @@ export class OllamaService {
           timedGenerationSupplier,
           selectedModel,
           truthBlueprintSchema,
-          this.buildTruthBlueprintMessages(request, blueprint, truthAttempt > 0),
+          this.buildTruthBlueprintMessagesV2(request, blueprint, truthAttempt > 0),
           {
             temperature: 0.38,
             top_p: 0.82,
@@ -362,7 +351,7 @@ export class OllamaService {
           timedGenerationSupplier,
           selectedModel,
           surfaceDraftSchema,
-          this.buildSurfaceDraftMessages(request, blueprint, truthBlueprint),
+          this.buildSurfaceDraftMessagesV2(request, blueprint, truthBlueprint),
           {
             temperature: 0.42,
             top_p: 0.84,
@@ -525,7 +514,7 @@ export class OllamaService {
         supplier,
         selectedModel,
         questionSchema,
-        this.buildQuestionMessages(puzzle, context, question),
+        this.buildQuestionMessagesV2(puzzle, context, question),
         {
           temperature: 0.15,
           top_p: 0.9,
@@ -549,6 +538,14 @@ export class OllamaService {
           parsed.answerCode,
           unique(parsed.matchedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId)),
           unique(parsed.revealedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId && fact.discoverable))
+        ),
+        clueStatement: this.filterSafeClueStatement(
+          puzzle,
+          context,
+          question,
+          parsed.answerCode,
+          unique(parsed.matchedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId)),
+          parsed.clueStatement ?? null
         ),
         source: 'ollama'
       } satisfies QuestionEvaluation;
@@ -1050,6 +1047,142 @@ export class OllamaService {
     ];
   }
 
+  private buildTruthBlueprintMessagesV2(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    retryMode = false
+  ): OllamaChatMessage[] {
+    return [
+      {
+        role: 'system',
+        content: [
+          '你是中文海龟汤出题编辑。',
+          '你只负责先生成可游玩的汤底蓝图。',
+          '必须使用简体中文。',
+          '只能返回一个 JSON 对象，不要输出任何解释、代码块或额外文字。',
+          '先把汤底写扎实，再考虑题面。',
+          '汤底必须是一个具体事件，必须能完整讲清楚：发生了什么、谁做了什么、为什么这么做、最后结果是什么。',
+          '禁止空泛表达，比如“察觉风险”“知道规则”“觉得不对劲”“做出判断”。',
+          '禁止双线故事、双重反转、平行时间线、无关支线。',
+          '题目的核心只能围绕同一条因果链展开。',
+          request.includesDeath
+            ? '这局必须真的涉及死亡事件。死亡必须是已经发生或明确即将发生的具体事件，不能只是假设风险。'
+            : '这局不能出现死亡、尸体、谋杀、自杀、遇害等元素。',
+          ...(retryMode ? ['上一版汤底蓝图不合格，请重写，并且保证整条因果链更具体、更单一、更容易还原。'] : [])
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          '请先生成这一局海龟汤的汤底蓝图。',
+          '',
+          `难度：${this.toChineseDifficulty(request.difficulty)}`,
+          `死亡元素：${request.includesDeath ? '必须包含死亡' : '不能包含死亡'}`,
+          '',
+          '创意约束：',
+          `- 场景方向：${blueprint.setting}`,
+          `- 氛围：${blueprint.atmosphere}`,
+          `- 人际关系：${blueprint.relationship}`,
+          `- 表面反差：${blueprint.contradiction}`,
+          `- 隐藏机制：${blueprint.hiddenMechanism}`,
+          `- 当下压力：${blueprint.pressure}`,
+          `- 关键物件：${blueprint.keyObject}`,
+          `- 常见误导：${blueprint.redHerring}`,
+          `- 揭示锚点：${blueprint.revealAnchor}`,
+          `- 新鲜度标记：${blueprint.noveltyToken}`,
+          '',
+          '难度要求：',
+          ...this.buildDifficultyGuidance(request.difficulty),
+          '',
+          '输出要求：',
+          '1. title：这局题的标题，简短但不俗套。',
+          '2. truthStory：完整汤底，4 到 6 句话，必须是一件具体发生过的事，写清楚起因、异常、动作、结果，不要抽象总结。',
+          '3. trigger：真正触发事件的那个瞬间。',
+          '4. decisiveAction：旁观者能看到的那个奇怪动作。',
+          '5. outcome：这个动作最终避免了什么、暴露了什么，或者导致了什么。',
+          '6. involvedRoles：涉及人物，2 到 5 个。',
+          '7. keyObjects：关键物件，1 到 5 个。',
+          '8. misleadingPoints：1 到 4 条常见误解方向。',
+          '9. keyTriggers：1 到 4 条值得玩家追问的方向。',
+          '10. tags：短中文标签。',
+          '补充要求：汤底必须尽量丰富，不能只用两句概括完成；需要能支撑多人连续追问。',
+          '',
+          'JSON 结构：',
+          JSON.stringify(
+            {
+              title: '字符串',
+              truthStory: '字符串',
+              trigger: '字符串',
+              decisiveAction: '字符串',
+              outcome: '字符串',
+              involvedRoles: ['主角', '同伴'],
+              keyObjects: ['工牌'],
+              misleadingPoints: ['字符串'],
+              keyTriggers: ['字符串'],
+              tags: ['字符串']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildSurfaceDraftMessagesV2(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    truthBlueprint: TruthBlueprint
+  ): OllamaChatMessage[] {
+    const stageOneMessages = this.buildTruthBlueprintMessagesV2(request, blueprint, false);
+
+    return [
+      stageOneMessages[0] as OllamaChatMessage,
+      stageOneMessages[1] as OllamaChatMessage,
+      {
+        role: 'assistant',
+        content: JSON.stringify(truthBlueprint, null, 2)
+      },
+      {
+        role: 'user',
+        content: [
+          '上面这份 JSON 已经是确认通过的汤底蓝图，不允许改动它的核心事件。',
+          '现在请只基于这份汤底蓝图生成题面。',
+          '仍然必须使用简体中文。',
+          '仍然只能返回一个 JSON 对象。',
+          '',
+          `当前难度：${this.toChineseDifficulty(request.difficulty)}`,
+          '难度要求：',
+          ...this.buildDifficultyGuidance(request.difficulty),
+          '',
+          '输出要求：',
+          '1. soupSurface：2 到 4 句题面，允许有一点前言或氛围铺垫，但必须始终围绕同一事件现场，不能换场景，不能剧透汤底。',
+          '2. misleadingPoints：1 到 4 条误导方向，可以沿用或优化汤底蓝图里的误导。',
+          '3. keyTriggers：1 到 4 条提问方向，必须能帮助玩家逼近这份汤底。',
+          '4. tags：短中文标签。',
+          '',
+          '硬性限制：',
+          '- 题面必须依赖上面的汤底，不能另起炉灶。',
+          '- 题面要保留悬念，但不能把汤底里真正发生的关键动作完全抹掉。',
+          '- 不要输出“主角知道规则”“发现风险”这种抽象句子，必须写清楚玩家能观察到的具体表现。',
+          '- 如果这局包含死亡，题面可以营造压迫感，但不要直接把死亡原因说破。',
+          '',
+          'JSON 结构：',
+          JSON.stringify(
+            {
+              soupSurface: '字符串',
+              misleadingPoints: ['字符串'],
+              keyTriggers: ['字符串'],
+              tags: ['字符串']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
   private buildPuzzleAuditMessages(
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
@@ -1129,7 +1262,7 @@ export class OllamaService {
         content: [
           'Task: produce one short non-spoiler hint for the current room.',
           '',
-          this.buildPuzzleDossier(puzzle, context),
+          this.buildPuzzleDossierV2(puzzle, context),
           '',
           `Hints already used in this room: ${context.hintUsageCount}`,
           `Suggested yes/no trigger directions: ${puzzle.keyTriggers.join(' / ') || 'none'}`,
@@ -1176,7 +1309,7 @@ export class OllamaService {
         content: [
           '任务：裁定玩家刚才的问题。',
           '',
-          this.buildPuzzleDossier(puzzle, context),
+          this.buildPuzzleDossierV2(puzzle, context),
           '',
           '当前问题：',
           question,
@@ -1226,7 +1359,7 @@ export class OllamaService {
         content: [
           'Task: score the player final guess.',
           '',
-          this.buildPuzzleDossier(puzzle, context),
+          this.buildPuzzleDossierV2(puzzle, context),
           '',
           'Player final guess:',
           guess,
@@ -1251,6 +1384,124 @@ export class OllamaService {
         ].join('\n')
       }
     ];
+  }
+
+  private buildQuestionMessagesV2(puzzle: Puzzle, context: RoomContext, question: string): OllamaChatMessage[] {
+    return [
+      {
+        role: 'system',
+        content: [
+          '你是严格、不自爆的海龟汤主持人兼裁判。',
+          '你只能根据下方谜题档案裁定，不能用常识脑补超出档案的信息。',
+          '对外只存在题面、已确认线索、最近问答和最终汤底，不存在公开事实链。',
+          '默认只回答 yes / no / partial / irrelevant / unknown。',
+          '只有当玩家的问题已经明确命中一个低强度、可公开、不会直接锁定核心机制的小线索时，才允许返回 clueStatement。',
+          'clueStatement 必须是给玩家看的短线索，不要照抄问题，不要直接照抄汤底，不要暴露核心物件、关键时间错位、身份伪装或最终反转。',
+          '如果不适合给线索，就让 clueStatement = null。',
+          '只能返回一个 JSON 对象。'
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          '任务：裁定玩家刚才的问题。',
+          '',
+          this.buildPuzzleDossierV2(puzzle, context),
+          '',
+          '当前问题：',
+          question,
+          '',
+          '裁定规则：',
+          '1. 命中真相就回答 yes。',
+          '2. 明显相反就回答 no。',
+          '3. 只对一部分就回答 partial。',
+          '4. 与核心事件关系弱就回答 irrelevant。',
+          '5. 结构模糊才回答 unknown。',
+          '6. matchedFactIds 只填真正被问题触碰到的隐藏检查点。',
+          '7. revealedFactIds 默认留空，只有极少数低强度检查点才允许放 0 或 1 个。',
+          '8. clueStatement 只在适合公开时填写一句 12 到 40 字的中文短线索，否则为 null。',
+          '',
+          'JSON 结构：',
+          JSON.stringify(
+            {
+              answerCode: 'yes|no|irrelevant|partial|unknown',
+              matchedFactIds: ['fact-id'],
+              revealedFactIds: ['fact-id'],
+              clueStatement: '字符串或 null',
+              progressDelta: 0,
+              reasoning: '简短中文说明'
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildPuzzleDossierV2(puzzle: Puzzle, context: RoomContext) {
+    const revealedSet = new Set(context.revealedFactIds);
+    const factsSection = puzzle.facts
+      .map(
+        (fact) =>
+          `- [${fact.factId}] importance=${fact.importance}; discoverable=${fact.discoverable ? 'yes' : 'no'}; confirmed=${
+            revealedSet.has(fact.factId) ? 'yes' : 'no'
+          }; statement=${fact.statement}`
+      )
+      .join('\n');
+    const cluesSection =
+      context.clues.length > 0 ? context.clues.map((clue, index) => `${index + 1}. ${clue.statement}`).join('\n') : 'none';
+
+    return [
+      '谜题档案：',
+      `标题：${puzzle.title}`,
+      `题面：${puzzle.soupSurface}`,
+      `汤底：${puzzle.truthStory}`,
+      `是否含死亡：${puzzle.includesDeath ? '是' : '否'}`,
+      `标签：${puzzle.tags.join(' / ') || 'none'}`,
+      `推荐追问方向：${puzzle.keyTriggers.join(' / ') || 'none'}`,
+      `常见误导：${puzzle.misleadingPoints.join(' / ') || 'none'}`,
+      '',
+      '隐藏检查点：',
+      factsSection,
+      '',
+      '已确认线索：',
+      cluesSection,
+      '',
+      `当前进度：${context.progressScore}`,
+      '最近关键问答：',
+      this.buildQuestionHistorySummaryV2(context)
+    ].join('\n');
+  }
+
+  private buildQuestionHistorySummaryV2(context: RoomContext) {
+    if (context.questionHistory.length === 0) {
+      return 'none';
+    }
+
+    const olderHistory = context.questionHistory.slice(0, -6);
+    const recentHistory = context.questionHistory.slice(-6);
+    const olderSummary =
+      olderHistory.length > 0
+        ? `更早之前共有 ${olderHistory.length} 轮问答，其中命中过隐藏检查点的有 ${
+            olderHistory.filter((item) => item.matchedFactIds.length > 0).length
+          } 轮，沉淀成公开线索的有 ${olderHistory.filter((item) => item.clueStatement).length} 轮。`
+        : '';
+    const recentSummary = recentHistory
+      .map((item, index) =>
+        [
+          `${olderHistory.length + index + 1}. Q=${item.question}`,
+          `A=${item.answerCode}`,
+          item.reasoning ? `R=${item.reasoning}` : '',
+          item.matchedFactIds.length > 0 ? `matched=${item.matchedFactIds.join(', ')}` : '',
+          item.clueStatement ? `clue=${item.clueStatement}` : ''
+        ]
+          .filter(Boolean)
+          .join(' | ')
+      )
+      .join('\n');
+
+    return [olderSummary, recentSummary].filter(Boolean).join('\n');
   }
 
   private buildPuzzleDossier(puzzle: Puzzle, context: RoomContext) {
@@ -1394,6 +1645,53 @@ export class OllamaService {
       .map((fact) => fact.factId);
   }
 
+  private filterSafeClueStatement(
+    puzzle: Puzzle,
+    context: RoomContext,
+    question: string,
+    answerCode: QuestionEvaluation['answerCode'],
+    matchedFactIds: string[],
+    candidateClueStatement: string | null
+  ) {
+    if (answerCode !== 'yes' && answerCode !== 'partial') {
+      return null;
+    }
+
+    const normalizedCandidate = candidateClueStatement?.trim().replace(/[。；;]+$/u, '') ?? '';
+    const matchedFacts = matchedFactIds
+      .map((factId) => puzzle.facts.find((fact) => fact.factId === factId) ?? null)
+      .filter((fact): fact is Puzzle['facts'][number] => Boolean(fact));
+    const existingClues = new Set(context.clues.map((clue) => clue.statement.trim()));
+
+    if (normalizedCandidate) {
+      if (
+        normalizedCandidate.length >= 8 &&
+        normalizedCandidate.length <= 80 &&
+        !existingClues.has(normalizedCandidate) &&
+        !/录音|门卡|工牌|药盒|收据|时间对不上|冒充|伪装|尸体|凶手|真正|其实/u.test(normalizedCandidate) &&
+        ![puzzle.truthStory, ...puzzle.facts.map((fact) => fact.statement)].some((sourceText) =>
+          this.hasStrongTextOverlap(normalizedCandidate, sourceText)
+        )
+      ) {
+        return normalizedCandidate;
+      }
+    }
+
+    const fallbackFact = matchedFacts.find((fact) => fact.importance <= 5 && !this.isSensitiveRevealFact(fact));
+
+    if (!fallbackFact) {
+      return null;
+    }
+
+    const normalizedFallback = this.summarizeFactAsClue(fallbackFact.statement, question);
+
+    if (!normalizedFallback || existingClues.has(normalizedFallback)) {
+      return null;
+    }
+
+    return normalizedFallback;
+  }
+
   private isBroadQuestion(question: string, derivedTerms: string[]) {
     return (
       derivedTerms.length <= 1 ||
@@ -1424,6 +1722,70 @@ export class OllamaService {
     return directKeywordHit || (concreteQuestion && keywordHits.length >= 2);
   }
 
+  private summarizeFactAsClue(statement: string, question: string) {
+    const normalized = statement.trim().replace(/[。；;]+$/u, '');
+
+    if (!normalized || normalized.length > 80) {
+      return null;
+    }
+
+    if (/录音|门卡|工牌|药盒|收据|时间对不上|冒充|伪装|尸体|凶手|真正|其实/u.test(normalized)) {
+      return null;
+    }
+
+    if (this.hasStrongTextOverlap(normalized, question)) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  private buildHiddenFactsFromTruthBlueprint(truthBlueprint: TruthBlueprint, includesDeath: boolean): Puzzle['facts'] {
+    const roleA = truthBlueprint.involvedRoles[0]?.trim() || '主角';
+    const roleB = truthBlueprint.involvedRoles[1]?.trim() || '另一个人';
+    const keyObject = truthBlueprint.keyObjects[0]?.trim() || '关键物件';
+    const truthSentences = this.splitChineseSentences(truthBlueprint.truthStory);
+    const factStatements = unique(
+      [
+        `${roleA}与${roleB}卷入了同一件具体事件。`,
+        `关键异常与${keyObject}有关。`,
+        truthBlueprint.trigger,
+        truthBlueprint.decisiveAction,
+        truthBlueprint.outcome,
+        ...truthSentences.slice(0, 3)
+      ]
+        .map((item) => this.normalizeScenarioSentence(item))
+        .filter(Boolean)
+    ).slice(0, 7);
+
+    const facts = factStatements.map((statement, index) => ({
+      factId: `fact-${index + 1}`,
+      statement,
+      importance: Math.max(4, 10 - index),
+      discoverable: index < 5,
+      keywords: this.ensureKeywords(statement, [roleA, roleB, keyObject])
+    }));
+
+    if (includesDeath && !facts.some((fact) => /死亡|死去|尸体|身亡|遇害|丧命/u.test(fact.statement))) {
+      facts.push({
+        factId: `fact-${facts.length + 1}`,
+        statement: '这起事件中确实发生了死亡。',
+        importance: 6,
+        discoverable: false,
+        keywords: ['死亡']
+      });
+    }
+
+    return facts.slice(0, 8);
+  }
+
+  private splitChineseSentences(value: string) {
+    return value
+      .split(/[。！？!?]/u)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
   private composePuzzleFromDraft(
     truthBlueprint: TruthBlueprint,
     draft: SurfaceDraft,
@@ -1431,19 +1793,15 @@ export class OllamaService {
     blueprint: GenerationBlueprint
   ): Puzzle {
     const promptTags = this.extractPromptFragments(request.prompt);
+    const facts = this.buildHiddenFactsFromTruthBlueprint(truthBlueprint, request.includesDeath);
 
     return {
       puzzleId: `generated-${nanoid(12)}`,
       title: this.normalizeScenarioTitle(truthBlueprint.title, blueprint),
       soupSurface: this.normalizeScenarioSentence(draft.soupSurface),
       truthStory: this.normalizeScenarioSentence(truthBlueprint.truthStory),
-      facts: draft.facts.map((fact, index) => ({
-        factId: fact.factId?.trim() || `fact-${index + 1}`,
-        statement: this.normalizeScenarioSentence(fact.statement),
-        importance: fact.importance,
-        discoverable: fact.discoverable,
-        keywords: this.ensureKeywords(fact.statement, fact.keywords)
-      })),
+      facts,
+      includesDeath: request.includesDeath,
       misleadingPoints: unique(
         [...draft.misleadingPoints, ...truthBlueprint.misleadingPoints, blueprint.redHerring]
           .map((item) => this.normalizeShortListItem(item))
@@ -1471,25 +1829,16 @@ export class OllamaService {
     blueprint: GenerationBlueprint
   ): Puzzle {
     const promptTags = this.extractPromptFragments(request.prompt);
-    const factStatements = unique(
-      [...truthBlueprint.factSeeds, truthBlueprint.trigger, truthBlueprint.decisiveAction, truthBlueprint.outcome]
-        .map((item) => this.normalizeScenarioSentence(item))
-        .filter(Boolean)
-    ).slice(0, 8);
     const soupSurface = this.buildSoupSurfaceFromTruthBlueprint(truthBlueprint, blueprint);
+    const facts = this.buildHiddenFactsFromTruthBlueprint(truthBlueprint, request.includesDeath);
 
     return {
       puzzleId: `generated-${nanoid(12)}`,
       title: this.normalizeScenarioTitle(truthBlueprint.title, blueprint),
       soupSurface,
       truthStory: this.normalizeScenarioSentence(truthBlueprint.truthStory),
-      facts: factStatements.map((statement, index) => ({
-        factId: `fact-${index + 1}`,
-        statement,
-        importance: Math.max(4, 10 - index),
-        discoverable: true,
-        keywords: this.ensureKeywords(statement, [])
-      })),
+      facts,
+      includesDeath: request.includesDeath,
       misleadingPoints: unique(
         [...truthBlueprint.misleadingPoints, blueprint.redHerring]
           .map((item) => this.normalizeShortListItem(item))
@@ -1549,6 +1898,7 @@ export class OllamaService {
         discoverable: true,
         keywords: this.ensureKeywords(statement, [])
       })),
+      includesDeath: request.includesDeath,
       misleadingPoints: unique(
         [...scenario.misleadingPoints, blueprint.redHerring]
           .map((item) => this.normalizeShortListItem(item))
@@ -1580,10 +1930,7 @@ export class OllamaService {
     const triggerTokens = new Set(this.extractComparableTokens([truthBlueprint.trigger]));
     const actionTokens = new Set(this.extractComparableTokens([truthBlueprint.decisiveAction]));
     const outcomeTokens = new Set(this.extractComparableTokens([truthBlueprint.outcome]));
-    const factLinkedCount = truthBlueprint.factSeeds.filter((fact) => {
-      const factTokens = new Set(this.extractComparableTokens([fact]));
-      return this.countSharedTokens(factTokens, truthTokens, triggerTokens, actionTokens, outcomeTokens) >= 1;
-    }).length;
+    const factLinkedCount = 4;
     const roomTokens = new Set(
       this.extractComparableTokens([
         truthBlueprint.title,
@@ -1591,7 +1938,6 @@ export class OllamaService {
         truthBlueprint.trigger,
         truthBlueprint.decisiveAction,
         truthBlueprint.outcome,
-        ...truthBlueprint.factSeeds,
         ...truthBlueprint.keyObjects,
         ...truthBlueprint.involvedRoles,
         blueprint.setting,
@@ -1610,6 +1956,28 @@ export class OllamaService {
 
     if (this.isAbstractTruthStory(truthBlueprint.truthStory)) {
       reasons.push('汤底仍然过于抽象，缺少可具体还原的事件经过。');
+    }
+
+    /*
+    if (!this.truthBlueprintSupportsCheckpoints(truthBlueprint)) {
+      reasons.push('姹ゅ簳钃濆浘缂哄皯鍙媶鍒嗙殑鍏抽敭瑙﹀彂鐐瑰拰鍔ㄤ綔缁嗚妭銆?);
+    }
+
+    if (request.includesDeath !== this.inferIncludesDeath(truthBlueprint.truthStory)) {
+      reasons.push(request.includesDeath ? '鏈眬瑕佹眰鏈夋浜哄厓绱狅紝浣嗘堡搴曟病鏈夌ǔ瀹氬啓鍑烘浜¤繖浠朵簨銆? : '鏈眬瑕佹眰鏃犳浜哄厓绱狅紝浣嗘堡搴曞嚭鐜颁簡姝讳骸浜嬩欢銆?);
+    }
+
+    */
+    if (!this.truthBlueprintSupportsCheckpoints(truthBlueprint)) {
+      reasons.push('汤底蓝图缺少可拆分的关键触发点和动作细节。');
+    }
+
+    if (request.includesDeath !== this.inferIncludesDeath(truthBlueprint.truthStory)) {
+      reasons.push(
+        request.includesDeath
+          ? '本局要求包含死亡元素，但汤底没有稳定写出死亡事件。'
+          : '本局要求不包含死亡元素，但汤底出现了死亡事件。'
+      );
     }
 
     if (promptTokens.length > 0 && !promptTokens.some((token) => roomTokens.has(token))) {
@@ -1701,6 +2069,7 @@ export class OllamaService {
         discoverable: fact.discoverable,
         keywords: this.ensureKeywords(fact.statement, fact.keywords)
       })),
+      includesDeath: request.includesDeath,
       misleadingPoints: unique(parsed.misleadingPoints.map((item) => item.trim()).filter(Boolean)).slice(0, 5),
       keyTriggers: unique(parsed.keyTriggers.map((item) => item.trim()).filter(Boolean)).slice(0, 4),
       difficulty: request.difficulty,
@@ -1817,6 +2186,16 @@ export class OllamaService {
     return hits >= 2 || (hits >= 1 && sentenceCount <= 2 && truthStory.length < 140);
   }
 
+  private truthBlueprintSupportsCheckpoints(truthBlueprint: TruthBlueprint) {
+    const truthSentences = this.splitChineseSentences(truthBlueprint.truthStory);
+    return (
+      truthSentences.length >= 3 &&
+      truthBlueprint.trigger.trim().length >= 8 &&
+      truthBlueprint.decisiveAction.trim().length >= 8 &&
+      truthBlueprint.outcome.trim().length >= 8
+    );
+  }
+
   private hasConcreteEventStructure(puzzle: Puzzle) {
     const actionSignals = [
       '报警',
@@ -1847,7 +2226,13 @@ export class OllamaService {
     const actionCount = actionSignals.filter((signal) => narrativeText.includes(signal)).length;
     const outcomeCount = outcomeSignals.filter((signal) => narrativeText.includes(signal)).length;
 
-    return actionCount >= 2 && outcomeCount >= 1;
+    const sentenceCount = this.splitChineseSentences(`${puzzle.soupSurface}${puzzle.truthStory}`).length;
+
+    return sentenceCount >= 3 && actionCount >= 1 && outcomeCount >= 1;
+  }
+
+  private inferIncludesDeath(text: string) {
+    return /死亡|死去|尸体|尸检|被杀|自杀|他杀|遇害|丧命|身亡|遗体/u.test(text);
   }
 
   private buildFallbackHint(puzzle: Puzzle, context: RoomContext) {
@@ -2321,11 +2706,20 @@ export class OllamaService {
       matchedFacts.map((fact) => fact.factId),
       matchedFacts.map((fact) => fact.factId)
     );
+    const clueStatement = this.filterSafeClueStatement(
+      puzzle,
+      context,
+      question,
+      answerCode,
+      matchedFacts.map((fact) => fact.factId),
+      null
+    );
 
     return {
       answerCode,
       matchedFactIds: matchedFacts.map((fact) => fact.factId),
       revealedFactIds,
+      clueStatement,
       progressDelta: Math.min(24, Math.max(4, Math.round(importance / matchedFacts.length))),
       reasoning: '问题命中了谜题事实中的关键词与核心对象。',
       source: 'heuristic'
@@ -2615,8 +3009,14 @@ export class OllamaService {
     const keyObject = truthBlueprint.keyObjects[0]?.trim() || blueprint.keyObject;
     const action = this.normalizeShortListItem(truthBlueprint.decisiveAction);
     const outcome = this.normalizeShortListItem(truthBlueprint.outcome);
+    const trigger = this.normalizeShortListItem(truthBlueprint.trigger);
 
-    return `在${blueprint.setting}里，${role}${action}，旁人完全看不懂。直到最后，人们才知道这和${keyObject}以及“${outcome}”有关。`;
+    return [
+      `在${blueprint.setting}里，一切原本看上去都很正常。`,
+      `${role}${action}，旁人完全看不懂他为什么突然这么做。`,
+      `${keyObject}和“${trigger}”似乎都和这件事有关，但真正的原因被藏了起来。`,
+      `直到最后，人们才知道这一切其实和“${outcome}”有关。`
+    ].join('');
   }
 
   private normalizeScenarioSentence(value: string, prefix = '') {
@@ -2702,23 +3102,32 @@ export class OllamaService {
     }
   ): Puzzle {
     const promptTags = this.extractPromptFragments(request.prompt);
+    const truthStory =
+      request.includesDeath && !this.inferIncludesDeath(input.truthStory)
+        ? `${input.truthStory} 最终，这起事件中确实有人死亡。`
+        : input.truthStory;
+    const facts =
+      request.includesDeath && !input.facts.some((statement) => this.inferIncludesDeath(statement))
+        ? [...input.facts, '这起事件最终造成了真实死亡。']
+        : input.facts;
 
     return {
       puzzleId: `generated-${nanoid(12)}`,
       title: input.title,
       soupSurface: input.soupSurface,
-      truthStory: input.truthStory,
-      facts: input.facts.map((statement, index) => ({
+      truthStory,
+      facts: facts.map((statement, index) => ({
         factId: `fact-${index + 1}`,
         statement,
         importance: Math.max(4, 10 - index),
         discoverable: true,
         keywords: this.ensureKeywords(statement, [])
       })),
+      includesDeath: request.includesDeath,
       misleadingPoints: unique([...input.misleadingPoints, blueprint.redHerring]).slice(0, 4),
       keyTriggers: unique(input.keyTriggers).slice(0, 4),
       difficulty: request.difficulty,
-      tags: unique([...input.tags, 'dynamic', 'fallback-local', blueprint.setting, ...promptTags]).slice(0, 8),
+      tags: unique([...input.tags, 'dynamic', 'fallback-local', blueprint.setting, ...(request.includesDeath ? ['死亡'] : []), ...promptTags]).slice(0, 8),
       generationSource: 'fallback',
       generationFailureReason: null
     };

@@ -20,7 +20,7 @@ export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
 };
 
 export const DEFAULT_APP_STATE: AppState = {
-  version: 5,
+  version: 7,
   ollama: DEFAULT_OLLAMA_CONFIG,
   rooms: []
 };
@@ -28,3 +28,4 @@ export const DEFAULT_APP_STATE: AppState = {
 export const MAX_PROGRESS_SCORE = 100;
 export const AI_HOST_NAME = 'AI 主持';
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const HARD_DIFFICULTY_MAX_QUESTION_COUNT = 20;

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { AI_HOST_NAME, ANSWER_LABELS } from '../lib/constants.js';
+import { AI_HOST_NAME, ANSWER_LABELS, HARD_DIFFICULTY_MAX_QUESTION_COUNT } from '../lib/constants.js';
 import { clampProgress, createRoomCode, nowIso, sortByUpdatedAt, unique } from '../lib/utils.js';
 import { StateStore } from '../storage/stateStore.js';
 import type {
@@ -16,7 +16,7 @@ import type {
   Puzzle,
   QuestionEvaluation,
   QuestionRecord,
-  RevealedFact,
+  RoomClue,
   RoomRealtimeEvent,
   RoomContext,
   RoomJoinResult,
@@ -40,6 +40,7 @@ interface CreateRoomInput {
   clientId?: string;
   displayName: string;
   difficulty: Difficulty;
+  includesDeath: boolean;
   generationPrompt: string;
 }
 
@@ -51,6 +52,7 @@ interface JoinRoomInput {
 
 interface RestartRoomInput {
   difficulty: Difficulty;
+  includesDeath: boolean;
   generationPrompt: string;
 }
 
@@ -188,7 +190,8 @@ export class RoomService {
         state.ollama.generationModel,
         {
           difficulty: input.difficulty,
-          prompt: ''
+          prompt: '',
+          includesDeath: input.includesDeath
         },
         {
           timeoutMs: state.ollama.generationTimeoutMs
@@ -231,6 +234,7 @@ export class RoomService {
       soupSurface: puzzle.soupSurface,
       truthStory: puzzle.truthStory,
       facts: puzzle.facts,
+      includesDeath: puzzle.includesDeath,
       misleadingPoints: puzzle.misleadingPoints,
       keyTriggers: puzzle.keyTriggers,
       difficulty: puzzle.difficulty,
@@ -256,7 +260,9 @@ export class RoomService {
         }
       ],
       questions: [],
+      maxQuestionCount: this.resolveMaxQuestionCount(puzzle.difficulty),
       revealedFactIds: [],
+      clues: [],
       hintUsageCount: 0,
       maxHintCount: 2,
       hintVote: null,
@@ -379,6 +385,7 @@ export class RoomService {
         throw new ServiceError(409, '\u623f\u95f4\u5df2\u7ecf\u7ed3\u7b97\uff0c\u4e0d\u80fd\u7ee7\u7eed\u63d0\u95ee\u3002');
       }
 
+      this.assertQuestionLimitAvailable(currentRoom);
       this.assertNoPendingSubmission(currentRoom.pendingSubmission);
       const currentParticipant = this.findParticipantOrThrow(currentRoom, participantId);
       participant = currentParticipant;
@@ -431,7 +438,8 @@ export class RoomService {
         progressDelta: Math.max(0, nextProgressScore - submissionRoom.progressScore),
         createdAt: timestamp,
         source: evaluation.source,
-        reasoning: evaluation.reasoning
+        reasoning: evaluation.reasoning,
+        clueStatement: null
       };
 
       const nextState = await this.store.updateState((current) => {
@@ -445,13 +453,27 @@ export class RoomService {
         this.assertSubmissionOwner(currentRoom.pendingSubmission, participantId, 'question');
 
         const revealedFactIds = unique([...currentRoom.revealedFactIds, ...evaluation.revealedFactIds]);
-        const newlyRevealedFacts = evaluation.revealedFactIds
-          .map((factId) => currentRoom.facts.find((fact) => fact.factId === factId)?.statement)
-          .filter((statement): statement is string => Boolean(statement));
+        const normalizedClueStatement = this.normalizeClueStatement(evaluation.clueStatement);
+        const existingClue = normalizedClueStatement
+          ? currentRoom.clues.find((clue) => this.normalizeClueStatement(clue.statement) === normalizedClueStatement) ?? null
+          : null;
+        const nextClue: RoomClue | null =
+          normalizedClueStatement && !existingClue
+            ? {
+                clueId: nanoid(),
+                statement: normalizedClueStatement,
+                sourceQuestionId: questionRecord.id,
+                createdAt: timestamp
+              }
+            : null;
+        const persistedQuestionRecord: QuestionRecord = {
+          ...questionRecord,
+          clueStatement: nextClue?.statement ?? existingClue?.statement ?? null
+        };
         const messages: RoomMessage[] = [
           ...currentRoom.messages,
           {
-            id: `${questionRecord.id}-question`,
+            id: `${persistedQuestionRecord.id}-question`,
             type: 'question',
             authorName: submissionParticipant.displayName,
             content: question,
@@ -459,7 +481,7 @@ export class RoomService {
             source: evaluation.source
           },
           {
-            id: `${questionRecord.id}-answer`,
+            id: `${persistedQuestionRecord.id}-answer`,
             type: 'answer',
             authorName: AI_HOST_NAME,
             content: answerLabel,
@@ -470,12 +492,12 @@ export class RoomService {
           }
         ];
 
-        if (newlyRevealedFacts.length) {
+        if (nextClue) {
           messages.push({
-            id: `${questionRecord.id}-facts`,
+            id: `${persistedQuestionRecord.id}-clue`,
             type: 'status',
             authorName: AI_HOST_NAME,
-            content: `主持补充了一条较轻的线索：${newlyRevealedFacts.join('；')}`,
+            content: `新增线索：${nextClue.statement}`,
             createdAt: timestamp,
             source: evaluation.source
           });
@@ -487,8 +509,9 @@ export class RoomService {
             item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
           ),
           messages,
-          questions: [...currentRoom.questions, questionRecord],
+          questions: [...currentRoom.questions, persistedQuestionRecord],
           revealedFactIds,
+          clues: nextClue ? [...currentRoom.clues, nextClue] : currentRoom.clues,
           pendingSubmission: null,
           progressScore: nextProgressScore,
           updatedAt: timestamp
@@ -873,7 +896,8 @@ export class RoomService {
         state.ollama.generationModel,
         {
           difficulty: input.difficulty,
-          prompt: ''
+          prompt: '',
+          includesDeath: input.includesDeath
         },
         {
           timeoutMs: state.ollama.generationTimeoutMs
@@ -926,6 +950,7 @@ export class RoomService {
         soupSurface: puzzle.soupSurface,
         truthStory: puzzle.truthStory,
         facts: puzzle.facts,
+        includesDeath: puzzle.includesDeath,
         misleadingPoints: puzzle.misleadingPoints,
         keyTriggers: puzzle.keyTriggers,
         difficulty: puzzle.difficulty,
@@ -953,7 +978,9 @@ export class RoomService {
           }
         ],
         questions: [],
+        maxQuestionCount: this.resolveMaxQuestionCount(puzzle.difficulty),
         revealedFactIds: [],
+        clues: [],
         hintUsageCount: 0,
         maxHintCount: currentRoom.maxHintCount,
         hintVote: null,
@@ -1306,6 +1333,12 @@ export class RoomService {
     }
   }
 
+  private assertQuestionLimitAvailable(room: GameRoom) {
+    if (room.maxQuestionCount !== null && room.questions.length >= room.maxQuestionCount) {
+      throw new ServiceError(409, `本局提问次数已用完，最高难度最多只能提问 ${room.maxQuestionCount} 次。`);
+    }
+  }
+
   private isHintVoteApproved(participants: RoomParticipant[], hintVote: HintVote) {
     return participants.every((participant) => hintVote.approvals.includes(participant.participantId));
   }
@@ -1540,10 +1573,18 @@ export class RoomService {
     const relevantQuestionCount =
       room.questions.filter((item) => item.matchedFactIds.length > 0 || item.answerCode === 'yes' || item.answerCode === 'partial').length +
       (evaluation.matchedFactIds.length > 0 || evaluation.answerCode === 'yes' || evaluation.answerCode === 'partial' ? 1 : 0);
-    const revealedScore = (revealedImportance / totalImportance) * 78;
-    const matchedScore = (matchedOnlyImportance / totalImportance) * 14;
-    const questionScore = Math.min(8, relevantQuestionCount * 2);
-    const nextScore = Math.round(revealedScore + matchedScore + questionScore);
+    const existingClueSet = new Set(
+      room.clues.map((clue) => this.normalizeClueStatement(clue.statement)).filter((statement): statement is string => Boolean(statement))
+    );
+    const nextClueCount =
+      evaluation.clueStatement && !existingClueSet.has(this.normalizeClueStatement(evaluation.clueStatement))
+        ? room.clues.length + 1
+        : room.clues.length;
+    const clueScore = Math.min(18, nextClueCount * 6);
+    const revealedScore = (revealedImportance / totalImportance) * 54;
+    const matchedScore = (matchedOnlyImportance / totalImportance) * 22;
+    const questionScore = Math.min(10, relevantQuestionCount * 2);
+    const nextScore = Math.round(revealedScore + matchedScore + questionScore + clueScore);
 
     return clampProgress(Math.max(room.progressScore, Math.min(nextScore, 96)));
   }
@@ -1593,6 +1634,10 @@ export class RoomService {
     };
   }
 
+  private resolveMaxQuestionCount(difficulty: Difficulty) {
+    return difficulty === 'hard' ? HARD_DIFFICULTY_MAX_QUESTION_COUNT : null;
+  }
+
   private toRoomContext(room: GameRoom): RoomContext {
     return {
       revealedFactIds: room.revealedFactIds,
@@ -1600,6 +1645,7 @@ export class RoomService {
         factId,
         statement: room.facts.find((fact) => fact.factId === factId)?.statement ?? factId
       })),
+      clues: room.clues,
       progressScore: room.progressScore,
       hintUsageCount: room.hintUsageCount,
       questionHistory: room.questions.map((item) => ({
@@ -1607,7 +1653,8 @@ export class RoomService {
         answerCode: item.answerCode,
         reasoning: item.reasoning,
         matchedFactIds: item.matchedFactIds,
-        revealedFactIds: item.revealedFactIds
+        revealedFactIds: item.revealedFactIds,
+        clueStatement: item.clueStatement ?? null
       }))
     };
   }
@@ -1619,6 +1666,7 @@ export class RoomService {
       soupSurface: room.soupSurface,
       truthStory: room.truthStory,
       facts: room.facts,
+      includesDeath: room.includesDeath,
       misleadingPoints: room.misleadingPoints,
       keyTriggers: room.keyTriggers,
       difficulty: room.difficulty,
@@ -1647,11 +1695,6 @@ export class RoomService {
   }
 
   private toPublicRoom(room: GameRoom): PublicGameRoom {
-    const mapFact = (factId: string): RevealedFact => ({
-      factId,
-      statement: room.facts.find((fact) => fact.factId === factId)?.statement ?? factId
-    });
-
     return {
       roomId: room.roomId,
       roomCode: room.roomCode,
@@ -1662,6 +1705,7 @@ export class RoomService {
       generationFailureReason: room.generationFailureReason,
       puzzleTitle: room.puzzleTitle,
       soupSurface: room.soupSurface,
+      includesDeath: room.includesDeath,
       difficulty: room.difficulty,
       tags: room.tags,
       participants: room.participants.map((participant) => this.toPublicParticipant(participant)),
@@ -1677,7 +1721,8 @@ export class RoomService {
       })),
       questionCount: room.questions.length,
       messageCount: room.messages.length,
-      revealedFacts: room.revealedFactIds.map(mapFact),
+      maxQuestionCount: room.maxQuestionCount,
+      clues: room.clues,
       hintUsageCount: room.hintUsageCount,
       maxHintCount: room.maxHintCount,
       hintVote: room.hintVote,
@@ -1690,5 +1735,9 @@ export class RoomService {
       createdAt: room.createdAt,
       updatedAt: room.updatedAt
     };
+  }
+
+  private normalizeClueStatement(value?: string | null) {
+    return value?.trim().replace(/[。；;]+$/u, '') ?? '';
   }
 }

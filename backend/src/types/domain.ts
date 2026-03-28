@@ -26,12 +26,20 @@ export interface Puzzle {
   soupSurface: string;
   truthStory: string;
   facts: PuzzleFact[];
+  includesDeath: boolean;
   misleadingPoints: string[];
   keyTriggers: string[];
   difficulty: Difficulty;
   tags: string[];
   generationSource?: Exclude<RoomGenerationSource, 'unknown'>;
   generationFailureReason?: string | null;
+}
+
+export interface RoomClue {
+  clueId: string;
+  statement: string;
+  sourceQuestionId: string;
+  createdAt: string;
 }
 
 export interface RoomParticipant {
@@ -67,6 +75,7 @@ export interface QuestionRecord {
   createdAt: string;
   source: AnswerSource;
   reasoning?: string;
+  clueStatement?: string | null;
 }
 
 export interface FinalGuessRecord {
@@ -115,6 +124,7 @@ export interface GameRoom {
   soupSurface: string;
   truthStory: string;
   facts: PuzzleFact[];
+  includesDeath: boolean;
   misleadingPoints: string[];
   keyTriggers: string[];
   difficulty: Difficulty;
@@ -122,7 +132,9 @@ export interface GameRoom {
   participants: RoomParticipant[];
   messages: RoomMessage[];
   questions: QuestionRecord[];
+  maxQuestionCount: number | null;
   revealedFactIds: string[];
+  clues: RoomClue[];
   hintUsageCount: number;
   maxHintCount: number;
   hintVote: HintVote | null;
@@ -182,6 +194,7 @@ export interface QuestionEvaluation {
   revealedFactIds: string[];
   progressDelta: number;
   reasoning: string;
+  clueStatement?: string | null;
   source: AnswerSource;
 }
 
@@ -196,11 +209,13 @@ export interface GuessEvaluation {
 export interface PuzzleGenerationRequest {
   difficulty: Difficulty;
   prompt: string;
+  includesDeath: boolean;
 }
 
 export interface RoomContext {
   revealedFactIds: string[];
   revealedFacts: RevealedFact[];
+  clues: RoomClue[];
   progressScore: number;
   hintUsageCount: number;
   questionHistory: Array<{
@@ -209,6 +224,7 @@ export interface RoomContext {
     reasoning?: string;
     matchedFactIds: string[];
     revealedFactIds: string[];
+    clueStatement?: string | null;
   }>;
 }
 
@@ -254,13 +270,15 @@ export interface PublicGameRoom {
   generationFailureReason: string | null;
   puzzleTitle: string;
   soupSurface: string;
+  includesDeath: boolean;
   difficulty: Difficulty;
   tags: string[];
   participants: PublicRoomParticipant[];
   messages: PublicRoomMessage[];
   questionCount: number;
   messageCount: number;
-  revealedFacts: RevealedFact[];
+  maxQuestionCount: number | null;
+  clues: RoomClue[];
   hintUsageCount: number;
   maxHintCount: number;
   hintVote: HintVote | null;

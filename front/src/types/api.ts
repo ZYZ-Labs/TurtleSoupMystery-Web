@@ -24,6 +24,13 @@ export interface RevealedFact {
   statement: string;
 }
 
+export interface RoomClue {
+  clueId: string;
+  statement: string;
+  sourceQuestionId: string;
+  createdAt: string;
+}
+
 export interface FinalGuessRecord {
   participantId: string;
   participantName: string;
@@ -86,13 +93,15 @@ export interface PublicGameRoom {
   generationFailureReason: string | null;
   puzzleTitle: string;
   soupSurface: string;
+  includesDeath: boolean;
   difficulty: Difficulty;
   tags: string[];
   participants: PublicRoomParticipant[];
   messages: PublicRoomMessage[];
   questionCount: number;
   messageCount: number;
-  revealedFacts: RevealedFact[];
+  maxQuestionCount: number | null;
+  clues: RoomClue[];
   hintUsageCount: number;
   maxHintCount: number;
   hintVote: HintVote | null;

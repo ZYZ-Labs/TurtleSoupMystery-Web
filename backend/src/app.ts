@@ -11,6 +11,7 @@ import { StateStore } from './storage/stateStore.js';
 const roomCreateSchema = z.object({
   displayName: z.string().trim().min(1, '请输入你的显示名称。').max(24, '显示名称请控制在 24 个字符内。'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  includesDeath: z.boolean().default(false),
   generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default(''),
   clientId: z.string().trim().max(64).optional().default('')
 });
@@ -24,6 +25,7 @@ const roomJoinSchema = z.object({
 const roomRestartSchema = z.object({
   participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  includesDeath: z.boolean().default(false),
   generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default('')
 });
 
@@ -280,6 +282,7 @@ export async function createApp() {
       response.json(
         await roomService.restartRoom(roomId, body.participantId, {
           difficulty: body.difficulty,
+          includesDeath: body.includesDeath,
           generationPrompt: body.generationPrompt
         })
       );
