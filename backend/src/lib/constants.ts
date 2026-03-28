@@ -14,6 +14,9 @@ export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
   generationSupplierId: '',
   generationModelCategory: 'all',
   generationModel: '',
+  presetSupplierId: '',
+  presetModelCategory: 'all',
+  presetModel: '',
   validationSupplierId: '',
   validationModelCategory: 'all',
   validationModel: ''
