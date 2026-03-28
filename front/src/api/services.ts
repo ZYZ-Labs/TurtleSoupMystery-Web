@@ -74,6 +74,20 @@ export async function submitRoomFinalGuess(roomId: string, participantId: string
   return data;
 }
 
+export async function requestRoomHint(roomId: string, participantId: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/hints/request`, {
+    participantId
+  });
+  return data;
+}
+
+export async function approveRoomHint(roomId: string, participantId: string) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/hints/approve`, {
+    participantId
+  });
+  return data;
+}
+
 export async function revealRoom(roomId: string, participantId: string) {
   const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/reveal`, {
     participantId

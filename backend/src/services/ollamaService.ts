@@ -49,6 +49,16 @@ const guessSchema = z.object({
   reasoning: z.string().default('')
 });
 
+const hintSchema = z.object({
+  hint: z.string().min(6).max(120)
+});
+
+const puzzleAuditSchema = z.object({
+  valid: z.boolean(),
+  coherenceScore: z.number().int().min(0).max(100).default(0),
+  reasons: z.array(z.string()).default([])
+});
+
 interface CheckResult {
   reachable: boolean;
   normalizedBaseUrl: string;
@@ -168,32 +178,108 @@ export class OllamaService {
     }
   }
 
-  async generatePuzzle(supplier: OllamaSupplier | null, model: string, request: PuzzleGenerationRequest): Promise<Puzzle> {
+  async generatePuzzle(
+    supplier: OllamaSupplier | null,
+    model: string,
+    request: PuzzleGenerationRequest,
+    auditOptions?: {
+      supplier?: OllamaSupplier | null;
+      model?: string;
+    }
+  ): Promise<Puzzle> {
     const selectedModel = model.trim();
     const blueprint = this.createGenerationBlueprint(request);
+    const auditSupplier =
+      auditOptions?.supplier?.baseUrl && auditOptions.model?.trim()
+        ? auditOptions.supplier
+        : supplier;
+    const auditModel = auditOptions?.model?.trim() || selectedModel;
 
     if (!supplier?.baseUrl || !selectedModel) {
       return this.generateFallbackPuzzle(request, blueprint);
+    }
+
+    let lastFailureReason = 'AI 生成题目未通过校验，请重试。';
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const parsed = await this.requestStructuredOutput(
+          supplier,
+          selectedModel,
+          generatedPuzzleSchema,
+          this.buildGenerationMessages(request, blueprint, attempt > 0),
+          {
+          temperature: 0.95,
+          top_p: 0.92,
+          repeat_penalty: 1.08,
+          num_ctx: 12_288,
+          num_predict: 1_400
+          }
+        );
+        const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
+        const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+
+        if (!localAudit.valid) {
+          lastFailureReason = localAudit.reasons[0] ?? lastFailureReason;
+          continue;
+        }
+
+        const remoteAudit = await this.auditGeneratedPuzzleWithModel(auditSupplier, auditModel, request, blueprint, puzzle);
+
+        if (remoteAudit.valid) {
+          return puzzle;
+        }
+
+        lastFailureReason = remoteAudit.reasons[0] ?? lastFailureReason;
+      } catch (error) {
+        lastFailureReason = error instanceof Error ? error.message : lastFailureReason;
+      }
+    }
+
+    throw new Error(lastFailureReason);
+  }
+
+  async generateHint(supplier: OllamaSupplier | null, model: string, puzzle: Puzzle, context: RoomContext) {
+    const selectedModel = model.trim();
+    const fallbackHint = this.buildFallbackHint(puzzle, context);
+
+    if (!supplier?.baseUrl || !selectedModel) {
+      return {
+        hint: fallbackHint,
+        source: 'heuristic' as const
+      };
     }
 
     try {
       const parsed = await this.requestStructuredOutput(
         supplier,
         selectedModel,
-        generatedPuzzleSchema,
-        this.buildGenerationMessages(request, blueprint),
+        hintSchema,
+        this.buildHintMessages(puzzle, context),
         {
-          temperature: 0.95,
-          top_p: 0.92,
-          repeat_penalty: 1.08,
+          temperature: 0.3,
+          top_p: 0.9,
+          repeat_penalty: 1.03,
           num_ctx: 12_288,
-          num_predict: 1_400
+          num_predict: 220
         }
       );
+      const normalizedHint = parsed.hint.trim();
 
-      return this.normalizeGeneratedPuzzle(parsed, request, blueprint);
+      return this.isHintSafe(normalizedHint, puzzle)
+        ? {
+            hint: normalizedHint,
+            source: 'ollama' as const
+          }
+        : {
+            hint: fallbackHint,
+            source: 'heuristic' as const
+          };
     } catch {
-      return this.generateFallbackPuzzle(request, blueprint);
+      return {
+        hint: fallbackHint,
+        source: 'heuristic' as const
+      };
     }
   }
 
@@ -317,7 +403,11 @@ export class OllamaService {
     throw lastError ?? new Error('Unable to obtain structured JSON output.');
   }
 
-  private buildGenerationMessages(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): OllamaChatMessage[] {
+  private buildGenerationMessages(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    retryMode = false
+  ): OllamaChatMessage[] {
     return [
       {
         role: 'system',
@@ -328,7 +418,18 @@ export class OllamaService {
           'The puzzle must be solvable through careful yes/no questioning.',
           'Avoid stale stock plots unless they are clearly subverted.',
           'Do not use supernatural explanations, dream endings, or pure coincidence.',
-          'Soup surface, truth story, facts, and key triggers must all be mutually consistent.'
+          'Soup surface, truth story, facts, and key triggers must all be mutually consistent.',
+          'The soup surface must describe the same event that the truth story fully explains.',
+          'Use the same concrete anchors across the entire puzzle, not different unrelated stories.',
+          'The truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.',
+          'Reject vague templates such as "the protagonist noticed something was wrong and interrupted the process" unless you explain the exact event in detail.',
+          ...(retryMode
+            ? [
+                'The previous draft was rejected for inconsistency.',
+                'Rebuild the puzzle from scratch and keep every field tied to one single causal chain.',
+                'Make the truth story more concrete, more event-driven, and less generic than before.'
+              ]
+            : [])
         ].join('\n')
       },
       {
@@ -355,7 +456,13 @@ export class OllamaService {
           '- title: memorable, not generic',
           '- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler',
           '- truthStory: complete causal chain, clearly explain why the surface happened',
+          '- soupSurface and truthStory must point to the same people, event, and hidden mechanism',
+          '- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory',
+          '- truthStory must include a concrete trigger, a concrete action, and a concrete outcome',
+          '- truthStory must not stop at abstract phrases like "the protagonist knew a rule" or "there was risk in the process"',
+          '- explain what actually happened to whom, where, and why',
           '- facts: 5-8 canonical facts with concrete wording',
+          '- every fact must support the same story, not introduce a separate subplot',
           '- misleadingPoints: 2-4 believable but wrong assumptions players may make',
           '- keyTriggers: 2-4 good yes/no question directions',
           '- difficulty must match the requested difficulty',
@@ -380,6 +487,107 @@ export class OllamaService {
               keyTriggers: ['string'],
               difficulty: request.difficulty,
               tags: ['string']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildPuzzleAuditMessages(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    puzzle: Puzzle
+  ): OllamaChatMessage[] {
+    return [
+      {
+        role: 'system',
+        content: [
+          'You are auditing a turtle soup puzzle before it is published.',
+          'Return JSON only.',
+          'Be strict: reject any puzzle whose soup surface, truth story, and facts do not describe the same event chain.',
+          'Reject abstract truth stories that only summarize reasoning, profession, or vague risk without a concrete incident.',
+          'Reject any puzzle where facts drift away from the soup surface or introduce a different story.'
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          'Task: decide whether this puzzle is playable as a coherent turtle soup mystery.',
+          '',
+          `Requested difficulty: ${request.difficulty}`,
+          `User theme preference: ${request.prompt.trim() || '随机主题，用户没有额外要求'}`,
+          `Blueprint setting: ${blueprint.setting}`,
+          `Blueprint key object: ${blueprint.keyObject}`,
+          `Blueprint reveal anchor: ${blueprint.revealAnchor}`,
+          '',
+          'Candidate puzzle JSON:',
+          JSON.stringify(puzzle, null, 2),
+          '',
+          'Audit rules:',
+          '1. Soup surface, truth story, and facts must describe one single concrete incident.',
+          '2. Truth story must contain specific event details, not only abstract explanation.',
+          '3. Facts must support the same incident and should not feel like a different story.',
+          '4. If the truth story could not be acted out as a specific scene, reject it.',
+          '',
+          'JSON shape:',
+          JSON.stringify(
+            {
+              valid: true,
+              coherenceScore: 0,
+              reasons: ['short Chinese reason']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildHintMessages(puzzle: Puzzle, context: RoomContext): OllamaChatMessage[] {
+    const unrevealedFacts = puzzle.facts
+      .filter((fact) => fact.discoverable && !context.revealedFactIds.includes(fact.factId))
+      .map((fact) => `- [${fact.factId}] importance=${fact.importance}; statement=${fact.statement}`)
+      .join('\n');
+
+    return [
+      {
+        role: 'system',
+        content: [
+          'You are a careful turtle soup host.',
+          'Return JSON only.',
+          'Write the hint in Simplified Chinese.',
+          'Give a directional hint, not the answer.',
+          'Do not reveal the exact truth story.',
+          'Do not quote canonical facts verbatim.',
+          'Do not mention murderer, culprit, identity, or the final twist explicitly unless they are already obvious from the public surface.'
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          'Task: produce one short non-spoiler hint for the current room.',
+          '',
+          this.buildPuzzleDossier(puzzle, context),
+          '',
+          `Hints already used in this room: ${context.hintUsageCount}`,
+          `Suggested yes/no trigger directions: ${puzzle.keyTriggers.join(' / ') || 'none'}`,
+          'Unrevealed discoverable facts:',
+          unrevealedFacts || '- none',
+          '',
+          'Hint requirements:',
+          '- 1 or 2 short sentences',
+          '- push players toward a better questioning direction',
+          '- do not copy any fact statement verbatim',
+          '- do not state the answer directly',
+          '',
+          'JSON shape:',
+          JSON.stringify(
+            {
+              hint: 'string'
             },
             null,
             2
@@ -542,6 +750,150 @@ export class OllamaService {
       difficulty: request.difficulty,
       tags: unique([...parsed.tags.map((item) => item.trim()).filter(Boolean), 'dynamic', blueprint.setting, ...promptTags]).slice(0, 8)
     };
+  }
+
+  private auditGeneratedPuzzleLocally(puzzle: Puzzle, request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) {
+    const reasons: string[] = [];
+
+    if (!this.isGeneratedPuzzleCoherent(puzzle, request, blueprint)) {
+      reasons.push('题面、汤底和事实链没有稳定落在同一条因果链上。');
+    }
+
+    if (this.isAbstractTruthStory(puzzle.truthStory)) {
+      reasons.push('汤底过于抽象，缺少可具体还原的事件经过。');
+    }
+
+    if (!this.hasConcreteEventStructure(puzzle)) {
+      reasons.push('汤底没有同时交代清楚触发点、人物动作和结果。');
+    }
+
+    return {
+      valid: reasons.length === 0,
+      coherenceScore: reasons.length === 0 ? 100 : Math.max(0, 82 - reasons.length * 22),
+      reasons
+    };
+  }
+
+  private async auditGeneratedPuzzleWithModel(
+    supplier: OllamaSupplier | null,
+    model: string,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    puzzle: Puzzle
+  ) {
+    const selectedModel = model.trim();
+
+    if (!supplier?.baseUrl || !selectedModel) {
+      return this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+    }
+
+    try {
+      const parsed = await this.requestStructuredOutput(
+        supplier,
+        selectedModel,
+        puzzleAuditSchema,
+        this.buildPuzzleAuditMessages(request, blueprint, puzzle),
+        {
+          temperature: 0.08,
+          top_p: 0.85,
+          repeat_penalty: 1.01,
+          num_ctx: 12_288,
+          num_predict: 300
+        }
+      );
+
+      return {
+        valid: parsed.valid,
+        coherenceScore: parsed.coherenceScore,
+        reasons: parsed.reasons.filter((item) => item.trim().length > 0).slice(0, 3)
+      };
+    } catch {
+      return this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+    }
+  }
+
+  private isGeneratedPuzzleCoherent(puzzle: Puzzle, request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) {
+    const surfaceTokens = new Set(this.extractComparableTokens([puzzle.soupSurface]));
+    const truthTokens = new Set(this.extractComparableTokens([puzzle.truthStory]));
+    const factTokens = new Set(this.extractComparableTokens(puzzle.facts.map((fact) => `${fact.statement} ${fact.keywords.join(' ')}`)));
+    const roomTokens = new Set(
+      this.extractComparableTokens([puzzle.title, puzzle.soupSurface, puzzle.truthStory, ...puzzle.tags, blueprint.setting, blueprint.keyObject])
+    );
+    const promptTokens = this.extractComparableTokens([request.prompt]);
+    const anchorTokens = this.extractComparableTokens([blueprint.setting, blueprint.keyObject, blueprint.revealAnchor]);
+    const surfaceBridge = this.countSharedTokens(surfaceTokens, truthTokens, factTokens);
+    const truthBridge = this.countSharedTokens(truthTokens, surfaceTokens, factTokens);
+    const linkedFacts = puzzle.facts.filter((fact) => {
+      const factTokensForCurrent = new Set(this.extractComparableTokens([fact.statement, ...fact.keywords]));
+      return this.countSharedTokens(factTokensForCurrent, surfaceTokens, truthTokens) > 0;
+    }).length;
+    const promptAligned = promptTokens.length === 0 || promptTokens.some((token) => roomTokens.has(token));
+    const anchorAligned = anchorTokens.some((token) => roomTokens.has(token));
+
+    return surfaceBridge >= 2 && truthBridge >= 2 && linkedFacts >= 3 && promptAligned && anchorAligned;
+  }
+
+  private isAbstractTruthStory(truthStory: string) {
+    const abstractPatterns = [
+      /主角的职业让他知道一种外人不熟悉的判断标准/u,
+      /主角在.+中注意到一条只有自己看懂的异常线索/u,
+      /故意说出一个会被误解的理由/u,
+      /避免对方继续留在危险区域/u,
+      /暴露出的风险/u,
+      /说明眼前并不是普通.+问题/u,
+      /借着.+伪装真正的风险/u,
+      /只能先做出那个看似多余的动作/u,
+      /真正决定性的线索来自/u,
+      /关键不是.+而是.+/u
+    ];
+    const hits = abstractPatterns.filter((pattern) => pattern.test(truthStory)).length;
+    const sentenceCount = truthStory.split(/[。！？]/u).map((item) => item.trim()).filter(Boolean).length;
+
+    return hits >= 2 || (hits >= 1 && sentenceCount <= 2 && truthStory.length < 140);
+  }
+
+  private hasConcreteEventStructure(puzzle: Puzzle) {
+    const actionSignals = ['报警', '离开', '打断', '打翻', '拒绝', '更换', '锁上', '跟踪', '冒充', '拿走', '送来', '退回', '中断'];
+    const outcomeSignals = ['结果', '于是', '因此', '随后', '最后', '为了', '导致', '避免', '阻止', '发现', '意识到'];
+    const narrativeText = `${puzzle.soupSurface} ${puzzle.truthStory} ${puzzle.facts.slice(0, 3).map((fact) => fact.statement).join(' ')}`;
+    const actionCount = actionSignals.filter((signal) => narrativeText.includes(signal)).length;
+    const outcomeCount = outcomeSignals.filter((signal) => narrativeText.includes(signal)).length;
+
+    return actionCount >= 2 && outcomeCount >= 1;
+  }
+
+  private buildFallbackHint(puzzle: Puzzle, context: RoomContext) {
+    const unusedTriggers = puzzle.keyTriggers.filter((item) => item.trim().length > 0).slice(context.hintUsageCount);
+
+    if (unusedTriggers.length > 0) {
+      return `提示：先围绕“${unusedTriggers[0]}”这个方向继续追问，会更接近关键。`;
+    }
+
+    const unrevealedFact = puzzle.facts
+      .filter((fact) => fact.discoverable && !context.revealedFactIds.includes(fact.factId))
+      .sort((left, right) => right.importance - left.importance)[0];
+
+    if (!unrevealedFact) {
+      return '提示：这局更值得追问事件触发条件、人物身份和时间顺序，而不是只盯着表面情绪。';
+    }
+
+    const keywords = unrevealedFact.keywords.filter((item) => item.trim().length >= 2).slice(0, 2);
+
+    if (keywords.length > 0) {
+      return `提示：别急着还原全貌，先围绕“${keywords.join(' / ')}”继续缩小范围。`;
+    }
+
+    return '提示：先拆清楚谁掌握了额外信息，以及那个看似普通的细节为什么会触发行动。';
+  }
+
+  private isHintSafe(hint: string, puzzle: Puzzle) {
+    if (!hint.trim()) {
+      return false;
+    }
+
+    return ![puzzle.truthStory, ...puzzle.facts.map((fact) => fact.statement)].some((sourceText) =>
+      this.hasStrongTextOverlap(hint, sourceText)
+    );
   }
 
   private async streamChat(supplier: OllamaSupplier, options: StreamChatOptions): Promise<StreamChatResult> {
@@ -861,21 +1213,33 @@ export class OllamaService {
       this.buildFallbackJobConstraint.bind(this)
     ];
 
-    return this.pickRandom(builders)(request, blueprint);
+    const candidates = [...builders];
+
+    while (candidates.length > 0) {
+      const builderIndex = Math.floor(Math.random() * candidates.length);
+      const [builder] = candidates.splice(builderIndex, 1);
+      const puzzle = builder?.(request, blueprint);
+
+      if (puzzle && this.auditGeneratedPuzzleLocally(puzzle, request, blueprint).valid) {
+        return puzzle;
+      }
+    }
+
+    return this.buildFallbackProtectiveLie(request, blueprint);
   }
 
   private buildFallbackProtectiveLie(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: `${blueprint.keyObject}背后的假话`,
-      soupSurface: `在${blueprint.setting}里，有人明明可以直接说明情况，却故意说了一个看似恶意的谎，让另一人立刻离开现场。`,
-      truthStory: `主角在${blueprint.setting}中注意到一条只有自己看懂的异常线索，关键就在那件${blueprint.keyObject}上。由于${blueprint.pressure}，他不能当场说破，只能故意说出一个会被误解的理由，把对方先赶走。表面上像是在刁难人，实际上是在避免对方继续留在危险区域。真正的关键不是谎话本身，而是${blueprint.revealAnchor}暴露出的风险。`,
+      soupSurface: `在${blueprint.setting}里，主角突然当众指责同伴偷拿了自己的${blueprint.keyObject}，逼得对方立刻离开，周围人都觉得他太过分。`,
+      truthStory: `主角当时正在${blueprint.setting}里值守，发现同伴手里的${blueprint.keyObject}上多出一处不该出现的细节，又从${blueprint.revealAnchor}里确认附近有人一直在盯着同伴。那个人只等同伴回到原来的位置就会下手。由于${blueprint.pressure}，主角不能当众说破，只能故意诬陷同伴偷东西，把人先骂到别处。几分钟后，原本站着的位置果然出了事，这句恶毒的话其实是在救人。`,
       facts: [
-        '主角已经提前发现了危险，但不能直接说明。',
-        `危险线索藏在那件${blueprint.keyObject}相关的细节里。`,
-        '如果当场挑明，局面会立刻失控。',
-        '主角说谎的真实目的是让对方尽快离开。',
-        `旁人之所以误会，是因为整件事表面上${blueprint.redHerring}。`,
-        `真正触发主角行动的，是${blueprint.revealAnchor}。`
+        '主角已经确认同伴继续留在原地会出事。',
+        `危险线索先出现在${blueprint.keyObject}的细节上。`,
+        `真正让主角确定风险升级的是${blueprint.revealAnchor}。`,
+        '主角故意说谎，是为了把同伴强行支开。',
+        '如果主角当场把真相讲破，盯梢的人会立刻改计划。',
+        `旁人之所以误会，是因为整件事表面上${blueprint.redHerring}。`
       ],
       misleadingPoints: ['看起来像主角在故意伤害或羞辱对方', '看起来像单纯的人际矛盾'],
       keyTriggers: [`那件${blueprint.keyObject}上是否还有别的信息？`, '主角是不是在保护某个人？'],
@@ -886,14 +1250,14 @@ export class OllamaService {
   private buildFallbackImpersonation(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: '迟到的身份',
-      soupSurface: `有人在${blueprint.setting}里听到一句再普通不过的话后，立刻改变了原计划，甚至主动报警。`,
-      truthStory: `表面上那句话再普通不过，但主角知道说这句话的人不该出现在${blueprint.setting}。结合${blueprint.keyObject}上的异常和${blueprint.revealAnchor}，他意识到现场出现了身份被冒用的情况。由于${blueprint.pressure}，他不能继续按原计划行事，只能立刻中断安排并报警。`,
+      soupSurface: `在${blueprint.setting}里，主角听到一句再普通不过的自我介绍后，立刻取消原计划，转身就报了警。`,
+      truthStory: `一名自称来接人的陌生人在${blueprint.setting}里说了一句外人很难注意的错误套话。主角又看见对方递出的${blueprint.keyObject}和${blueprint.revealAnchor}完全对不上，立刻确定来的人不是原本约好的那个人，而是在冒充身份接近目标。由于${blueprint.pressure}，主角不能继续陪着演下去，只能当场改口取消安排并报警。`,
       facts: [
         '现场出现了被冒用或伪装的身份。',
         `主角之所以识破，是因为一句话和${blueprint.keyObject}上的细节对不上。`,
+        `真正决定性的第二个破绽来自${blueprint.revealAnchor}。`,
         `外人会误以为只是${blueprint.redHerring}。`,
-        '主角改变计划不是因为害怕迟到或犯错，而是因为确认了风险。',
-        `真正决定性的线索来自${blueprint.revealAnchor}。`,
+        '主角改变计划不是因为害怕迟到或犯错，而是因为确认了冒充者。',
         '如果主角继续按原计划走，后果会更严重。'
       ],
       misleadingPoints: ['看起来像主角疑神疑鬼', '看起来像普通的流程问题'],
@@ -906,14 +1270,14 @@ export class OllamaService {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: '没出现的提醒',
       soupSurface: '主角醒来后发现某个平时必然出现的提醒没有出现，却因此判断事情已经发生了。',
-      truthStory: `主角前一天知道了一条只有少数人清楚的规则：如果那种提醒真的按计划出现，他一定会注意到。但这次他没有注意到，反而意味着自己所处环境被人为处理过。再结合${blueprint.keyObject}和${blueprint.revealAnchor}的异常，他意识到有人故意让他错过某个关键时点。`,
+      truthStory: `前一天晚上，主角和同伴约好，只要对方安全到家，就会用${blueprint.keyObject}发来固定提醒。第二天那条提醒没有出现，主角却在门口发现和${blueprint.revealAnchor}有关的异常，意识到不是同伴忘了发，而是对方在回家前就被人拦住了。有人还故意动过主角周围的信息，让他差点错过报警时机。`,
       facts: [
-        '主角提前知道一个关于提醒机制的特殊规则。',
-        '提醒没有被注意到，本身就是异常线索。',
-        '有人刻意制造了主角与外部信息隔离的条件。',
-        `那件${blueprint.keyObject}证明安排是提前布置好的。`,
-        `关键证据来自${blueprint.revealAnchor}。`,
-        '主角的判断建立在反向推理，而不是直觉。'
+        '主角和同伴之间原本有固定的报平安约定。',
+        `那件${blueprint.keyObject}原本就是约定里必须出现的信号。`,
+        '提醒没有出现，本身就是异常线索。',
+        `门口的${blueprint.revealAnchor}说明有人在主角醒来前动过手脚。`,
+        '主角是通过反向推理意识到同伴已经出事了。',
+        '如果再晚一步，报警时机会被错过。'
       ],
       misleadingPoints: ['看起来像主角只是睡过头', '看起来像设备故障'],
       keyTriggers: ['主角是不是提前知道某种规则？', '关键在于“没出现”的东西吗？'],
@@ -925,14 +1289,14 @@ export class OllamaService {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: '被安排好的安静',
       soupSurface: `主角在${blueprint.setting}里突然发现周围异常安静，随后立刻放弃了自己原本最在意的安排。`,
-      truthStory: `主角原本非常重视那项安排，但他知道在正常情况下，自己不可能感受不到外面的某个信号。如今环境异常安静，说明有人故意做了隔离处理。再看到${blueprint.keyObject}和${blueprint.revealAnchor}的异常，他意识到自己被暂时困住，是为了让真正的危险在外面顺利发生。`,
+      truthStory: `主角原本准备带着${blueprint.keyObject}按时离开${blueprint.setting}去见一个重要的人，可那天周围安静得反常，连平时一定会传来的动静都没有。他检查后发现门口和${blueprint.revealAnchor}被人动过，意识到自己被故意困在里面。真正的目标不是他手上的安排，而是有人想趁他无法出去时，在外面对另一个人下手，所以他立刻放弃原计划，改成先求助。`,
       facts: [
-        '主角并不是临时变卦，而是发现自己被隔离了。',
+        '主角并不是临时变卦，而是发现自己被故意困住了。',
         '安静本身就是不正常的线索。',
-        `那件${blueprint.keyObject}证明隔离不是巧合。`,
-        '真正危险发生在主角原本要去参与的场景里。',
-        `表面上容易被误解成${blueprint.redHerring}。`,
-        `决定主角行动的是${blueprint.revealAnchor}这一处细节。`
+        `主角原本准备带着${blueprint.keyObject}按计划离开。`,
+        `决定主角行动的是${blueprint.revealAnchor}这一处被动过的细节。`,
+        '真正危险发生在主角原本要去参与的场景外部。',
+        `表面上容易被误解成${blueprint.redHerring}。`
       ],
       misleadingPoints: ['看起来像主角突然不负责任', '看起来像只是环境太舒服而懈怠'],
       keyTriggers: ['安静这件事本身重要吗？', '有人是在故意拖住主角吗？'],
@@ -944,11 +1308,11 @@ export class OllamaService {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: `退回来的${blueprint.keyObject}`,
       soupSurface: `有人把刚处理好的${blueprint.keyObject}全部退回，却反而让主角意识到自己被保护了。`,
-      truthStory: `主角原本以为对方是在故意刁难自己，但对方其实在处理${blueprint.keyObject}时发现了异常：${blueprint.revealAnchor}里反复出现同一个隐藏观察者。为了不让风险继续扩大，对方故意用一个表面上合理却不真实的理由退回全部内容。主角回去复盘后，才意识到自己长期被人盯上。`,
+      truthStory: `主角把一批带有${blueprint.keyObject}的材料送去处理，对方在检查时发现每一份材料里的${blueprint.revealAnchor}都反复出现同一个陌生人。那个人显然一直在跟着主角，只是主角自己没有发现。为了不让对方意识到已经暴露，处理人没有直接说出跟踪者的事，只借口格式不合格把全部材料退回。主角回去逐一重看后，才明白对方是在提醒自己立刻换路线并报警。`,
       facts: [
         `问题不在${blueprint.keyObject}本身，而在里面暴露出来的隐藏信息。`,
         `关键异常来自${blueprint.revealAnchor}。`,
-        '处理人没有直接说破，是为了避免打草惊蛇。',
+        '处理人没有直接说破，是为了避免跟踪者立刻收手。',
         '主角一开始误会了对方的动机。',
         `表面上这更像${blueprint.redHerring}，而不是安全提醒。`,
         '主角后来才理解退回行为其实是在保护自己。'
@@ -962,15 +1326,15 @@ export class OllamaService {
   private buildFallbackJobConstraint(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
       title: '职业里的多余动作',
-      soupSurface: `主角在${blueprint.setting}里做了一个看似多余、甚至有些失礼的动作，却因此避免了一场更大的事故。`,
-      truthStory: `主角的职业让他知道一种外人不熟悉的判断标准。当天他发现${blueprint.keyObject}和${blueprint.revealAnchor}同时出现异常，说明眼前并不是普通流程问题，而是有人借着${blueprint.redHerring}伪装真正的风险。由于${blueprint.pressure}，他只能先做出那个看似多余的动作，把整个流程硬生生打断。`,
+      soupSurface: `在${blueprint.setting}里，主角突然打断了一个看上去完全正常的流程，周围人都以为他在故意找麻烦。`,
+      truthStory: `主角当时正在${blueprint.setting}值守，一名神色紧张的人拿着${blueprint.keyObject}要求继续办理。主角注意到对方口中的职业信息和${blueprint.revealAnchor}对不上，判断这人正在借着${blueprint.redHerring}掩饰真正目的。由于${blueprint.pressure}，他不能直接拆穿对方，只能故意做出失礼动作，把流程强行打断，争取时间等同事和安保介入。`,
       facts: [
-        '主角的职业经验是判断成立的关键前提。',
-        `那件${blueprint.keyObject}不正常，说明现场并非表面那么简单。`,
-        `真正让主角确认风险的是${blueprint.revealAnchor}。`,
-        '主角的动作虽然突兀，但目标是立刻终止流程。',
-        `旁观者容易误会成${blueprint.redHerring}。`,
-        '如果主角不插手，事故就会按原计划发生。'
+        '主角当时正在值守，需要对异常细节负责。',
+        `来办理的人拿着${blueprint.keyObject}，但说法和现场细节对不上。`,
+        `真正让主角确认不对劲的，是${blueprint.revealAnchor}。`,
+        '主角故意打断流程，是为了拖住对方而不是羞辱对方。',
+        `旁观者最初会把这件事误会成${blueprint.redHerring}。`,
+        '如果主角不立刻插手，对方就会带着目的继续推进。'
       ],
       misleadingPoints: ['看起来像主角越权', '看起来像主角脾气古怪'],
       keyTriggers: ['主角的职业是否很关键？', '他的动作是不是在故意中断某个流程？'],
@@ -997,7 +1361,7 @@ export class OllamaService {
       puzzleId: `generated-${nanoid(12)}`,
       title: input.title,
       soupSurface: input.soupSurface,
-      truthStory: `${input.truthStory} 主题偏向：${request.prompt.trim() || `${blueprint.setting} / ${blueprint.atmosphere}`}。`,
+      truthStory: input.truthStory,
       facts: input.facts.map((statement, index) => ({
         factId: `fact-${index + 1}`,
         statement,
@@ -1023,15 +1387,111 @@ export class OllamaService {
   }
 
   private extractSearchTerms(texts: string[]) {
-    const stopWords = new Set(['是否', '是不是', '有没有', '为什么', '怎么', '什么', '这个', '那个', '事情', '有关', '相关']);
+    const stopWords = new Set([
+      '是否',
+      '是不是',
+      '有没有',
+      '为什么',
+      '怎么',
+      '什么',
+      '这个',
+      '那个',
+      '事情',
+      '有关',
+      '相关',
+      '那件',
+      '这件',
+      '还有',
+      '别的',
+      '信息',
+      '关键',
+      '是不是藏'
+    ]);
 
-    return unique(
-      texts
-        .flatMap((value) => normalizeText(value).split(/\s+/))
-        .map((item) => item.trim())
-        .filter((item) => item.length >= 2 && !stopWords.has(item))
-        .slice(0, 16)
-    );
+    return unique(this.extractComparableTokens(texts).filter((item) => item.length >= 2 && !stopWords.has(item))).slice(0, 24);
+  }
+
+  private extractComparableTokens(texts: string[]) {
+    const stopTerms = new Set([
+      '主角',
+      '有人',
+      '一个',
+      '一些',
+      '事情',
+      '真相',
+      '表面',
+      '后来',
+      '因为',
+      '所以',
+      '如果',
+      '自己',
+      '对方',
+      '有关',
+      '相关',
+      '发现',
+      '感觉',
+      '然后',
+      '只是',
+      '不是'
+    ]);
+    const snippets = texts.flatMap((value) => {
+      const normalized = normalizeText(value);
+
+      if (!normalized) {
+        return [];
+      }
+
+      return normalized
+        .split(/\s+/)
+        .flatMap((token) => {
+          const current = token.trim();
+
+          if (!current || stopTerms.has(current)) {
+            return [];
+          }
+
+          if (/^[\u4e00-\u9fff]+$/u.test(current)) {
+            const parts = [current];
+
+            for (let size = 2; size <= Math.min(4, current.length); size += 1) {
+              for (let index = 0; index <= current.length - size; index += 1) {
+                parts.push(current.slice(index, index + size));
+              }
+            }
+
+            return parts;
+          }
+
+          return current.length >= 2 ? [current] : [];
+        })
+        .filter((token) => token.length >= 2 && !stopTerms.has(token));
+    });
+
+    return unique(snippets).slice(0, 160);
+  }
+
+  private countSharedTokens(source: Set<string>, ...comparators: Array<Set<string>>) {
+    if (source.size === 0) {
+      return 0;
+    }
+
+    const comparisonPool = new Set(comparators.flatMap((comparator) => [...comparator]));
+    let matches = 0;
+
+    for (const token of source) {
+      if (comparisonPool.has(token)) {
+        matches += 1;
+      }
+    }
+
+    return matches;
+  }
+
+  private hasStrongTextOverlap(left: string, right: string) {
+    const leftTokens = new Set(this.extractComparableTokens([left]));
+    const rightTokens = new Set(this.extractComparableTokens([right]));
+
+    return this.countSharedTokens(leftTokens, rightTokens) >= 3;
   }
 
   private pickRandom<T>(items: T[]) {

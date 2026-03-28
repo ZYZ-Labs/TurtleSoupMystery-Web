@@ -60,7 +60,7 @@
           <v-list density="comfortable">
             <v-list-item>你现在只要选难度就能开局，主题留空时会自动随机。</v-list-item>
             <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已揭示事实和最终结算结果。</v-list-item>
-            <v-list-item>当前版本采用轮询同步，不需要额外消息中间件就能在局域网里多人协作。</v-list-item>
+            <v-list-item>当前版本采用实时推送同步，局域网里多人协作时会更顺滑。</v-list-item>
           </v-list>
         </v-card-text>
       </v-card>
@@ -107,6 +107,7 @@
             <v-chip size="small" color="primary" variant="tonal">{{ formatDifficulty(room.difficulty) }}</v-chip>
             <v-chip size="small" variant="outlined">{{ room.participants.length }} 人</v-chip>
             <v-chip size="small" variant="outlined">{{ room.questionCount }} 次提问</v-chip>
+            <v-chip size="small" variant="outlined">已用提示 {{ room.hintUsageCount }}/{{ room.maxHintCount }}</v-chip>
           </div>
 
           <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
@@ -177,7 +178,7 @@
               <template #prepend>
                 <v-icon :icon="mdiCheckCircleOutline" color="success" />
               </template>
-              <v-list-item-title>{{ fact.statement }}</v-list-item-title>
+              <div class="revealed-fact-text">{{ fact.statement }}</div>
             </v-list-item>
           </v-list>
           <v-alert v-else type="info" variant="tonal">还没有揭示事实，先从高质量的 Yes / No 问题开始。</v-alert>
@@ -187,6 +188,10 @@
       <v-card v-if="room.status !== 'playing'" class="glass-card">
         <v-card-title class="section-title px-6 pt-6">完整汤底</v-card-title>
         <v-card-text class="pt-4">
+          <v-alert v-if="room.endingBadge" :type="endingBadgeType(room.endingBadge.tier)" variant="tonal" class="mb-4">
+            <div class="font-weight-medium mb-1">{{ room.endingBadge.title }}</div>
+            <div class="text-body-2">{{ room.endingBadge.description }}</div>
+          </v-alert>
           <p class="text-body-1 mb-4">{{ room.truthStory }}</p>
           <div v-if="room.finalGuess" class="text-body-2 text-medium-emphasis">
             最终猜测人：{{ room.finalGuess.participantName }} · 得分 {{ room.finalGuess.score }}%
@@ -271,6 +276,41 @@
               <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" :disabled="!canRevealRoom" @click="handleReveal">
                 公开汤底并结束
               </v-btn>
+            </div>
+
+            <v-alert type="info" variant="tonal" class="mb-4">
+              <div class="font-weight-medium mb-2">协作提示</div>
+              <div class="text-body-2 mb-2">本局最多可使用 {{ room.maxHintCount }} 次提示，当前剩余 {{ remainingHints }} 次。</div>
+              <div v-if="room.hintVote" class="text-body-2">
+                {{ room.hintVote.proposedByName }} 发起了提示投票，当前已同意 {{ room.hintVote.approvals.length }} / {{ room.participants.length }} 人。
+              </div>
+              <div v-else class="text-body-2">
+                只有所有玩家都同意，AI 主持才会给出一个不自爆的方向提示。
+              </div>
+            </v-alert>
+
+            <div class="d-flex flex-wrap align-center ga-3 mb-4">
+              <v-btn
+                v-if="!room.hintVote"
+                variant="tonal"
+                color="secondary"
+                :loading="requestingHint"
+                :disabled="!canRequestHint"
+                @click="handleRequestHint"
+              >
+                {{ remainingHints > 0 ? '发起提示投票' : '提示已用尽' }}
+              </v-btn>
+              <v-btn
+                v-else-if="!hasApprovedHintVote"
+                variant="tonal"
+                color="secondary"
+                :loading="approvingHint"
+                :disabled="!canApproveHint"
+                @click="handleApproveHint"
+              >
+                同意使用提示
+              </v-btn>
+              <v-chip v-else variant="tonal" color="secondary">你已同意本轮提示</v-chip>
             </div>
 
             <div class="text-body-2 text-medium-emphasis">
@@ -365,6 +405,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { buildRealtimeRoomUrl } from '@/api/client';
 import AnswerBadge from '@/components/ui/AnswerBadge.vue';
 import {
+  approveRoomHint,
   askRoomQuestion,
   createRoom,
   deleteRoom,
@@ -372,6 +413,7 @@ import {
   fetchRoomByCode,
   heartbeatRoom,
   joinRoom,
+  requestRoomHint,
   revealRoom,
   restartRoom,
   submitRoomFinalGuess
@@ -407,6 +449,8 @@ const guessing = ref(false);
 const revealing = ref(false);
 const restarting = ref(false);
 const deletingRoom = ref(false);
+const requestingHint = ref(false);
+const approvingHint = ref(false);
 const guessDialog = ref(false);
 const restartDialog = ref(false);
 const question = ref('');
@@ -470,18 +514,82 @@ const isJoined = computed(() => {
 const isHost = computed(() => activeParticipant.value?.role === 'host');
 const canManageRoom = computed(() => auth.isAuthenticated);
 const roomPendingSubmission = computed(() => room.value?.pendingSubmission ?? null);
+const roomHintVote = computed(() => room.value?.hintVote ?? null);
+const remainingHints = computed(() => {
+  if (!room.value) {
+    return 0;
+  }
+
+  return Math.max(0, room.value.maxHintCount - room.value.hintUsageCount);
+});
+const hasApprovedHintVote = computed(() =>
+  Boolean(activeParticipant.value && roomHintVote.value?.approvals.includes(activeParticipant.value.participantId))
+);
 const questionInputDisabled = computed(() => !isJoined.value || asking.value);
 const canSubmitQuestion = computed(
-  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+  () =>
+    isJoined.value &&
+    !asking.value &&
+    !guessing.value &&
+    !revealing.value &&
+    !restarting.value &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null
 );
 const canOpenGuessDialog = computed(
-  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+  () =>
+    isJoined.value &&
+    !asking.value &&
+    !guessing.value &&
+    !revealing.value &&
+    !restarting.value &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null
 );
 const canConfirmGuess = computed(
-  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+  () =>
+    isJoined.value &&
+    !asking.value &&
+    !guessing.value &&
+    !revealing.value &&
+    !restarting.value &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null
 );
 const canRevealRoom = computed(
-  () => isHost.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+  () =>
+    isHost.value &&
+    !asking.value &&
+    !guessing.value &&
+    !revealing.value &&
+    !restarting.value &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null
+);
+const canRequestHint = computed(
+  () =>
+    isJoined.value &&
+    room.value?.status === 'playing' &&
+    remainingHints.value > 0 &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null &&
+    roomHintVote.value === null
+);
+const canApproveHint = computed(
+  () =>
+    isJoined.value &&
+    room.value?.status === 'playing' &&
+    remainingHints.value > 0 &&
+    !requestingHint.value &&
+    !approvingHint.value &&
+    roomPendingSubmission.value === null &&
+    roomHintVote.value !== null &&
+    !hasApprovedHintVote.value
 );
 const pendingSubmissionHint = '\u5f53\u524d\u623f\u95f4\u6309\u987a\u5e8f\u5171\u4eab\u63d0\u4ea4\uff0c\u7b49\u8fd9\u6b21\u88c1\u51b3\u5b8c\u6210\u540e\uff0c\u5927\u5bb6\u5c31\u53ef\u4ee5\u7ee7\u7eed\u53d1\u9001\u3002';
 const pendingSubmissionMessage = computed(() => {
@@ -494,6 +602,8 @@ const pendingSubmissionMessage = computed(() => {
   const actorLabel = pendingSubmission.participantId === activeParticipant.value?.participantId ? '\u4f60' : pendingSubmission.participantName;
 
   switch (pendingSubmission.kind) {
+    case 'hint':
+      return `${actorLabel} 正在整理本轮提示，主持人会给出一个不剧透的方向。`;
     case 'final_guess':
       return `${actorLabel} \u6b63\u5728\u63d0\u4ea4\u6700\u7ec8\u731c\u6d4b\uff0c\u4e3b\u6301\u4eba\u6b63\u5728\u5b8c\u6210\u672c\u8f6e\u7ed3\u7b97\u3002`;
     case 'restart':
@@ -552,6 +662,17 @@ function statusColor(status: RoomStatus) {
     solved: 'success',
     failed: 'error'
   }[status];
+}
+
+function endingBadgeType(tier: 'perfect' | 'gold' | 'silver' | 'bronze'): 'success' | 'info' | 'warning' {
+  const tones = {
+    perfect: 'success',
+    gold: 'success',
+    silver: 'info',
+    bronze: 'warning'
+  } as const;
+
+  return tones[tier];
 }
 
 async function loadConfig() {
@@ -955,6 +1076,45 @@ async function handleAskQuestion() {
   }
 }
 
+async function handleRequestHint() {
+  if (!canRequestHint.value || !room.value || !activeParticipant.value) {
+    return;
+  }
+
+  const previousHintUsage = room.value.hintUsageCount;
+  requestingHint.value = true;
+
+  try {
+    room.value = await requestRoomHint(room.value.roomId, activeParticipant.value.participantId);
+    ui.notify(
+      room.value.hintUsageCount > previousHintUsage ? '提示已经送达聊天室。' : '已发起提示投票，等待所有成员同意。',
+      'success'
+    );
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    requestingHint.value = false;
+  }
+}
+
+async function handleApproveHint() {
+  if (!canApproveHint.value || !room.value || !activeParticipant.value) {
+    return;
+  }
+
+  const previousHintUsage = room.value.hintUsageCount;
+  approvingHint.value = true;
+
+  try {
+    room.value = await approveRoomHint(room.value.roomId, activeParticipant.value.participantId);
+    ui.notify(room.value.hintUsageCount > previousHintUsage ? '提示已经送达聊天室。' : '已记录你的同意。', 'success');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    approvingHint.value = false;
+  }
+}
+
 async function handleSubmitGuess() {
   if (!canConfirmGuess.value || !room.value || !activeParticipant.value) {
     return;
@@ -1122,6 +1282,13 @@ onBeforeUnmount(() => {
 .message-item--status,
 .message-item--system {
   background: rgba(244, 248, 253, 0.88);
+}
+
+.revealed-fact-text {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.55;
 }
 
 @media (max-width: 960px) {

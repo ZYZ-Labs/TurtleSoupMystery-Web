@@ -4,10 +4,12 @@ export type AnswerCode = 'yes' | 'no' | 'irrelevant' | 'partial' | 'unknown';
 export type AnswerSource = 'ollama' | 'heuristic';
 export type ParticipantRole = 'host' | 'player';
 export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
-export type SubmissionKind = 'question' | 'final_guess' | 'restart';
+export type SubmissionKind = 'question' | 'final_guess' | 'restart' | 'hint';
 export type AIProvider = 'ollama';
 export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | 'multimodal' | 'other';
 export type ConnectionStatus = 'idle' | 'connected' | 'error';
+export type EndingBadgeCode = 'perfect' | 'guided_once' | 'guided_twice' | 'open_truth' | 'missed';
+export type EndingBadgeTier = 'perfect' | 'gold' | 'silver' | 'bronze';
 
 export interface PuzzleFact {
   factId: string;
@@ -83,6 +85,20 @@ export interface PendingRoomSubmission {
   startedAt: string;
 }
 
+export interface HintVote {
+  proposedByParticipantId: string;
+  proposedByName: string;
+  approvals: string[];
+  createdAt: string;
+}
+
+export interface EndingBadge {
+  code: EndingBadgeCode;
+  title: string;
+  description: string;
+  tier: EndingBadgeTier;
+}
+
 export interface GameRoom {
   roomId: string;
   roomCode: string;
@@ -101,9 +117,13 @@ export interface GameRoom {
   messages: RoomMessage[];
   questions: QuestionRecord[];
   revealedFactIds: string[];
+  hintUsageCount: number;
+  maxHintCount: number;
+  hintVote: HintVote | null;
   pendingSubmission: PendingRoomSubmission | null;
   progressScore: number;
   status: RoomStatus;
+  endingBadge: EndingBadge | null;
   finalGuess?: FinalGuessRecord;
   createdAt: string;
   updatedAt: string;
@@ -173,6 +193,7 @@ export interface PuzzleGenerationRequest {
 export interface RoomContext {
   revealedFactIds: string[];
   progressScore: number;
+  hintUsageCount: number;
   questionHistory: Array<{
     question: string;
     answerCode: AnswerCode;
@@ -225,9 +246,13 @@ export interface PublicGameRoom {
   questionCount: number;
   messageCount: number;
   revealedFacts: RevealedFact[];
+  hintUsageCount: number;
+  maxHintCount: number;
+  hintVote: HintVote | null;
   pendingSubmission: PendingRoomSubmission | null;
   progressScore: number;
   status: RoomStatus;
+  endingBadge: EndingBadge | null;
   finalGuess?: FinalGuessRecord;
   truthStory: string | null;
   createdAt: string;

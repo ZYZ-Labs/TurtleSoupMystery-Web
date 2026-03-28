@@ -19,7 +19,7 @@ export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
 };
 
 export const DEFAULT_APP_STATE: AppState = {
-  version: 4,
+  version: 5,
   ollama: DEFAULT_OLLAMA_CONFIG,
   rooms: []
 };

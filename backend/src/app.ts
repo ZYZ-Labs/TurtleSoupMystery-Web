@@ -242,6 +242,24 @@ export async function createApp() {
   );
 
   app.post(
+    '/api/rooms/:roomId/hints/request',
+    wrap(async (request, response) => {
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = participantActionSchema.parse(request.body ?? {});
+      response.json(await roomService.requestHint(roomId, body.participantId));
+    })
+  );
+
+  app.post(
+    '/api/rooms/:roomId/hints/approve',
+    wrap(async (request, response) => {
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = participantActionSchema.parse(request.body ?? {});
+      response.json(await roomService.approveHint(roomId, body.participantId));
+    })
+  );
+
+  app.post(
     '/api/rooms/:roomId/reveal',
     wrap(async (request, response) => {
       const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;

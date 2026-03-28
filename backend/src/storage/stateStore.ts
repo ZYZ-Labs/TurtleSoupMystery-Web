@@ -188,7 +188,11 @@ export class StateStore {
           messages: room.messages ?? [],
           questions: room.questions ?? [],
           revealedFactIds: room.revealedFactIds ?? [],
-          pendingSubmission: room.pendingSubmission ?? null
+          hintUsageCount: room.hintUsageCount ?? 0,
+          maxHintCount: room.maxHintCount ?? 2,
+          hintVote: room.hintVote ?? null,
+          pendingSubmission: room.pendingSubmission ?? null,
+          endingBadge: room.endingBadge ?? null
         }))
       } satisfies AppState;
     } catch {
@@ -578,9 +582,13 @@ export class StateStore {
       messages,
       questions,
       revealedFactIds: session.revealedFactIds,
+      hintUsageCount: 0,
+      maxHintCount: 2,
+      hintVote: null,
       pendingSubmission: null,
       progressScore: session.progressScore,
       status: session.status,
+      endingBadge: null,
       finalGuess: session.finalGuess
         ? {
             participantId: participant.participantId,
