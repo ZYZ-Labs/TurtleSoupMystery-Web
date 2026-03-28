@@ -80,6 +80,7 @@ export interface PublicGameRoom {
   roomCode: string;
   title: string;
   generationPrompt: string;
+  generationDurationMs: number;
   puzzleTitle: string;
   soupSurface: string;
   difficulty: Difficulty;
@@ -132,6 +133,7 @@ export interface OllamaSupplier {
 
 export interface OllamaConfig {
   suppliers: OllamaSupplier[];
+  generationTimeoutMs: number;
   generationSupplierId: string;
   generationModelCategory: ModelCategory;
   generationModel: string;
@@ -153,6 +155,7 @@ export interface OverviewPayload {
   ollama: {
     configured: boolean;
     supplierCount: number;
+    generationTimeoutMs: number;
     generationSupplierLabel: string;
     generationModel: string;
     validationSupplierLabel: string;

@@ -10,6 +10,7 @@ export const ANSWER_LABELS: Record<AnswerCode, string> = {
 
 export const DEFAULT_OLLAMA_CONFIG: OllamaConfig = {
   suppliers: [],
+  generationTimeoutMs: 3_600_000,
   generationSupplierId: '',
   generationModelCategory: 'all',
   generationModel: '',

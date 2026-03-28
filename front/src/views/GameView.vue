@@ -38,7 +38,15 @@
 
           <v-alert v-if="creating" type="info" variant="tonal" class="mt-4">
             <div class="font-weight-medium mb-2">{{ creatingStatus }}</div>
+            <div class="text-body-2 text-medium-emphasis mb-3">
+              已耗时 {{ formatDuration(generationElapsedMs) }} / 超时 {{ formatDuration(generationTimeoutMs) }}
+            </div>
             <v-progress-linear indeterminate color="primary" rounded />
+            <div v-if="generationLogs.length" class="generation-log-list mt-3">
+              <div v-for="log in generationLogs" :key="log" class="generation-log-item">
+                {{ log }}
+              </div>
+            </div>
           </v-alert>
         </v-card-text>
       </v-card>
@@ -108,6 +116,7 @@
             <v-chip size="small" variant="outlined">{{ room.participants.length }} 人</v-chip>
             <v-chip size="small" variant="outlined">{{ room.questionCount }} 次提问</v-chip>
             <v-chip size="small" variant="outlined">已用提示 {{ room.hintUsageCount }}/{{ room.maxHintCount }}</v-chip>
+            <v-chip size="small" variant="outlined">生成耗时 {{ formatDuration(room.generationDurationMs) }}</v-chip>
           </div>
 
           <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
@@ -381,6 +390,18 @@
           hint="例如：现代都市、强误导、围绕一张照片展开。"
           persistent-hint
         />
+        <v-alert v-if="restarting" type="info" variant="tonal" class="mt-4">
+          <div class="font-weight-medium mb-2">{{ creatingStatus }}</div>
+          <div class="text-body-2 text-medium-emphasis mb-3">
+            已耗时 {{ formatDuration(generationElapsedMs) }} / 超时 {{ formatDuration(generationTimeoutMs) }}
+          </div>
+          <v-progress-linear indeterminate color="primary" rounded />
+          <div v-if="generationLogs.length" class="generation-log-list mt-3">
+            <div v-for="log in generationLogs" :key="`restart-${log}`" class="generation-log-item">
+              {{ log }}
+            </div>
+          </div>
+        </v-alert>
       </v-card-text>
       <v-card-actions class="px-6 pb-6">
         <v-spacer />
@@ -409,6 +430,7 @@ import {
   askRoomQuestion,
   createRoom,
   deleteRoom,
+  fetchHealth,
   fetchOverview,
   fetchRoomByCode,
   heartbeatRoom,
@@ -420,7 +442,7 @@ import {
 } from '@/api/services';
 import { getBrowserClientId, getStoredDisplayName, saveStoredDisplayName } from '@/lib/browserIdentity';
 import { extractErrorMessage } from '@/lib/errors';
-import { formatDateTime, formatDifficulty } from '@/lib/format';
+import { formatDateTime, formatDifficulty, formatDuration } from '@/lib/format';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import type {
@@ -458,6 +480,9 @@ const finalGuess = ref('');
 const ollamaConfigured = ref(false);
 const creatingStatus = ref('');
 const askingStatus = ref('');
+const generationTimeoutMs = ref(3600000);
+const generationElapsedMs = ref(0);
+const generationLogs = ref<string[]>([]);
 
 const createForm = reactive<{
   displayName: string;
@@ -485,9 +510,12 @@ const restartForm = reactive<{
 let heartbeatTimer: number | null = null;
 let creatingStatusTimer: number | null = null;
 let askingStatusTimer: number | null = null;
+let generationElapsedTimer: number | null = null;
+let generationKeepAliveTimer: number | null = null;
 let realtimeReconnectTimer: number | null = null;
 let realtimeSocket: WebSocket | null = null;
 let realtimeShouldReconnect = false;
+let generationLoggedMessages = new Set<string>();
 
 const creatingStatusSteps = ['正在生成汤面...', '正在编织汤底逻辑...', '正在检测汤底可推理性...', '正在整理房间信息...'];
 const askingStatusSteps = ['主持正在理解问题...', '正在比对已知事实...', '正在校验回答边界...', '正在整理最终裁决...'];
@@ -679,6 +707,7 @@ async function loadConfig() {
   try {
     const overview = await fetchOverview();
     ollamaConfigured.value = overview.ollama.configured;
+    generationTimeoutMs.value = overview.ollama.generationTimeoutMs || 3600000;
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   }
@@ -736,6 +765,68 @@ async function loadRoom(showError = true) {
 function syncRestartForm() {
   restartForm.difficulty = room.value?.difficulty ?? 'medium';
   restartForm.generationPrompt = room.value?.generationPrompt ?? '';
+}
+
+function appendGenerationLog(message: string) {
+  const normalized = message.trim();
+
+  if (!normalized || generationLoggedMessages.has(normalized)) {
+    return;
+  }
+
+  generationLoggedMessages.add(normalized);
+  generationLogs.value = [...generationLogs.value, normalized].slice(-8);
+}
+
+function resetGenerationActivity() {
+  generationElapsedMs.value = 0;
+  generationLogs.value = [];
+  generationLoggedMessages = new Set<string>();
+}
+
+function stopGenerationActivity() {
+  if (generationElapsedTimer !== null) {
+    window.clearInterval(generationElapsedTimer);
+    generationElapsedTimer = null;
+  }
+
+  if (generationKeepAliveTimer !== null) {
+    window.clearInterval(generationKeepAliveTimer);
+    generationKeepAliveTimer = null;
+  }
+}
+
+function resolveGenerationRequestTimeout() {
+  return Math.max(3600000, generationTimeoutMs.value + 60000);
+}
+
+function startGenerationActivity(mode: 'create' | 'restart') {
+  resetGenerationActivity();
+  stopGenerationActivity();
+  appendGenerationLog(mode === 'create' ? '已提交建房请求，正在等待模型开始生成。' : '已提交重开请求，正在重新生成这一锅。');
+  startStatusLoop(creatingStatus, creatingStatusSteps, 'creating', appendGenerationLog);
+
+  generationElapsedTimer = window.setInterval(() => {
+    generationElapsedMs.value += 1000;
+
+    if (generationElapsedMs.value >= 60_000) {
+      appendGenerationLog('生成已持续超过 1 分钟，当前仍在继续。');
+    }
+
+    if (generationElapsedMs.value >= 5 * 60_000) {
+      appendGenerationLog('生成已持续超过 5 分钟，建议耐心等待模型和审题流程完成。');
+    }
+  }, 1000);
+
+  generationKeepAliveTimer = window.setInterval(() => {
+    void fetchHealth()
+      .then(() => {
+        appendGenerationLog('仍在等待模型返回，已与服务端保持连接。');
+      })
+      .catch(() => {
+        appendGenerationLog('连接保活失败，但当前生成请求仍在继续。');
+      });
+  }, 15000);
 }
 
 function stopSyncTimers() {
@@ -883,16 +974,23 @@ function restartRoomSubscription() {
   connectRealtime();
 }
 
-function startStatusLoop(target: typeof creatingStatus, steps: string[], timerType: 'creating' | 'asking') {
+function startStatusLoop(
+  target: typeof creatingStatus,
+  steps: string[],
+  timerType: 'creating' | 'asking',
+  onStep?: (message: string) => void
+) {
   stopStatusLoop(timerType);
 
   let index = 0;
   target.value = steps[0] ?? '';
+  onStep?.(target.value);
 
   const timerId = window.setInterval(() => {
     index = (index + 1) % steps.length;
     target.value = steps[index] ?? '';
-  }, 1200);
+    onStep?.(target.value);
+  }, 2400);
 
   if (timerType === 'creating') {
     creatingStatusTimer = timerId;
@@ -979,7 +1077,7 @@ async function handleCreateRoom() {
   }
 
   creating.value = true;
-  startStatusLoop(creatingStatus, creatingStatusSteps, 'creating');
+  startGenerationActivity('create');
   saveStoredDisplayName(displayName);
 
   try {
@@ -988,7 +1086,7 @@ async function handleCreateRoom() {
       displayName,
       difficulty: createForm.difficulty,
       generationPrompt: createForm.generationPrompt.trim()
-    });
+    }, resolveGenerationRequestTimeout());
 
     room.value = created.room;
     activeParticipant.value = created.participant;
@@ -998,11 +1096,12 @@ async function handleCreateRoom() {
     await router.push(`/game/${created.room.roomCode}`);
     restartHeartbeatTimer();
     void sendHeartbeat(false);
-    ui.notify('房间已创建，把房间码发给其他成员即可加入。', 'success');
+    ui.notify(`房间已创建，把房间码发给其他成员即可加入。生成耗时 ${formatDuration(created.room.generationDurationMs)}。`, 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
     creating.value = false;
+    stopGenerationActivity();
     stopStatusLoop('creating');
   }
 }
@@ -1167,20 +1266,23 @@ async function handleRestartRoom() {
   }
 
   restarting.value = true;
+  startGenerationActivity('restart');
 
   try {
     room.value = await restartRoom(room.value.roomId, activeParticipant.value.participantId, {
       difficulty: restartForm.difficulty,
       generationPrompt: restartForm.generationPrompt.trim()
-    });
+    }, resolveGenerationRequestTimeout());
     restartDialog.value = false;
     question.value = '';
     finalGuess.value = '';
-    ui.notify('新一局已经准备好了，房间成员无需重新加入。', 'success');
+    ui.notify(`新一局已经准备好了，房间成员无需重新加入。生成耗时 ${formatDuration(room.value.generationDurationMs)}。`, 'success');
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
     restarting.value = false;
+    stopGenerationActivity();
+    stopStatusLoop('creating');
   }
 }
 
@@ -1252,6 +1354,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopSyncTimers();
+  stopGenerationActivity();
   stopStatusLoop('creating');
   stopStatusLoop('asking');
 });
@@ -1289,6 +1392,17 @@ onBeforeUnmount(() => {
   overflow: visible;
   text-overflow: clip;
   line-height: 1.55;
+}
+
+.generation-log-list {
+  display: grid;
+  gap: 6px;
+}
+
+.generation-log-item {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(56, 71, 87, 0.88);
 }
 
 @media (max-width: 960px) {

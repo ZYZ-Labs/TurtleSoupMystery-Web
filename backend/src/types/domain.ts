@@ -104,6 +104,7 @@ export interface GameRoom {
   roomCode: string;
   title: string;
   generationPrompt: string;
+  generationDurationMs: number;
   puzzleId: string;
   puzzleTitle: string;
   soupSurface: string;
@@ -154,6 +155,7 @@ export interface OllamaSupplier {
 
 export interface OllamaConfig {
   suppliers: OllamaSupplier[];
+  generationTimeoutMs: number;
   generationSupplierId: string;
   generationModelCategory: ModelCategory;
   generationModel: string;
@@ -237,6 +239,7 @@ export interface PublicGameRoom {
   roomCode: string;
   title: string;
   generationPrompt: string;
+  generationDurationMs: number;
   puzzleTitle: string;
   soupSurface: string;
   difficulty: Difficulty;

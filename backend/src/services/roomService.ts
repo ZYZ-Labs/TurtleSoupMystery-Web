@@ -95,6 +95,7 @@ export class RoomService {
             state.ollama.validationModel
         ),
         supplierCount: state.ollama.suppliers.length,
+        generationTimeoutMs: state.ollama.generationTimeoutMs,
         generationSupplierLabel: this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId)?.label ?? '',
         generationModel: state.ollama.generationModel,
         validationSupplierLabel: this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId)?.label ?? '',
@@ -154,6 +155,7 @@ export class RoomService {
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
     const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
+    const generationStartedAtMs = Date.now();
     const clientId = this.normalizeClientId(input.clientId);
     const timestamp = nowIso();
     const host: RoomParticipant = {
@@ -176,12 +178,14 @@ export class RoomService {
         },
         {
           supplier: validationSupplier,
-          model: state.ollama.validationModel
+          model: state.ollama.validationModel,
+          timeoutMs: state.ollama.generationTimeoutMs
         }
       );
     } catch (error) {
       throw new ServiceError(503, error instanceof Error ? error.message : '当前无法生成可游玩的海龟汤，请稍后再试。');
     }
+    const generationDurationMs = Math.max(0, Date.now() - generationStartedAtMs);
     const roomCode = this.createUniqueRoomCode(state.rooms);
     const roomTitle = slugifyPrompt(resolvedPrompt) || puzzle.title;
     const room: GameRoom = {
@@ -189,6 +193,7 @@ export class RoomService {
       roomCode,
       title: roomTitle,
       generationPrompt: resolvedPrompt,
+      generationDurationMs,
       puzzleId: puzzle.puzzleId,
       puzzleTitle: puzzle.title,
       soupSurface: puzzle.soupSurface,
@@ -809,6 +814,7 @@ export class RoomService {
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
     const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
+    const generationStartedAtMs = Date.now();
     let puzzle;
 
     try {
@@ -821,12 +827,14 @@ export class RoomService {
         },
         {
           supplier: validationSupplier,
-          model: state.ollama.validationModel
+          model: state.ollama.validationModel,
+          timeoutMs: state.ollama.generationTimeoutMs
         }
       );
     } catch (error) {
       throw new ServiceError(503, error instanceof Error ? error.message : '当前无法生成可游玩的海龟汤，请稍后再试。');
     }
+    const generationDurationMs = Math.max(0, Date.now() - generationStartedAtMs);
     const timestamp = nowIso();
 
     const nextState = await this.store.updateState((current) => {
@@ -841,6 +849,7 @@ export class RoomService {
         ...currentRoom,
         title: slugifyPrompt(resolvedPrompt) || puzzle.title,
         generationPrompt: resolvedPrompt,
+        generationDurationMs,
         puzzleId: puzzle.puzzleId,
         puzzleTitle: puzzle.title,
         soupSurface: puzzle.soupSurface,
@@ -1066,6 +1075,7 @@ export class RoomService {
   async saveOllamaRuntimeConfig(
     nextConfig: Pick<
       OllamaConfig,
+      | 'generationTimeoutMs'
       | 'generationSupplierId'
       | 'generationModelCategory'
       | 'generationModel'
@@ -1079,6 +1089,7 @@ export class RoomService {
       ollama: {
         ...state.ollama,
         generationSupplierId: nextConfig.generationSupplierId,
+        generationTimeoutMs: nextConfig.generationTimeoutMs,
         generationModelCategory: nextConfig.generationModelCategory,
         generationModel: this.resolveModelSelection(
           this.findSupplier(state.ollama.suppliers, nextConfig.generationSupplierId)?.availableModels ?? [],
@@ -1574,6 +1585,7 @@ export class RoomService {
       roomCode: room.roomCode,
       title: room.title,
       generationPrompt: room.generationPrompt,
+      generationDurationMs: room.generationDurationMs,
       puzzleTitle: room.puzzleTitle,
       soupSurface: room.soupSurface,
       difficulty: room.difficulty,

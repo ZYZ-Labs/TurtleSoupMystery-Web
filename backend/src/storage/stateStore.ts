@@ -181,6 +181,7 @@ export class StateStore {
         ollama: this.normalizeOllamaConfig(parsed.ollama),
         rooms: (parsed.rooms ?? []).map((room) => ({
           ...room,
+          generationDurationMs: room.generationDurationMs ?? 0,
           facts: room.facts ?? [],
           misleadingPoints: room.misleadingPoints ?? [],
           keyTriggers: room.keyTriggers ?? [],
@@ -429,6 +430,10 @@ export class StateStore {
     return {
       ...DEFAULT_APP_STATE.ollama,
       suppliers: normalizedSuppliers,
+      generationTimeoutMs:
+        Number.isFinite(source.generationTimeoutMs) && Number(source.generationTimeoutMs) >= 30_000
+          ? Number(source.generationTimeoutMs)
+          : DEFAULT_APP_STATE.ollama.generationTimeoutMs,
       generationSupplierId,
       generationModelCategory: this.normalizeSelectedCategory(source.generationModelCategory),
       generationModel: typeof source.generationModel === 'string' && source.generationModel.trim() ? source.generationModel.trim() : legacyDefaultModel,
@@ -569,6 +574,7 @@ export class StateStore {
       roomCode: session.sessionId.slice(0, 6).toUpperCase(),
       title: session.puzzleTitle,
       generationPrompt: 'Migrated legacy session',
+      generationDurationMs: 0,
       puzzleId: session.puzzleId,
       puzzleTitle: session.puzzleTitle,
       soupSurface: session.soupSurface,

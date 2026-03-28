@@ -29,6 +29,13 @@ export async function fetchOverview() {
   return data;
 }
 
+export async function fetchHealth() {
+  const { data } = await apiClient.get<{ status: string; timestamp: string }>('/health', {
+    timeout: 10000
+  });
+  return data;
+}
+
 export async function fetchRooms() {
   const { data } = await apiClient.get<PublicGameRoom[]>('/rooms');
   return data;
@@ -48,8 +55,8 @@ export async function createRoom(payload: {
   displayName: string;
   difficulty: 'easy' | 'medium' | 'hard';
   generationPrompt: string;
-}) {
-  const { data } = await apiClient.post<RoomJoinResult>('/rooms', payload);
+}, timeoutMs?: number) {
+  const { data } = await apiClient.post<RoomJoinResult>('/rooms', payload, timeoutMs ? { timeout: timeoutMs } : undefined);
   return data;
 }
 
@@ -101,12 +108,13 @@ export async function restartRoom(
   payload: {
     difficulty: 'easy' | 'medium' | 'hard';
     generationPrompt: string;
-  }
+  },
+  timeoutMs?: number
 ) {
   const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/restart`, {
     participantId,
     ...payload
-  });
+  }, timeoutMs ? { timeout: timeoutMs } : undefined);
   return data;
 }
 
@@ -156,6 +164,7 @@ export async function deleteOllamaSupplier(supplierId: string) {
 export async function saveOllamaRuntimeConfig(
   payload: Pick<
     OllamaConfig,
+    | 'generationTimeoutMs'
     | 'generationSupplierId'
     | 'generationModelCategory'
     | 'generationModel'

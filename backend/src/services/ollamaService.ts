@@ -185,6 +185,7 @@ export class OllamaService {
     auditOptions?: {
       supplier?: OllamaSupplier | null;
       model?: string;
+      timeoutMs?: number;
     }
   ): Promise<Puzzle> {
     const selectedModel = model.trim();
@@ -194,6 +195,9 @@ export class OllamaService {
         ? auditOptions.supplier
         : supplier;
     const auditModel = auditOptions?.model?.trim() || selectedModel;
+    const generationDeadline = Number.isFinite(auditOptions?.timeoutMs)
+      ? Date.now() + Math.max(30_000, Number(auditOptions?.timeoutMs))
+      : null;
 
     if (!supplier?.baseUrl || !selectedModel) {
       return this.generateFallbackPuzzle(request, blueprint);
@@ -203,8 +207,9 @@ export class OllamaService {
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
+        const timedGenerationSupplier = this.withRemainingTimeout(supplier, generationDeadline);
         const parsed = await this.requestStructuredOutput(
-          supplier,
+          timedGenerationSupplier,
           selectedModel,
           generatedPuzzleSchema,
           this.buildGenerationMessages(request, blueprint, attempt > 0),
@@ -224,7 +229,14 @@ export class OllamaService {
           continue;
         }
 
-        const remoteAudit = await this.auditGeneratedPuzzleWithModel(auditSupplier, auditModel, request, blueprint, puzzle);
+        const remoteAudit = await this.auditGeneratedPuzzleWithModel(
+          auditSupplier,
+          auditModel,
+          request,
+          blueprint,
+          puzzle,
+          generationDeadline
+        );
 
         if (remoteAudit.valid) {
           return puzzle;
@@ -779,7 +791,8 @@ export class OllamaService {
     model: string,
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
-    puzzle: Puzzle
+    puzzle: Puzzle,
+    deadline: number | null = null
   ) {
     const selectedModel = model.trim();
 
@@ -788,8 +801,9 @@ export class OllamaService {
     }
 
     try {
+      const timedAuditSupplier = this.withRemainingTimeout(supplier, deadline);
       const parsed = await this.requestStructuredOutput(
-        supplier,
+        timedAuditSupplier,
         selectedModel,
         puzzleAuditSchema,
         this.buildPuzzleAuditMessages(request, blueprint, puzzle),
@@ -1492,6 +1506,23 @@ export class OllamaService {
     const rightTokens = new Set(this.extractComparableTokens([right]));
 
     return this.countSharedTokens(leftTokens, rightTokens) >= 3;
+  }
+
+  private withRemainingTimeout(supplier: OllamaSupplier, deadline: number | null) {
+    if (!deadline) {
+      return supplier;
+    }
+
+    const remainingMs = deadline - Date.now();
+
+    if (remainingMs <= 1_500) {
+      throw new Error('海龟汤生成超时，请稍后重试，或在设置里调大生成超时。');
+    }
+
+    return {
+      ...supplier,
+      timeoutMs: Math.max(1_500, Math.round(remainingMs))
+    } satisfies OllamaSupplier;
   }
 
   private pickRandom<T>(items: T[]) {

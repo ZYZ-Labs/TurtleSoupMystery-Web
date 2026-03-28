@@ -54,6 +54,7 @@ const supplierSchema = z.object({
 });
 
 const runtimeConfigSchema = z.object({
+  generationTimeoutMs: z.number().int().min(30000).max(21600000).default(3600000),
   generationSupplierId: z.string().trim().default(''),
   generationModelCategory: z.enum(['all', 'balanced', 'reasoning', 'lightweight', 'multimodal', 'other']).default('all'),
   generationModel: z.string().trim().default(''),

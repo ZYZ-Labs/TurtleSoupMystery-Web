@@ -106,6 +106,17 @@
               <v-col cols="12">
                 <div class="text-subtitle-1 font-weight-bold mb-2">汤底生成</div>
               </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model.number="runtimeForm.generationTimeoutMs"
+                  label="房间生成超时（毫秒）"
+                  type="number"
+                  min="30000"
+                  max="21600000"
+                  hint="创建房间和重新开局会使用这个总超时时间，默认 3600000 毫秒，也就是 1 小时。"
+                  persistent-hint
+                />
+              </v-col>
               <v-col cols="12" md="4">
                 <v-select
                   v-model="runtimeForm.generationSupplierId"
@@ -189,6 +200,10 @@
             <span>{{ config?.suppliers.length ?? 0 }}</span>
           </div>
           <div class="d-flex align-center justify-space-between mb-3">
+            <span class="text-medium-emphasis">房间生成超时</span>
+            <span>{{ formatDuration(runtimeForm.generationTimeoutMs) }}</span>
+          </div>
+          <div class="d-flex align-center justify-space-between mb-3">
             <span class="text-medium-emphasis">生成供应商</span>
             <span>{{ generationSupplier?.label || '未选择' }}</span>
           </div>
@@ -221,7 +236,7 @@ import {
   updateOllamaSupplier
 } from '@/api/services';
 import { extractErrorMessage } from '@/lib/errors';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, formatDuration } from '@/lib/format';
 import { useUiStore } from '@/stores/ui';
 import type { AIProvider, ConnectionStatus, ModelCategory, OllamaConfig, OllamaModel, OllamaSupplier } from '@/types/api';
 
@@ -251,6 +266,7 @@ const supplierForm = reactive({
 });
 
 const runtimeForm = reactive({
+  generationTimeoutMs: 3600000,
   generationSupplierId: '',
   generationModelCategory: 'all' as ModelCategory,
   generationModel: '',
@@ -348,6 +364,7 @@ function syncSupplierForm(supplier: OllamaSupplier | null) {
 }
 
 function syncRuntimeForm(source: OllamaConfig) {
+  runtimeForm.generationTimeoutMs = source.generationTimeoutMs;
   runtimeForm.generationSupplierId = source.generationSupplierId;
   runtimeForm.generationModelCategory = source.generationModelCategory;
   runtimeForm.generationModel = source.generationModel;
@@ -508,6 +525,7 @@ async function handleSaveRuntime() {
 
   try {
     config.value = await saveOllamaRuntimeConfig({
+      generationTimeoutMs: runtimeForm.generationTimeoutMs,
       generationSupplierId: runtimeForm.generationSupplierId,
       generationModelCategory: runtimeForm.generationModelCategory,
       generationModel: runtimeForm.generationModel,
