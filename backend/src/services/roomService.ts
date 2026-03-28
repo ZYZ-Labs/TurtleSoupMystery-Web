@@ -929,13 +929,20 @@ export class RoomService {
     return state.ollama;
   }
 
-  async createOllamaSupplier(input: { label: string; provider: OllamaSupplier['provider']; baseUrl: string; timeoutMs: number }) {
-    const checkResult = await this.ollamaService.checkConnection(input.baseUrl, input.timeoutMs);
+  async createOllamaSupplier(input: {
+    label: string;
+    provider: OllamaSupplier['provider'];
+    baseUrl: string;
+    apiKey: string;
+    timeoutMs: number;
+  }) {
+    const checkResult = await this.ollamaService.checkConnection(input.provider, input.baseUrl, input.apiKey, input.timeoutMs);
     const supplier: OllamaSupplier = {
       supplierId: nanoid(),
       label: this.normalizeSupplierLabel(input.label),
       provider: input.provider,
       baseUrl: checkResult.normalizedBaseUrl,
+      apiKey: input.apiKey.trim(),
       timeoutMs: input.timeoutMs,
       availableModels: checkResult.models,
       lastCheckedAt: nowIso(),
@@ -958,9 +965,15 @@ export class RoomService {
 
   async updateOllamaSupplier(
     supplierId: string,
-    input: { label: string; provider: OllamaSupplier['provider']; baseUrl: string; timeoutMs: number }
+    input: {
+      label: string;
+      provider: OllamaSupplier['provider'];
+      baseUrl: string;
+      apiKey: string;
+      timeoutMs: number;
+    }
   ) {
-    const checkResult = await this.ollamaService.checkConnection(input.baseUrl, input.timeoutMs);
+    const checkResult = await this.ollamaService.checkConnection(input.provider, input.baseUrl, input.apiKey, input.timeoutMs);
 
     const nextState = await this.store.updateState((state) => {
       const supplier = this.findSupplierOrThrow(state.ollama.suppliers, supplierId);
@@ -969,6 +982,7 @@ export class RoomService {
         label: this.normalizeSupplierLabel(input.label),
         provider: input.provider,
         baseUrl: checkResult.normalizedBaseUrl,
+        apiKey: input.apiKey.trim(),
         timeoutMs: input.timeoutMs,
         availableModels: checkResult.models,
         lastCheckedAt: nowIso(),
@@ -1035,7 +1049,12 @@ export class RoomService {
   async refreshOllamaSupplierModels(supplierId: string) {
     const state = await this.store.readState();
     const supplier = this.findSupplierOrThrow(state.ollama.suppliers, supplierId);
-    const checkResult = await this.ollamaService.checkConnection(supplier.baseUrl, supplier.timeoutMs);
+    const checkResult = await this.ollamaService.checkConnection(
+      supplier.provider,
+      supplier.baseUrl,
+      supplier.apiKey,
+      supplier.timeoutMs
+    );
 
     const nextState = await this.store.updateState((current) => {
       const currentSupplier = this.findSupplierOrThrow(current.ollama.suppliers, supplierId);
@@ -1068,8 +1087,8 @@ export class RoomService {
     return nextState.ollama;
   }
 
-  async checkOllamaConnection(baseUrl: string, timeoutMs: number) {
-    return this.ollamaService.checkConnection(baseUrl, timeoutMs);
+  async checkOllamaConnection(provider: OllamaSupplier['provider'], baseUrl: string, apiKey: string, timeoutMs: number) {
+    return this.ollamaService.checkConnection(provider, baseUrl, apiKey, timeoutMs);
   }
 
   async saveOllamaRuntimeConfig(

@@ -4,7 +4,7 @@ export type AnswerCode = 'yes' | 'no' | 'irrelevant' | 'partial' | 'unknown';
 export type ParticipantRole = 'host' | 'player';
 export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
 export type SubmissionKind = 'question' | 'final_guess' | 'restart' | 'hint';
-export type AIProvider = 'ollama';
+export type AIProvider = 'ollama' | 'deepseek';
 export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | 'multimodal' | 'other';
 export type ConnectionStatus = 'idle' | 'connected' | 'error';
 export type EndingBadgeCode = 'perfect' | 'guided_once' | 'guided_twice' | 'open_truth' | 'missed';
@@ -124,6 +124,7 @@ export interface OllamaSupplier {
   label: string;
   provider: AIProvider;
   baseUrl: string;
+  apiKey: string;
   timeoutMs: number;
   availableModels: OllamaModel[];
   lastCheckedAt: string | null;

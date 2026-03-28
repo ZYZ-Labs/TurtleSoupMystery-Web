@@ -130,22 +130,31 @@ export async function fetchOllamaConfig() {
   return data;
 }
 
-export async function checkOllamaConnection(baseUrl: string, timeoutMs: number) {
+export async function checkOllamaConnection(
+  provider: OllamaSupplier['provider'],
+  baseUrl: string,
+  apiKey: string,
+  timeoutMs: number
+) {
   const { data } = await apiClient.post<OllamaCheckResult>('/settings/ollama/check', {
+    provider,
     baseUrl,
+    apiKey,
     timeoutMs
   });
   return data;
 }
 
-export async function createOllamaSupplier(payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'timeoutMs'>) {
+export async function createOllamaSupplier(
+  payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'apiKey' | 'timeoutMs'>
+) {
   const { data } = await apiClient.post<OllamaConfig>('/settings/ollama/suppliers', payload);
   return data;
 }
 
 export async function updateOllamaSupplier(
   supplierId: string,
-  payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'timeoutMs'>
+  payload: Pick<OllamaSupplier, 'label' | 'provider' | 'baseUrl' | 'apiKey' | 'timeoutMs'>
 ) {
   const { data } = await apiClient.put<OllamaConfig>(`/settings/ollama/suppliers/${supplierId}`, payload);
   return data;

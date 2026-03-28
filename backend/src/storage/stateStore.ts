@@ -411,6 +411,7 @@ export class StateStore {
         label: '默认 Ollama',
         provider: 'ollama',
         baseUrl: legacyBaseUrl,
+        apiKey: '',
         timeoutMs: Number.isFinite(legacyTimeoutMs) && legacyTimeoutMs > 0 ? legacyTimeoutMs : 30000,
         availableModels: normalizedLegacyModels,
         lastCheckedAt: legacySource.lastCheckedAt ?? null,
@@ -449,8 +450,9 @@ export class StateStore {
     return {
       supplierId: typeof raw.supplierId === 'string' && raw.supplierId.trim() ? raw.supplierId : 'supplier-legacy',
       label: typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : '未命名供应商',
-      provider: raw.provider === 'ollama' ? 'ollama' : 'ollama',
+      provider: raw.provider === 'deepseek' ? 'deepseek' : 'ollama',
       baseUrl: typeof raw.baseUrl === 'string' ? raw.baseUrl.trim() : '',
+      apiKey: typeof raw.apiKey === 'string' ? raw.apiKey.trim() : '',
       timeoutMs: Number.isFinite(raw.timeoutMs) && Number(raw.timeoutMs) > 0 ? Number(raw.timeoutMs) : 30000,
       availableModels: models,
       lastCheckedAt: typeof raw.lastCheckedAt === 'string' ? raw.lastCheckedAt : null,

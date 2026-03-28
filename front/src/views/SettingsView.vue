@@ -16,7 +16,7 @@
               @click="selectSupplier(supplier.supplierId)"
             >
               <v-list-item-title>{{ supplier.label }}</v-list-item-title>
-              <v-list-item-subtitle>{{ supplier.baseUrl || '未配置地址' }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ providerLabel(supplier.provider) }} · {{ supplier.baseUrl || '未配置地址' }}</v-list-item-subtitle>
               <template #append>
                 <v-chip size="small" :color="statusColor(supplier.lastStatus)" variant="flat">
                   {{ statusLabel(supplier.lastStatus) }}
@@ -24,7 +24,7 @@
               </template>
             </v-list-item>
           </v-list>
-          <v-alert v-else type="info" variant="tonal">还没有供应商，先在这里添加一个 Ollama 供应商。</v-alert>
+          <v-alert v-else type="info" variant="tonal">还没有供应商，先在这里添加一个 Ollama 或 DeepSeek 供应商。</v-alert>
         </v-card-text>
       </v-card>
 
@@ -50,9 +50,19 @@
               <v-col cols="12" md="8">
                 <v-text-field
                   v-model="supplierForm.baseUrl"
-                  label="Ollama 地址"
-                  hint="例如 http://192.168.1.10:11434"
+                  :label="supplierBaseUrlLabel"
+                  :hint="supplierBaseUrlHint"
                   persistent-hint
+                />
+              </v-col>
+              <v-col v-if="supplierNeedsApiKey" cols="12">
+                <v-text-field
+                  v-model="supplierForm.apiKey"
+                  label="API Key"
+                  hint="连接测试和模型刷新都会使用这里的密钥。"
+                  persistent-hint
+                  type="password"
+                  autocomplete="off"
                 />
               </v-col>
               <v-col cols="12">
@@ -248,7 +258,10 @@ const deletingSupplier = ref(false);
 const refreshingSupplierId = ref('');
 const savingRuntime = ref(false);
 
-const providerItems = [{ title: 'Ollama（局域网）', value: 'ollama' satisfies AIProvider }];
+const providerItems = [
+  { title: 'Ollama（局域网）', value: 'ollama' satisfies AIProvider },
+  { title: 'DeepSeek（云端）', value: 'deepseek' satisfies AIProvider }
+];
 const categoryItems = [
   { title: '全部', value: 'all' satisfies ModelCategory },
   { title: '平衡', value: 'balanced' satisfies ModelCategory },
@@ -262,6 +275,7 @@ const supplierForm = reactive({
   label: '',
   provider: 'ollama' as AIProvider,
   baseUrl: '',
+  apiKey: '',
   timeoutMs: 30000
 });
 
@@ -293,6 +307,18 @@ const supplierItems = computed(() =>
     value: supplier.supplierId
   }))
 );
+
+const supplierNeedsApiKey = computed(() => supplierForm.provider === 'deepseek');
+const supplierBaseUrlLabel = computed(() => (supplierForm.provider === 'deepseek' ? 'DeepSeek 接口地址' : 'Ollama 地址'));
+const supplierBaseUrlHint = computed(() =>
+  supplierForm.provider === 'deepseek'
+    ? '例如 https://api.deepseek.com 或 https://api.deepseek.com/v1'
+    : '例如 http://192.168.1.10:11434'
+);
+
+function providerLabel(provider: AIProvider) {
+  return provider === 'deepseek' ? 'DeepSeek' : 'Ollama';
+}
 
 function categoryLabel(category: Exclude<ModelCategory, 'all'>) {
   return {
@@ -360,6 +386,7 @@ function syncSupplierForm(supplier: OllamaSupplier | null) {
   supplierForm.label = supplier?.label ?? '';
   supplierForm.provider = supplier?.provider ?? 'ollama';
   supplierForm.baseUrl = supplier?.baseUrl ?? '';
+  supplierForm.apiKey = supplier?.apiKey ?? '';
   supplierForm.timeoutMs = supplier?.timeoutMs ?? 30000;
 }
 
@@ -543,6 +570,19 @@ async function handleSaveRuntime() {
     savingRuntime.value = false;
   }
 }
+
+watch(
+  () => supplierForm.provider,
+  (provider) => {
+    if (provider === 'ollama') {
+      supplierForm.apiKey = '';
+    }
+
+    if (provider === 'deepseek' && !supplierForm.baseUrl.trim()) {
+      supplierForm.baseUrl = 'https://api.deepseek.com';
+    }
+  }
+);
 
 watch(
   () => runtimeForm.generationSupplierId,

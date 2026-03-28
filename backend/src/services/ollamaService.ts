@@ -80,6 +80,24 @@ interface OllamaChatChunk {
   };
 }
 
+interface OpenAICompatibleModelListResponse {
+  data?: Array<Record<string, unknown>>;
+}
+
+interface OpenAICompatibleChatChunk {
+  error?: {
+    message?: string;
+  };
+  choices?: Array<{
+    delta?: {
+      content?: string;
+    };
+    message?: {
+      content?: string;
+    };
+  }>;
+}
+
 interface StreamChatResult {
   content: string;
 }
@@ -133,27 +151,37 @@ const REVEAL_ANCHORS = ['背景反光', '时间点对不上', '物件位置异�
 type FallbackBuilder = (request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) => Puzzle;
 
 export class OllamaService {
-  async checkConnection(baseUrl: string, timeoutMs: number): Promise<CheckResult> {
-    const normalizedBaseUrl = normalizeOllamaBaseUrl(baseUrl);
+  async checkConnection(
+    provider: OllamaSupplier['provider'],
+    baseUrl: string,
+    apiKey: string,
+    timeoutMs: number
+  ): Promise<CheckResult> {
+    const normalizedBaseUrl = this.normalizeSupplierBaseUrl(provider, baseUrl);
 
     if (!normalizedBaseUrl) {
       return {
         reachable: false,
         normalizedBaseUrl,
         models: [],
-        message: '请先填写 Ollama 服务地址。'
+        message: provider === 'deepseek' ? '请先填写 DeepSeek 接口地址。' : '请先填写 Ollama 服务地址。'
+      };
+    }
+
+    if (provider === 'deepseek' && !apiKey.trim()) {
+      return {
+        reachable: false,
+        normalizedBaseUrl,
+        models: [],
+        message: '请先填写 DeepSeek API Key。'
       };
     }
 
     try {
-      const response = await axios.get<{ models?: Array<Record<string, unknown>> }>(
-        buildOllamaApiUrl(normalizedBaseUrl, 'tags'),
-        {
-          timeout: timeoutMs
-        }
-      );
-
-      const models = (response.data.models ?? []).map((item) => this.mapOllamaModel(item));
+      const models =
+        provider === 'deepseek'
+          ? await this.fetchDeepSeekModels(normalizedBaseUrl, apiKey, timeoutMs)
+          : await this.fetchOllamaModels(normalizedBaseUrl, timeoutMs);
 
       return {
         reachable: true,
@@ -162,12 +190,7 @@ export class OllamaService {
         message: models.length > 0 ? '连接成功，已获取模型列表。' : '连接成功，但没有返回可用模型。'
       };
     } catch (error) {
-      const message =
-        error instanceof AxiosError
-          ? error.message
-          : error instanceof Error
-            ? error.message
-            : '连接失败。';
+      const message = this.describeRemoteError(error);
 
       return {
         reachable: false,
@@ -911,6 +934,12 @@ export class OllamaService {
   }
 
   private async streamChat(supplier: OllamaSupplier, options: StreamChatOptions): Promise<StreamChatResult> {
+    return supplier.provider === 'deepseek'
+      ? this.streamOpenAICompatibleChat(supplier, options)
+      : this.streamOllamaChat(supplier, options);
+  }
+
+  private async streamOllamaChat(supplier: OllamaSupplier, options: StreamChatOptions): Promise<StreamChatResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), supplier.timeoutMs);
 
@@ -991,6 +1020,101 @@ export class OllamaService {
     }
   }
 
+  private async streamOpenAICompatibleChat(
+    supplier: OllamaSupplier,
+    options: StreamChatOptions
+  ): Promise<StreamChatResult> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), supplier.timeoutMs);
+
+    try {
+      const response = await fetch(this.buildProviderApiUrl(supplier.provider, supplier.baseUrl, 'chat/completions'), {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${supplier.apiKey.trim()}`
+        },
+        body: JSON.stringify({
+          model: options.model,
+          stream: true,
+          messages: options.messages,
+          ...this.mapOpenAICompatibleOptions(options)
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new Error((await response.text()) || `${this.providerLabel(supplier.provider)} stream request failed with ${response.status}.`);
+      }
+
+      if (!response.body) {
+        throw new Error(`${this.providerLabel(supplier.provider)} did not return a readable stream.`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let content = '';
+
+      const processLine = (line: string) => {
+        const trimmed = line.trim();
+
+        if (!trimmed || trimmed.startsWith(':') || !trimmed.startsWith('data:')) {
+          return;
+        }
+
+        const payload = trimmed.slice(5).trim();
+
+        if (!payload || payload === '[DONE]') {
+          return;
+        }
+
+        const chunk = JSON.parse(payload) as OpenAICompatibleChatChunk;
+        const errorMessage = chunk.error?.message?.trim();
+
+        if (errorMessage) {
+          throw new Error(errorMessage);
+        }
+
+        for (const choice of chunk.choices ?? []) {
+          if (typeof choice.delta?.content === 'string') {
+            content += choice.delta.content;
+          } else if (typeof choice.message?.content === 'string') {
+            content += choice.message.content;
+          }
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+
+        let newlineIndex = buffer.indexOf('\n');
+
+        while (newlineIndex !== -1) {
+          const line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          processLine(line);
+          newlineIndex = buffer.indexOf('\n');
+        }
+
+        if (done) {
+          break;
+        }
+      }
+
+      if (buffer.trim()) {
+        processLine(buffer);
+      }
+
+      return {
+        content: content.trim()
+      };
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   private parseStructuredJson<T>(raw: string, schema: z.ZodType<T>) {
     const normalized = raw.trim();
     const candidates = [
@@ -1007,7 +1131,7 @@ export class OllamaService {
       }
     }
 
-    throw new Error('Unable to parse structured JSON from Ollama stream output.');
+    throw new Error('Unable to parse structured JSON from AI stream output.');
   }
 
   private extractJsonBlock(value: string) {
@@ -1037,6 +1161,132 @@ export class OllamaService {
       parameterSize: details ? String(details.parameter_size ?? '') : undefined,
       quantizationLevel: details ? String(details.quantization_level ?? '') : undefined
     };
+  }
+
+  private mapDeepSeekModel(item: Record<string, unknown>): OllamaModel {
+    const model = String(item.id ?? item.model ?? item.name ?? '');
+    const created = Number(item.created ?? 0);
+    const modifiedAt =
+      Number.isFinite(created) && created > 0 ? new Date(created * 1000).toISOString() : '';
+
+    return {
+      name: model,
+      model,
+      family: this.deriveModelFamily(model, model),
+      category: this.deriveModelCategory(model, model),
+      size: 0,
+      modifiedAt,
+      parameterSize: typeof item.owned_by === 'string' ? String(item.owned_by) : undefined
+    };
+  }
+
+  private async fetchOllamaModels(normalizedBaseUrl: string, timeoutMs: number) {
+    const response = await axios.get<{ models?: Array<Record<string, unknown>> }>(
+      buildOllamaApiUrl(normalizedBaseUrl, 'tags'),
+      {
+        timeout: timeoutMs
+      }
+    );
+
+    return (response.data.models ?? []).map((item) => this.mapOllamaModel(item));
+  }
+
+  private async fetchDeepSeekModels(normalizedBaseUrl: string, apiKey: string, timeoutMs: number) {
+    const response = await axios.get<OpenAICompatibleModelListResponse>(
+      this.buildProviderApiUrl('deepseek', normalizedBaseUrl, 'models'),
+      {
+        timeout: timeoutMs,
+        headers: {
+          authorization: `Bearer ${apiKey.trim()}`
+        }
+      }
+    );
+
+    return (response.data.data ?? [])
+      .map((item) => this.mapDeepSeekModel(item))
+      .filter((item) => item.name.trim().length > 0);
+  }
+
+  private normalizeSupplierBaseUrl(provider: OllamaSupplier['provider'], input: string) {
+    return provider === 'ollama' ? normalizeOllamaBaseUrl(input) : input.trim().replace(/\/+$/u, '');
+  }
+
+  private buildProviderApiUrl(provider: OllamaSupplier['provider'], baseUrl: string, path: string) {
+    if (provider === 'ollama') {
+      return buildOllamaApiUrl(baseUrl, path);
+    }
+
+    const normalized = this.normalizeSupplierBaseUrl(provider, baseUrl);
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${normalized}/${cleanPath}`;
+  }
+
+  private providerLabel(provider: OllamaSupplier['provider']) {
+    return provider === 'deepseek' ? 'DeepSeek' : 'Ollama';
+  }
+
+  private describeRemoteError(error: unknown) {
+    if (error instanceof AxiosError) {
+      const responseMessage = this.extractResponseErrorMessage(error.response?.data);
+      return responseMessage || error.message;
+    }
+
+    return error instanceof Error ? error.message : '连接失败。';
+  }
+
+  private extractResponseErrorMessage(payload: unknown): string {
+    if (typeof payload === 'string') {
+      return payload.trim();
+    }
+
+    if (!payload || typeof payload !== 'object') {
+      return '';
+    }
+
+    const directMessage =
+      'message' in payload && typeof payload.message === 'string'
+        ? payload.message.trim()
+        : 'error' in payload && typeof payload.error === 'string'
+          ? payload.error.trim()
+          : '';
+
+    if (directMessage) {
+      return directMessage;
+    }
+
+    if ('error' in payload && payload.error && typeof payload.error === 'object') {
+      const nestedMessage =
+        'message' in payload.error && typeof payload.error.message === 'string' ? payload.error.message.trim() : '';
+
+      if (nestedMessage) {
+        return nestedMessage;
+      }
+    }
+
+    return '';
+  }
+
+  private mapOpenAICompatibleOptions(options: StreamChatOptions) {
+    const rawOptions = options.options ?? {};
+    const nextOptions: Record<string, unknown> = {};
+
+    if (typeof rawOptions.temperature === 'number') {
+      nextOptions.temperature = rawOptions.temperature;
+    }
+
+    if (typeof rawOptions.top_p === 'number') {
+      nextOptions.top_p = rawOptions.top_p;
+    }
+
+    if (typeof rawOptions.num_predict === 'number') {
+      nextOptions.max_tokens = rawOptions.num_predict;
+    }
+
+    if (options.format === 'json') {
+      nextOptions.response_format = { type: 'json_object' };
+    }
+
+    return nextOptions;
   }
 
   private deriveModelFamily(name: string, model: string) {

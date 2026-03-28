@@ -42,14 +42,17 @@ const participantActionSchema = z.object({
 });
 
 const checkSchema = z.object({
-  baseUrl: z.string().trim().min(1, 'Ollama 地址不能为空。'),
+  provider: z.enum(['ollama', 'deepseek']).default('ollama'),
+  baseUrl: z.string().trim().min(1, '供应商地址不能为空。'),
+  apiKey: z.string().trim().max(500).default(''),
   timeoutMs: z.number().int().min(1000).max(120000).default(30000)
 });
 
 const supplierSchema = z.object({
   label: z.string().trim().min(1, '请先填写供应商名称。').max(32, '供应商名称请控制在 32 个字符内。'),
-  provider: z.enum(['ollama']).default('ollama'),
-  baseUrl: z.string().trim().min(1, 'Ollama 地址不能为空。'),
+  provider: z.enum(['ollama', 'deepseek']).default('ollama'),
+  baseUrl: z.string().trim().min(1, '供应商地址不能为空。'),
+  apiKey: z.string().trim().max(500).default(''),
   timeoutMs: z.number().int().min(1000).max(120000).default(30000)
 });
 
@@ -305,7 +308,7 @@ export async function createApp() {
     requireAuth,
     wrap(async (request, response) => {
       const body = checkSchema.parse(request.body ?? {});
-      response.json(await roomService.checkOllamaConnection(body.baseUrl, body.timeoutMs));
+      response.json(await roomService.checkOllamaConnection(body.provider, body.baseUrl, body.apiKey, body.timeoutMs));
     })
   );
 
