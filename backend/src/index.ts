@@ -68,4 +68,7 @@ socketServer.on('connection', (socket: WebSocket, request: IncomingMessage) => {
 
 server.listen(port, host, () => {
   console.log(`Turtle Soup Mystery backend listening on http://${host}:${port}`);
+  console.log(
+    `AI debug logs ${!/^(0|false|no|off)$/iu.test(process.env.AI_DEBUG_LOGS ?? 'true') ? 'enabled' : 'disabled'}`
+  );
 });

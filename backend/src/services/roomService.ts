@@ -169,6 +169,21 @@ export class RoomService {
     let puzzle;
 
     try {
+      console.info(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'create_room_generation_start',
+          timestamp,
+          difficulty: input.difficulty,
+          prompt: resolvedPrompt,
+          generationSupplier: generationSupplier?.label ?? null,
+          generationProvider: generationSupplier?.provider ?? null,
+          generationModel: state.ollama.generationModel,
+          validationSupplier: validationSupplier?.label ?? null,
+          validationProvider: validationSupplier?.provider ?? null,
+          validationModel: state.ollama.validationModel
+        })
+      );
       puzzle = await this.ollamaService.generatePuzzle(
         generationSupplier,
         state.ollama.generationModel,
@@ -182,7 +197,24 @@ export class RoomService {
           timeoutMs: state.ollama.generationTimeoutMs
         }
       );
+      console.info(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'create_room_generation_success',
+          timestamp: nowIso(),
+          puzzleTitle: puzzle.title,
+          difficulty: puzzle.difficulty
+        })
+      );
     } catch (error) {
+      console.error(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'create_room_generation_error',
+          timestamp: nowIso(),
+          message: error instanceof Error ? error.message : String(error)
+        })
+      );
       throw new ServiceError(503, error instanceof Error ? error.message : '当前无法生成可游玩的海龟汤，请稍后再试。');
     }
     const generationDurationMs = Math.max(0, Date.now() - generationStartedAtMs);
@@ -818,6 +850,22 @@ export class RoomService {
     let puzzle;
 
     try {
+      console.info(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'restart_room_generation_start',
+          timestamp: nowIso(),
+          roomId,
+          difficulty: input.difficulty,
+          prompt: resolvedPrompt,
+          generationSupplier: generationSupplier?.label ?? null,
+          generationProvider: generationSupplier?.provider ?? null,
+          generationModel: state.ollama.generationModel,
+          validationSupplier: validationSupplier?.label ?? null,
+          validationProvider: validationSupplier?.provider ?? null,
+          validationModel: state.ollama.validationModel
+        })
+      );
       puzzle = await this.ollamaService.generatePuzzle(
         generationSupplier,
         state.ollama.generationModel,
@@ -831,7 +879,26 @@ export class RoomService {
           timeoutMs: state.ollama.generationTimeoutMs
         }
       );
+      console.info(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'restart_room_generation_success',
+          timestamp: nowIso(),
+          roomId,
+          puzzleTitle: puzzle.title,
+          difficulty: puzzle.difficulty
+        })
+      );
     } catch (error) {
+      console.error(
+        JSON.stringify({
+          scope: 'room',
+          stage: 'restart_room_generation_error',
+          timestamp: nowIso(),
+          roomId,
+          message: error instanceof Error ? error.message : String(error)
+        })
+      );
       throw new ServiceError(503, error instanceof Error ? error.message : '当前无法生成可游玩的海龟汤，请稍后再试。');
     }
     const generationDurationMs = Math.max(0, Date.now() - generationStartedAtMs);

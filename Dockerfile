@@ -18,7 +18,7 @@ ENV NODE_ENV=production
 ENV PORT=8080
 ENV APP_RUNTIME_DIR=/app/data/runtime
 ENV APP_SQLITE_PATH=/app/data/runtime/turtle-soup.db
-ENV AI_DEBUG_LOGS=false
+ENV AI_DEBUG_LOGS=true
 ENV AI_DEBUG_LOG_MAX_CHARS=12000
 ENV NODE_OPTIONS=--disable-warning=ExperimentalWarning
 

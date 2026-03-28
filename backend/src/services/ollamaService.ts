@@ -34,6 +34,21 @@ const generatedPuzzleSchema = z.object({
   tags: z.array(z.string()).default([])
 });
 
+const puzzleScenarioSchema = z.object({
+  title: z.string().min(4),
+  visibleScene: z.string().min(12),
+  hiddenCause: z.string().min(12),
+  trigger: z.string().min(12),
+  decisiveAction: z.string().min(12),
+  outcome: z.string().min(12),
+  involvedRoles: z.array(z.string().min(1)).min(2).max(5),
+  keyObjects: z.array(z.string().min(1)).min(1).max(5),
+  factSeeds: z.array(z.string().min(6)).min(5).max(8),
+  misleadingPoints: z.array(z.string()).default([]),
+  keyTriggers: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([])
+});
+
 const questionSchema = z.object({
   answerCode: z.enum(['yes', 'no', 'irrelevant', 'partial', 'unknown']),
   matchedFactIds: z.array(z.string()).default([]),
@@ -128,6 +143,8 @@ interface GenerationBlueprint {
   revealAnchor: string;
 }
 
+type PuzzleScenario = z.infer<typeof puzzleScenarioSchema>;
+
 const EASY_SETTINGS = ['校园', '办公室', '家庭', '便利店', '小区', '餐馆', '商场'];
 const MEDIUM_SETTINGS = ['现代都市', '医院', '旅馆', '摄影棚', '短途列车', '演出后台', '旅游大巴'];
 const HARD_SETTINGS = ['心理咨询室', '档案馆', '停运车站', '航运码头', '实验楼', '闭馆展厅', '深夜值班室'];
@@ -157,7 +174,7 @@ const REVEAL_ANCHORS = ['背景反光', '时间点对不上', '物件位置异�
 type FallbackBuilder = (request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) => Puzzle;
 
 export class OllamaService {
-  private readonly debugLogsEnabled = /^(1|true|yes|on)$/iu.test(process.env.AI_DEBUG_LOGS ?? '');
+  private readonly debugLogsEnabled = !/^(0|false|no|off)$/iu.test(process.env.AI_DEBUG_LOGS ?? 'true');
   private readonly debugLogMaxChars = this.resolveDebugLogMaxChars(process.env.AI_DEBUG_LOG_MAX_CHARS);
 
   async checkConnection(
@@ -259,11 +276,53 @@ export class OllamaService {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         const timedGenerationSupplier = this.withRemainingTimeout(supplier, generationDeadline);
+        const scenario = await this.requestStructuredOutput(
+          timedGenerationSupplier,
+          selectedModel,
+          puzzleScenarioSchema,
+          this.buildScenarioMessages(request, blueprint, attempt > 0),
+          {
+            temperature: 0.92,
+            top_p: 0.9,
+            repeat_penalty: 1.06,
+            num_ctx: 12_288,
+            num_predict: 900
+          },
+          {
+            traceId,
+            operation: 'generate_puzzle',
+            stage: `scenario_attempt_${attempt + 1}`
+          }
+        );
+
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Scenario generated.',
+          attempt: attempt + 1,
+          scenario
+        });
+
+        const scenarioAudit = this.auditScenarioLocally(scenario, request, blueprint);
+
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Scenario audit finished.',
+          attempt: attempt + 1,
+          scenarioAudit
+        });
+
+        if (!scenarioAudit.valid) {
+          lastFailureReason = scenarioAudit.reasons[0] ?? lastFailureReason;
+          continue;
+        }
+
         const parsed = await this.requestStructuredOutput(
           timedGenerationSupplier,
           selectedModel,
           generatedPuzzleSchema,
-          this.buildGenerationMessages(request, blueprint, attempt > 0),
+          this.buildGenerationMessages(request, blueprint, scenario, attempt > 0),
           {
             temperature: 0.95,
             top_p: 0.92,
@@ -274,7 +333,7 @@ export class OllamaService {
           {
             traceId,
             operation: 'generate_puzzle',
-            stage: `generation_attempt_${attempt + 1}`
+            stage: `puzzle_attempt_${attempt + 1}`
           }
         );
         const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
@@ -571,9 +630,89 @@ export class OllamaService {
     throw lastError ?? new Error('Unable to obtain structured JSON output.');
   }
 
+  private buildScenarioMessages(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    retryMode = false
+  ): OllamaChatMessage[] {
+    return [
+      {
+        role: 'system',
+        content: [
+          'You design the canonical incident skeleton for a turtle soup mystery.',
+          'Write all natural-language fields in Simplified Chinese.',
+          'Return JSON only.',
+          'Design exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.',
+          'Every field must refer to the same people, the same place, and the same timeline.',
+          'Do not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.',
+          'Do not switch incidents midway. Do not introduce a second story in fact seeds.',
+          ...(retryMode
+            ? [
+                'The previous scenario was rejected.',
+                'Rebuild the scenario from scratch with a tighter single-event causal chain.'
+              ]
+            : [])
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          'Task: first create the canonical event skeleton for one turtle soup puzzle.',
+          '',
+          `Difficulty: ${request.difficulty}`,
+          `User theme preference: ${request.prompt.trim() || '随机主题，用户没有额外要求'}`,
+          '',
+          'Creative brief:',
+          `- Setting: ${blueprint.setting}`,
+          `- Atmosphere: ${blueprint.atmosphere}`,
+          `- Relationship focus: ${blueprint.relationship}`,
+          `- Surface contradiction: ${blueprint.contradiction}`,
+          `- Hidden mechanism: ${blueprint.hiddenMechanism}`,
+          `- Immediate pressure: ${blueprint.pressure}`,
+          `- Key object: ${blueprint.keyObject}`,
+          `- Red-herring flavor: ${blueprint.redHerring}`,
+          `- Reveal anchor: ${blueprint.revealAnchor}`,
+          `- Novelty token: ${blueprint.noveltyToken}`,
+          '',
+          'Scenario rules:',
+          '- visibleScene is the exact strange scene players will hear as the soup surface',
+          '- hiddenCause explains the real hidden reason behind that same scene',
+          '- trigger is the concrete moment that set the event in motion',
+          '- decisiveAction is the one visible action that looked strange to bystanders',
+          '- outcome is the concrete result caused by that action',
+          '- involvedRoles must stay consistent across all fields',
+          '- factSeeds must all belong to this same incident timeline',
+          '- factSeeds must be concrete evidence or event details, not abstract conclusions',
+          '- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened',
+          '',
+          'JSON shape:',
+          JSON.stringify(
+            {
+              title: 'string',
+              visibleScene: 'string',
+              hiddenCause: 'string',
+              trigger: 'string',
+              decisiveAction: 'string',
+              outcome: 'string',
+              involvedRoles: ['主角', '同伴'],
+              keyObjects: ['工牌'],
+              factSeeds: ['string'],
+              misleadingPoints: ['string'],
+              keyTriggers: ['string'],
+              tags: ['string']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
   private buildGenerationMessages(
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
+    scenario: PuzzleScenario,
     retryMode = false
   ): OllamaChatMessage[] {
     return [
@@ -586,10 +725,10 @@ export class OllamaService {
           'The puzzle must be solvable through careful yes/no questioning.',
           'Avoid stale stock plots unless they are clearly subverted.',
           'Do not use supernatural explanations, dream endings, or pure coincidence.',
+          'The approved scenario is the single source of truth.',
           'Soup surface, truth story, facts, and key triggers must all be mutually consistent.',
           'The soup surface must describe the same event that the truth story fully explains.',
-          'Use exactly one central incident, one hidden cause, and one visible outcome.',
-          'Do not switch to another event, another victim, another plan, or another timeline halfway through.',
+          'Do not invent any second story, second timeline, second culprit, or second hidden cause.',
           'Use the same concrete anchors across the entire puzzle, not different unrelated stories.',
           'The truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.',
           'Reject vague templates such as "the protagonist noticed something was wrong and interrupted the process" unless you explain the exact event in detail.',
@@ -622,12 +761,17 @@ export class OllamaService {
           `- Reveal anchor: ${blueprint.revealAnchor}`,
           `- Novelty token: ${blueprint.noveltyToken}`,
           '',
+          'Approved incident skeleton:',
+          this.buildScenarioDossier(scenario),
+          '',
           'Output requirements:',
           '- title: memorable, not generic',
           '- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler',
           '- truthStory: complete causal chain, clearly explain why the surface happened',
           '- soupSurface and truthStory must point to the same people, event, and hidden mechanism',
           '- the soupSurface must be the visible climax scene of the same incident described in truthStory',
+          '- soupSurface must be a concise rewrite of visibleScene, not a different scene',
+          '- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario',
           '- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory',
           '- truthStory must include a concrete trigger, a concrete action, and a concrete outcome',
           '- truthStory must not stop at abstract phrases like "the protagonist knew a rule" or "there was risk in the process"',
@@ -902,6 +1046,82 @@ export class OllamaService {
       'Recent question history:',
       historySection
     ].join('\n');
+  }
+
+  private buildScenarioDossier(scenario: PuzzleScenario) {
+    return [
+      `Title: ${scenario.title}`,
+      `Visible scene: ${scenario.visibleScene}`,
+      `Hidden cause: ${scenario.hiddenCause}`,
+      `Trigger: ${scenario.trigger}`,
+      `Decisive action: ${scenario.decisiveAction}`,
+      `Outcome: ${scenario.outcome}`,
+      `Involved roles: ${scenario.involvedRoles.join(' / ')}`,
+      `Key objects: ${scenario.keyObjects.join(' / ')}`,
+      `Fact seeds: ${scenario.factSeeds.map((item, index) => `${index + 1}. ${item}`).join(' | ')}`,
+      `Misleading points: ${scenario.misleadingPoints.join(' / ') || 'none'}`,
+      `Key triggers: ${scenario.keyTriggers.join(' / ') || 'none'}`,
+      `Tags: ${scenario.tags.join(' / ') || 'none'}`
+    ].join('\n');
+  }
+
+  private auditScenarioLocally(
+    scenario: PuzzleScenario,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint
+  ) {
+    const reasons: string[] = [];
+    const visibleTokens = new Set(this.extractComparableTokens([scenario.visibleScene]));
+    const hiddenTokens = new Set(this.extractComparableTokens([scenario.hiddenCause]));
+    const triggerTokens = new Set(this.extractComparableTokens([scenario.trigger]));
+    const actionTokens = new Set(this.extractComparableTokens([scenario.decisiveAction]));
+    const outcomeTokens = new Set(this.extractComparableTokens([scenario.outcome]));
+    const factLinkedCount = scenario.factSeeds.filter((fact) => {
+      const factTokens = new Set(this.extractComparableTokens([fact]));
+      return this.countSharedTokens(factTokens, visibleTokens, hiddenTokens, triggerTokens, actionTokens, outcomeTokens) >= 1;
+    }).length;
+    const roomTokens = new Set(
+      this.extractComparableTokens([
+        scenario.title,
+        scenario.visibleScene,
+        scenario.hiddenCause,
+        scenario.trigger,
+        scenario.decisiveAction,
+        scenario.outcome,
+        ...scenario.factSeeds,
+        ...scenario.keyObjects,
+        ...scenario.involvedRoles,
+        blueprint.setting,
+        blueprint.keyObject
+      ])
+    );
+    const promptTokens = this.extractComparableTokens([request.prompt]);
+
+    if (this.countSharedTokens(visibleTokens, triggerTokens, actionTokens, outcomeTokens) < 2) {
+      reasons.push('事件骨架里的表面场景和行动结果没有稳定落在同一事件上。');
+    }
+
+    if (this.countSharedTokens(hiddenTokens, triggerTokens, actionTokens, outcomeTokens) < 2) {
+      reasons.push('事件骨架里的隐藏原因与触发、动作、结果衔接不紧。');
+    }
+
+    if (factLinkedCount < 4) {
+      reasons.push('事件骨架里的事实种子没有稳定支撑同一条时间线。');
+    }
+
+    if (this.isAbstractTruthStory([scenario.hiddenCause, scenario.trigger, scenario.decisiveAction, scenario.outcome].join('。'))) {
+      reasons.push('事件骨架仍然过于抽象，缺少可具体还原的动作和结果。');
+    }
+
+    if (promptTokens.length > 0 && !promptTokens.some((token) => roomTokens.has(token))) {
+      reasons.push('事件骨架没有响应用户主题要求。');
+    }
+
+    return {
+      valid: reasons.length === 0,
+      coherenceScore: reasons.length === 0 ? 100 : Math.max(0, 88 - reasons.length * 20),
+      reasons
+    };
   }
 
   private normalizeGeneratedPuzzle(
