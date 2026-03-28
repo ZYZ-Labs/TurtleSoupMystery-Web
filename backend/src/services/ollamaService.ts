@@ -682,10 +682,38 @@ export class OllamaService {
           attempt: attemptIndex + 1,
           error: this.describeUnknownError(error)
         });
+
+        if (!this.shouldRetryStructuredOutput(error, attemptIndex, attempts.length)) {
+          break;
+        }
       }
     }
 
     throw lastError ?? new Error('Unable to obtain structured JSON output.');
+  }
+
+  private shouldRetryStructuredOutput(error: unknown, attemptIndex: number, totalAttempts: number) {
+    if (attemptIndex >= totalAttempts - 1) {
+      return false;
+    }
+
+    return this.isStructuredOutputRepairableError(error);
+  }
+
+  private isStructuredOutputRepairableError(error: unknown) {
+    if (error instanceof z.ZodError) {
+      return true;
+    }
+
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    if (error.name === 'AbortError') {
+      return false;
+    }
+
+    return /structured json|valid json|schema|parse|unexpected token|end of json/i.test(error.message);
   }
 
   private buildScenarioMessages(
@@ -1938,6 +1966,12 @@ export class OllamaService {
       return {
         content: content.trim()
       };
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Ollama 请求超时，已等待 ${Math.round(supplier.timeoutMs / 1000)} 秒。`);
+      }
+
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -2033,6 +2067,12 @@ export class OllamaService {
       return {
         content: content.trim()
       };
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`${this.providerLabel(supplier.provider)} 请求超时，已等待 ${Math.round(supplier.timeoutMs / 1000)} 秒。`);
+      }
+
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
