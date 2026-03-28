@@ -8,6 +8,7 @@ import type {
   GameRoom,
   OllamaConfig,
   OllamaSupplier,
+  PendingRoomSubmission,
   PublicGameRoom,
   PublicPuzzle,
   Puzzle,
@@ -17,7 +18,8 @@ import type {
   RoomContext,
   RoomJoinResult,
   RoomMessage,
-  RoomParticipant
+  RoomParticipant,
+  SubmissionKind
 } from '../types/domain.js';
 import { OllamaService } from './ollamaService.js';
 
@@ -42,6 +44,11 @@ interface JoinRoomInput {
   clientId?: string;
   roomCode: string;
   displayName: string;
+}
+
+interface RestartRoomInput {
+  difficulty: Difficulty;
+  generationPrompt: string;
 }
 
 export class RoomService {
@@ -192,6 +199,7 @@ export class RoomService {
       ],
       questions: [],
       revealedFactIds: [],
+      pendingSubmission: null,
       progressScore: 0,
       status: 'playing',
       createdAt: timestamp,
@@ -296,95 +304,32 @@ export class RoomService {
   }
 
   async askQuestion(roomId: string, participantId: string, question: string) {
-    const state = await this.store.readState();
-    const room = this.findRoomOrThrow(state.rooms, roomId);
+    const startedAt = nowIso();
+    let lockedRoom: GameRoom | null = null;
+    let participant: RoomParticipant | null = null;
+    let validationSupplier: OllamaSupplier | null = null;
+    let validationModel = '';
 
-    if (room.status !== 'playing') {
-      throw new ServiceError(409, '房间已经结算，不能继续提问。');
-    }
-
-    const participant = this.findParticipantOrThrow(room, participantId);
-    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
-    const evaluation = await this.ollamaService.evaluateQuestion(
-      validationSupplier,
-      state.ollama.validationModel,
-      this.toPuzzle(room),
-      this.toRoomContext(room),
-      question
-    );
-    const timestamp = nowIso();
-    const answerLabel = ANSWER_LABELS[evaluation.answerCode];
-    const questionRecord: QuestionRecord = {
-      id: nanoid(),
-      askedByParticipantId: participant.participantId,
-      askedByName: participant.displayName,
-      question,
-      answerCode: evaluation.answerCode,
-      answerLabel,
-      matchedFactIds: evaluation.matchedFactIds,
-      revealedFactIds: evaluation.revealedFactIds,
-      progressDelta: evaluation.progressDelta,
-      createdAt: timestamp,
-      source: evaluation.source,
-      reasoning: evaluation.reasoning
-    };
-
-    const nextState = await this.store.updateState((current) => {
+    await this.store.updateState((current) => {
       const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
 
       if (currentRoom.status !== 'playing') {
-        throw new ServiceError(409, '房间已经结算，不能继续提问。');
+        throw new ServiceError(409, '\u623f\u95f4\u5df2\u7ecf\u7ed3\u7b97\uff0c\u4e0d\u80fd\u7ee7\u7eed\u63d0\u95ee\u3002');
       }
 
-      this.findParticipantOrThrow(currentRoom, participantId);
-      const revealedFactIds = unique([...currentRoom.revealedFactIds, ...evaluation.revealedFactIds]);
-      const newlyRevealedFacts = evaluation.revealedFactIds
-        .map((factId) => currentRoom.facts.find((fact) => fact.factId === factId)?.statement)
-        .filter((statement): statement is string => Boolean(statement));
-      const messages: RoomMessage[] = [
-        ...currentRoom.messages,
-        {
-          id: `${questionRecord.id}-question`,
-          type: 'question',
-          authorName: participant.displayName,
-          content: question,
-          createdAt: timestamp,
-          source: evaluation.source
-        },
-        {
-          id: `${questionRecord.id}-answer`,
-          type: 'answer',
-          authorName: AI_HOST_NAME,
-          content: answerLabel,
-          createdAt: timestamp,
-          answerCode: evaluation.answerCode,
-          answerLabel,
-          source: evaluation.source
-        }
-      ];
-
-      if (newlyRevealedFacts.length) {
-        messages.push({
-          id: `${questionRecord.id}-facts`,
-          type: 'status',
-          authorName: AI_HOST_NAME,
-          content: `新揭示事实：${newlyRevealedFacts.join('；')}`,
-          createdAt: timestamp,
-          source: evaluation.source
-        });
-      }
+      this.assertNoPendingSubmission(currentRoom.pendingSubmission);
+      const currentParticipant = this.findParticipantOrThrow(currentRoom, participantId);
+      participant = currentParticipant;
+      validationSupplier = this.findSupplier(current.ollama.suppliers, current.ollama.validationSupplierId);
+      validationModel = current.ollama.validationModel;
 
       const nextRoom: GameRoom = {
         ...currentRoom,
-        participants: currentRoom.participants.map((item) =>
-          item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
-        ),
-        messages,
-        questions: [...currentRoom.questions, questionRecord],
-        revealedFactIds,
-        progressScore: clampProgress(currentRoom.progressScore + evaluation.progressDelta),
-        updatedAt: timestamp
+        pendingSubmission: this.createPendingSubmission('question', currentParticipant, startedAt),
+        updatedAt: startedAt
       };
+
+      lockedRoom = nextRoom;
 
       return {
         ...current,
@@ -392,82 +337,147 @@ export class RoomService {
       };
     });
 
-    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
-    this.emitRoomUpdated(publicRoom);
-    return publicRoom;
-  }
-
-  async submitFinalGuess(roomId: string, participantId: string, guess: string) {
-    const state = await this.store.readState();
-    const room = this.findRoomOrThrow(state.rooms, roomId);
-
-    if (room.status !== 'playing') {
-      throw new ServiceError(409, '房间已经结算，不能再次提交最终猜测。');
+    if (!lockedRoom || !participant) {
+      throw new ServiceError(500, '\u63d0\u4ea4\u95ee\u9898\u65f6\u53d1\u751f\u4e86\u610f\u5916\u9519\u8bef\u3002');
     }
 
-    const participant = this.findParticipantOrThrow(room, participantId);
-    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
-    const evaluation = await this.ollamaService.evaluateFinalGuess(
-      validationSupplier,
-      state.ollama.validationModel,
-      this.toPuzzle(room),
-      this.toRoomContext(room),
-      guess
-    );
-    const timestamp = nowIso();
-    const nextStatus = evaluation.accepted ? 'solved' : 'failed';
-    const finalGuess: FinalGuessRecord = {
-      participantId: participant.participantId,
-      participantName: participant.displayName,
-      guess,
-      accepted: evaluation.accepted,
-      score: evaluation.score,
-      missingPoints: evaluation.missingPoints,
-      createdAt: timestamp,
-      source: evaluation.source,
-      reasoning: evaluation.reasoning
-    };
+    const submissionRoom: GameRoom = lockedRoom as GameRoom;
+    const submissionParticipant: RoomParticipant = participant as RoomParticipant;
 
-    const nextState = await this.store.updateState((current) => {
-      const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
+    this.emitRoomUpdated(this.toPublicRoom(submissionRoom));
 
-      if (currentRoom.status !== 'playing') {
-        throw new ServiceError(409, '房间已经结算，不能再次提交最终猜测。');
-      }
+    try {
+      const evaluation = await this.ollamaService.evaluateQuestion(
+        validationSupplier,
+        validationModel,
+        this.toPuzzle(submissionRoom),
+        this.toRoomContext(submissionRoom),
+        question
+      );
+      const timestamp = nowIso();
+      const answerLabel = ANSWER_LABELS[evaluation.answerCode];
+      const questionRecord: QuestionRecord = {
+        id: nanoid(),
+        askedByParticipantId: submissionParticipant.participantId,
+        askedByName: submissionParticipant.displayName,
+        question,
+        answerCode: evaluation.answerCode,
+        answerLabel,
+        matchedFactIds: evaluation.matchedFactIds,
+        revealedFactIds: evaluation.revealedFactIds,
+        progressDelta: evaluation.progressDelta,
+        createdAt: timestamp,
+        source: evaluation.source,
+        reasoning: evaluation.reasoning
+      };
 
-      this.findParticipantOrThrow(currentRoom, participantId);
+      const nextState = await this.store.updateState((current) => {
+        const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
 
-      const nextRoom: GameRoom = {
-        ...currentRoom,
-        participants: currentRoom.participants.map((item) =>
-          item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
-        ),
-        messages: [
+        if (currentRoom.status !== 'playing') {
+          throw new ServiceError(409, '\u623f\u95f4\u5df2\u7ecf\u7ed3\u7b97\uff0c\u4e0d\u80fd\u7ee7\u7eed\u63d0\u95ee\u3002');
+        }
+
+        this.findParticipantOrThrow(currentRoom, participantId);
+        this.assertSubmissionOwner(currentRoom.pendingSubmission, participantId, 'question');
+
+        const revealedFactIds = unique([...currentRoom.revealedFactIds, ...evaluation.revealedFactIds]);
+        const newlyRevealedFacts = evaluation.revealedFactIds
+          .map((factId) => currentRoom.facts.find((fact) => fact.factId === factId)?.statement)
+          .filter((statement): statement is string => Boolean(statement));
+        const messages: RoomMessage[] = [
           ...currentRoom.messages,
           {
-            id: `${finalGuess.participantId}-guess-${timestamp}`,
-            type: 'guess',
-            authorName: participant.displayName,
-            content: guess,
+            id: `${questionRecord.id}-question`,
+            type: 'question',
+            authorName: submissionParticipant.displayName,
+            content: question,
             createdAt: timestamp,
             source: evaluation.source
           },
           {
-            id: `${finalGuess.participantId}-status-${timestamp}`,
-            type: 'status',
+            id: `${questionRecord.id}-answer`,
+            type: 'answer',
             authorName: AI_HOST_NAME,
-            content: evaluation.accepted
-              ? `最终猜测通过，房间已破解。得分 ${evaluation.score}%。`
-              : `最终猜测未通过，房间已结算。得分 ${evaluation.score}%。`,
+            content: answerLabel,
             createdAt: timestamp,
+            answerCode: evaluation.answerCode,
+            answerLabel,
             source: evaluation.source
           }
-        ],
-        status: nextStatus,
-        progressScore: clampProgress(Math.max(currentRoom.progressScore, evaluation.score)),
-        finalGuess,
-        updatedAt: timestamp
+        ];
+
+        if (newlyRevealedFacts.length) {
+          messages.push({
+            id: `${questionRecord.id}-facts`,
+            type: 'status',
+            authorName: AI_HOST_NAME,
+            content: `\u65b0\u63ed\u793a\u4e8b\u5b9e\uff1a${newlyRevealedFacts.join('\uFF1B')}`,
+            createdAt: timestamp,
+            source: evaluation.source
+          });
+        }
+
+        const nextRoom: GameRoom = {
+          ...currentRoom,
+          participants: currentRoom.participants.map((item) =>
+            item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
+          ),
+          messages,
+          questions: [...currentRoom.questions, questionRecord],
+          revealedFactIds,
+          pendingSubmission: null,
+          progressScore: clampProgress(currentRoom.progressScore + evaluation.progressDelta),
+          updatedAt: timestamp
+        };
+
+        return {
+          ...current,
+          rooms: current.rooms.map((item) => (item.roomId === roomId ? nextRoom : item))
+        };
+      });
+
+      const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+      this.emitRoomUpdated(publicRoom);
+      return publicRoom;
+    } catch (error) {
+      const clearedRoom = await this.clearPendingSubmission(roomId, participantId, 'question');
+
+      if (clearedRoom) {
+        this.emitRoomUpdated(this.toPublicRoom(clearedRoom));
+      }
+
+      throw error;
+    }
+  }
+
+  async submitFinalGuess(roomId: string, participantId: string, guess: string) {
+    const startedAt = nowIso();
+    let lockedRoom: GameRoom | null = null;
+    let participant: RoomParticipant | null = null;
+    let validationSupplier: OllamaSupplier | null = null;
+    let validationModel = '';
+
+    await this.store.updateState((current) => {
+      const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
+
+      if (currentRoom.status !== 'playing') {
+        throw new ServiceError(409, '\u623f\u95f4\u5df2\u7ecf\u7ed3\u7b97\uff0c\u4e0d\u80fd\u518d\u6b21\u63d0\u4ea4\u6700\u7ec8\u731c\u6d4b\u3002');
+      }
+
+      this.assertNoPendingSubmission(currentRoom.pendingSubmission);
+      const currentParticipant = this.findParticipantOrThrow(currentRoom, participantId);
+      participant = currentParticipant;
+      validationSupplier = this.findSupplier(current.ollama.suppliers, current.ollama.validationSupplierId);
+      validationModel = current.ollama.validationModel;
+
+      const nextRoom: GameRoom = {
+        ...currentRoom,
+        pendingSubmission: this.createPendingSubmission('final_guess', currentParticipant, startedAt),
+        updatedAt: startedAt
       };
+
+      lockedRoom = nextRoom;
 
       return {
         ...current,
@@ -475,9 +485,98 @@ export class RoomService {
       };
     });
 
-    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
-    this.emitRoomUpdated(publicRoom);
-    return publicRoom;
+    if (!lockedRoom || !participant) {
+      throw new ServiceError(500, '\u63d0\u4ea4\u6700\u7ec8\u731c\u6d4b\u65f6\u53d1\u751f\u4e86\u610f\u5916\u9519\u8bef\u3002');
+    }
+
+    const submissionRoom: GameRoom = lockedRoom as GameRoom;
+    const submissionParticipant: RoomParticipant = participant as RoomParticipant;
+
+    this.emitRoomUpdated(this.toPublicRoom(submissionRoom));
+
+    try {
+      const evaluation = await this.ollamaService.evaluateFinalGuess(
+        validationSupplier,
+        validationModel,
+        this.toPuzzle(submissionRoom),
+        this.toRoomContext(submissionRoom),
+        guess
+      );
+      const timestamp = nowIso();
+      const nextStatus = evaluation.accepted ? 'solved' : 'failed';
+      const finalGuess: FinalGuessRecord = {
+        participantId: submissionParticipant.participantId,
+        participantName: submissionParticipant.displayName,
+        guess,
+        accepted: evaluation.accepted,
+        score: evaluation.score,
+        missingPoints: evaluation.missingPoints,
+        createdAt: timestamp,
+        source: evaluation.source,
+        reasoning: evaluation.reasoning
+      };
+
+      const nextState = await this.store.updateState((current) => {
+        const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
+
+        if (currentRoom.status !== 'playing') {
+          throw new ServiceError(409, '\u623f\u95f4\u5df2\u7ecf\u7ed3\u7b97\uff0c\u4e0d\u80fd\u518d\u6b21\u63d0\u4ea4\u6700\u7ec8\u731c\u6d4b\u3002');
+        }
+
+        this.findParticipantOrThrow(currentRoom, participantId);
+        this.assertSubmissionOwner(currentRoom.pendingSubmission, participantId, 'final_guess');
+
+        const nextRoom: GameRoom = {
+          ...currentRoom,
+          participants: currentRoom.participants.map((item) =>
+            item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
+          ),
+          messages: [
+            ...currentRoom.messages,
+            {
+              id: `${finalGuess.participantId}-guess-${timestamp}`,
+              type: 'guess',
+              authorName: submissionParticipant.displayName,
+              content: guess,
+              createdAt: timestamp,
+              source: evaluation.source
+            },
+            {
+              id: `${finalGuess.participantId}-status-${timestamp}`,
+              type: 'status',
+              authorName: AI_HOST_NAME,
+              content: evaluation.accepted
+                ? `\u6700\u7ec8\u731c\u6d4b\u901a\u8fc7\uff0c\u623f\u95f4\u5df2\u7834\u6848\u3002\u5f97\u5206 ${evaluation.score}%\u3002`
+                : `\u6700\u7ec8\u731c\u6d4b\u672a\u901a\u8fc7\uff0c\u623f\u95f4\u5df2\u7ed3\u7b97\u3002\u5f97\u5206 ${evaluation.score}%\u3002`,
+              createdAt: timestamp,
+              source: evaluation.source
+            }
+          ],
+          pendingSubmission: null,
+          status: nextStatus,
+          progressScore: clampProgress(Math.max(currentRoom.progressScore, evaluation.score)),
+          finalGuess,
+          updatedAt: timestamp
+        };
+
+        return {
+          ...current,
+          rooms: current.rooms.map((item) => (item.roomId === roomId ? nextRoom : item))
+        };
+      });
+
+      const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+      this.emitRoomUpdated(publicRoom);
+      return publicRoom;
+    } catch (error) {
+      const clearedRoom = await this.clearPendingSubmission(roomId, participantId, 'final_guess');
+
+      if (clearedRoom) {
+        this.emitRoomUpdated(this.toPublicRoom(clearedRoom));
+      }
+
+      throw error;
+    }
   }
 
   async revealRoom(roomId: string, participantId: string) {
@@ -489,6 +588,7 @@ export class RoomService {
         throw new ServiceError(403, '只有房主可以公开汤底。');
       }
 
+      this.assertNoPendingSubmission(room.pendingSubmission);
       const timestamp = nowIso();
       const nextRoom: GameRoom = {
         ...room,
@@ -506,6 +606,88 @@ export class RoomService {
           }
         ],
         status: room.status === 'playing' ? 'failed' : room.status,
+        updatedAt: timestamp
+      };
+
+      return {
+        ...current,
+        rooms: current.rooms.map((item) => (item.roomId === roomId ? nextRoom : item))
+      };
+    });
+
+    const publicRoom = this.toPublicRoom(this.findRoomOrThrow(nextState.rooms, roomId));
+    this.emitRoomUpdated(publicRoom);
+    return publicRoom;
+  }
+
+  async restartRoom(roomId: string, participantId: string, input: RestartRoomInput) {
+    const state = await this.store.readState();
+    const room = this.findRoomOrThrow(state.rooms, roomId);
+
+    if (room.status === 'playing') {
+      throw new ServiceError(409, '房间仍在进行中，暂时不能重新开局。');
+    }
+
+    const participant = this.findParticipantOrThrow(room, participantId);
+
+    if (participant.role !== 'host') {
+      throw new ServiceError(403, '只有房主可以重新开局。');
+    }
+
+    const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
+    const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
+    const puzzle = await this.ollamaService.generatePuzzle(generationSupplier, state.ollama.generationModel, {
+      difficulty: input.difficulty,
+      prompt: resolvedPrompt
+    });
+    const timestamp = nowIso();
+
+    const nextState = await this.store.updateState((current) => {
+      const currentRoom = this.findRoomOrThrow(current.rooms, roomId);
+      const currentParticipant = this.findParticipantOrThrow(currentRoom, participantId);
+
+      if (currentParticipant.role !== 'host') {
+        throw new ServiceError(403, '只有房主可以重新开局。');
+      }
+
+      const nextRoom: GameRoom = {
+        ...currentRoom,
+        title: slugifyPrompt(resolvedPrompt) || puzzle.title,
+        generationPrompt: resolvedPrompt,
+        puzzleId: puzzle.puzzleId,
+        puzzleTitle: puzzle.title,
+        soupSurface: puzzle.soupSurface,
+        truthStory: puzzle.truthStory,
+        facts: puzzle.facts,
+        misleadingPoints: puzzle.misleadingPoints,
+        keyTriggers: puzzle.keyTriggers,
+        difficulty: puzzle.difficulty,
+        tags: unique([...puzzle.tags, 'multiplayer']),
+        participants: currentRoom.participants.map((item) =>
+          item.participantId === participantId ? { ...item, lastSeenAt: timestamp } : item
+        ),
+        messages: [
+          {
+            id: nanoid(),
+            type: 'system',
+            authorName: '系统',
+            content: `${currentParticipant.displayName} 开启了新一轮，之前的问答记录已清空。`,
+            createdAt: timestamp
+          },
+          {
+            id: nanoid(),
+            type: 'status',
+            authorName: AI_HOST_NAME,
+            content: `汤面：${puzzle.soupSurface}`,
+            createdAt: timestamp
+          }
+        ],
+        questions: [],
+        revealedFactIds: [],
+        pendingSubmission: null,
+        progressScore: 0,
+        status: 'playing',
+        finalGuess: undefined,
         updatedAt: timestamp
       };
 
@@ -725,6 +907,58 @@ export class RoomService {
     return nextState.ollama;
   }
 
+  private createPendingSubmission(kind: SubmissionKind, participant: RoomParticipant, startedAt: string): PendingRoomSubmission {
+    return {
+      kind,
+      participantId: participant.participantId,
+      participantName: participant.displayName,
+      startedAt
+    };
+  }
+
+  private assertNoPendingSubmission(pendingSubmission: PendingRoomSubmission | null) {
+    if (!pendingSubmission) {
+      return;
+    }
+
+    throw new ServiceError(409, `${pendingSubmission.participantName} \u6b63\u5728\u63d0\u4ea4\u5185\u5bb9\uff0c\u8bf7\u7a0d\u5019\u518d\u8bd5\u3002`);
+  }
+
+  private assertSubmissionOwner(pendingSubmission: PendingRoomSubmission | null, participantId: string, kind: SubmissionKind) {
+    if (!pendingSubmission || pendingSubmission.participantId !== participantId || pendingSubmission.kind !== kind) {
+      throw new ServiceError(409, '\u5f53\u524d\u63d0\u4ea4\u72b6\u6001\u5df2\u53d8\u5316\uff0c\u8bf7\u7a0d\u5019\u518d\u8bd5\u3002');
+    }
+  }
+
+  private async clearPendingSubmission(roomId: string, participantId: string, kind: SubmissionKind) {
+    let clearedRoom: GameRoom | null = null;
+
+    await this.store.updateState((current) => {
+      const room = current.rooms.find((item) => item.roomId === roomId);
+
+      if (!room) {
+        return current;
+      }
+
+      if (!room.pendingSubmission || room.pendingSubmission.participantId !== participantId || room.pendingSubmission.kind !== kind) {
+        return current;
+      }
+
+      const nextRoom: GameRoom = {
+        ...room,
+        pendingSubmission: null,
+        updatedAt: nowIso()
+      };
+      clearedRoom = nextRoom;
+
+      return {
+        ...current,
+        rooms: current.rooms.map((item) => (item.roomId === roomId ? nextRoom : item))
+      };
+    });
+
+    return clearedRoom;
+  }
   private normalizeDisplayName(value: string) {
     return value.trim().slice(0, 24);
   }
@@ -1000,6 +1234,7 @@ export class RoomService {
       questionCount: room.questions.length,
       messageCount: room.messages.length,
       revealedFacts: room.revealedFactIds.map(mapFact),
+      pendingSubmission: room.pendingSubmission,
       progressScore: room.progressScore,
       status: room.status,
       finalGuess: room.finalGuess,

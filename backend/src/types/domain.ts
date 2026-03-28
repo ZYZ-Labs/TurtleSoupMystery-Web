@@ -4,6 +4,7 @@ export type AnswerCode = 'yes' | 'no' | 'irrelevant' | 'partial' | 'unknown';
 export type AnswerSource = 'ollama' | 'heuristic';
 export type ParticipantRole = 'host' | 'player';
 export type MessageType = 'system' | 'question' | 'answer' | 'guess' | 'status';
+export type SubmissionKind = 'question' | 'final_guess' | 'restart';
 export type AIProvider = 'ollama';
 export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | 'multimodal' | 'other';
 export type ConnectionStatus = 'idle' | 'connected' | 'error';
@@ -75,6 +76,13 @@ export interface FinalGuessRecord {
   reasoning?: string;
 }
 
+export interface PendingRoomSubmission {
+  kind: SubmissionKind;
+  participantId: string;
+  participantName: string;
+  startedAt: string;
+}
+
 export interface GameRoom {
   roomId: string;
   roomCode: string;
@@ -93,6 +101,7 @@ export interface GameRoom {
   messages: RoomMessage[];
   questions: QuestionRecord[];
   revealedFactIds: string[];
+  pendingSubmission: PendingRoomSubmission | null;
   progressScore: number;
   status: RoomStatus;
   finalGuess?: FinalGuessRecord;
@@ -216,6 +225,7 @@ export interface PublicGameRoom {
   questionCount: number;
   messageCount: number;
   revealedFacts: RevealedFact[];
+  pendingSubmission: PendingRoomSubmission | null;
   progressScore: number;
   status: RoomStatus;
   finalGuess?: FinalGuessRecord;

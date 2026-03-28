@@ -81,6 +81,21 @@ export async function revealRoom(roomId: string, participantId: string) {
   return data;
 }
 
+export async function restartRoom(
+  roomId: string,
+  participantId: string,
+  payload: {
+    difficulty: 'easy' | 'medium' | 'hard';
+    generationPrompt: string;
+  }
+) {
+  const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/restart`, {
+    participantId,
+    ...payload
+  });
+  return data;
+}
+
 export async function heartbeatRoom(roomId: string, participantId: string) {
   const { data } = await apiClient.post<PublicGameRoom>(`/rooms/${roomId}/heartbeat`, {
     participantId

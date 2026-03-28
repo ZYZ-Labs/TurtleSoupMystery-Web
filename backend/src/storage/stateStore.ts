@@ -187,7 +187,8 @@ export class StateStore {
           participants: room.participants ?? [],
           messages: room.messages ?? [],
           questions: room.questions ?? [],
-          revealedFactIds: room.revealedFactIds ?? []
+          revealedFactIds: room.revealedFactIds ?? [],
+          pendingSubmission: room.pendingSubmission ?? null
         }))
       } satisfies AppState;
     } catch {
@@ -577,6 +578,7 @@ export class StateStore {
       messages,
       questions,
       revealedFactIds: session.revealedFactIds,
+      pendingSubmission: null,
       progressScore: session.progressScore,
       status: session.status,
       finalGuess: session.finalGuess

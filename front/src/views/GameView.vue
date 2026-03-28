@@ -123,6 +123,9 @@
               删除当前房间
             </v-btn>
           </div>
+          <div v-if="isHost && isJoined && room.status !== 'playing'" class="mt-4">
+            <v-btn color="primary" variant="outlined" @click="openRestartDialog">换个主题再开一局</v-btn>
+          </div>
         </v-card-text>
       </v-card>
 
@@ -237,7 +240,8 @@
               auto-grow
               label="提出一个共享问题"
               placeholder="例如：这件事和受害者主动做出的选择有关吗？"
-              :disabled="!isJoined || asking"
+              :disabled="questionInputDisabled"
+              @keydown.enter="handleQuestionEnterSubmit"
               class="mb-4"
             />
 
@@ -249,14 +253,22 @@
               <v-progress-linear indeterminate color="primary" rounded />
             </v-alert>
 
+            <v-alert v-else-if="roomPendingSubmission" type="info" variant="tonal" class="mb-4">
+              <div class="font-weight-medium mb-2">{{ pendingSubmissionMessage }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-3">
+                {{ pendingSubmissionHint }}
+              </div>
+              <v-progress-linear indeterminate color="primary" rounded />
+            </v-alert>
+
             <div class="d-flex flex-wrap ga-3 mb-2">
-              <v-btn color="primary" :loading="asking" :disabled="!isJoined || asking" @click="handleAskQuestion">
+              <v-btn color="primary" :loading="asking" :disabled="!canSubmitQuestion" @click="handleAskQuestion">
                 {{ asking ? '校验中...' : '发送问题' }}
               </v-btn>
-              <v-btn variant="outlined" color="secondary" :disabled="!isJoined || asking" @click="guessDialog = true">
+              <v-btn variant="outlined" color="secondary" :disabled="!canOpenGuessDialog" @click="openGuessDialog">
                 提交最终猜测
               </v-btn>
-              <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" :disabled="asking" @click="handleReveal">
+              <v-btn v-if="isHost" variant="outlined" color="error" :loading="revealing" :disabled="!canRevealRoom" @click="handleReveal">
                 公开汤底并结束
               </v-btn>
             </div>
@@ -302,7 +314,38 @@
       <v-card-actions class="px-6 pb-6">
         <v-spacer />
         <v-btn variant="text" @click="guessDialog = false">取消</v-btn>
-        <v-btn color="primary" :loading="guessing" @click="handleSubmitGuess">确认结算</v-btn>
+        <v-btn color="primary" :loading="guessing" :disabled="!canConfirmGuess" @click="handleSubmitGuess">确认结算</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="restartDialog" max-width="720">
+    <v-card>
+      <v-card-title class="section-title px-6 pt-6">重新开一局</v-card-title>
+      <v-card-text class="pt-4">
+        <div class="text-body-2 text-medium-emphasis mb-4">会保留房间码和当前成员，只重置这一局的汤底、进度和聊天记录。</div>
+        <v-select
+          v-model="restartForm.difficulty"
+          :items="difficultyItems"
+          item-title="title"
+          item-value="value"
+          label="新一局难度"
+          class="mb-4"
+        />
+        <v-textarea
+          v-model="restartForm.generationPrompt"
+          rows="5"
+          auto-grow
+          label="新主题"
+          placeholder="留空即可随机，也可以手动写一个新的方向。"
+          hint="例如：现代都市、强误导、围绕一张照片展开。"
+          persistent-hint
+        />
+      </v-card-text>
+      <v-card-actions class="px-6 pb-6">
+        <v-spacer />
+        <v-btn variant="text" :disabled="restarting" @click="restartDialog = false">取消</v-btn>
+        <v-btn color="primary" :loading="restarting" @click="handleRestartRoom">确认重开</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -330,6 +373,7 @@ import {
   heartbeatRoom,
   joinRoom,
   revealRoom,
+  restartRoom,
   submitRoomFinalGuess
 } from '@/api/services';
 import { getBrowserClientId, getStoredDisplayName, saveStoredDisplayName } from '@/lib/browserIdentity';
@@ -361,8 +405,10 @@ const joining = ref(false);
 const asking = ref(false);
 const guessing = ref(false);
 const revealing = ref(false);
+const restarting = ref(false);
 const deletingRoom = ref(false);
 const guessDialog = ref(false);
+const restartDialog = ref(false);
 const question = ref('');
 const finalGuess = ref('');
 const ollamaConfigured = ref(false);
@@ -382,6 +428,14 @@ const createForm = reactive<{
 const joinForm = reactive({
   roomCode: '',
   displayName: rememberedDisplayName
+});
+
+const restartForm = reactive<{
+  difficulty: Difficulty;
+  generationPrompt: string;
+}>({
+  difficulty: 'medium',
+  generationPrompt: ''
 });
 
 let heartbeatTimer: number | null = null;
@@ -415,6 +469,39 @@ const isJoined = computed(() => {
 
 const isHost = computed(() => activeParticipant.value?.role === 'host');
 const canManageRoom = computed(() => auth.isAuthenticated);
+const roomPendingSubmission = computed(() => room.value?.pendingSubmission ?? null);
+const questionInputDisabled = computed(() => !isJoined.value || asking.value);
+const canSubmitQuestion = computed(
+  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+);
+const canOpenGuessDialog = computed(
+  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+);
+const canConfirmGuess = computed(
+  () => isJoined.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+);
+const canRevealRoom = computed(
+  () => isHost.value && !asking.value && !guessing.value && !revealing.value && !restarting.value && roomPendingSubmission.value === null
+);
+const pendingSubmissionHint = '\u5f53\u524d\u623f\u95f4\u6309\u987a\u5e8f\u5171\u4eab\u63d0\u4ea4\uff0c\u7b49\u8fd9\u6b21\u88c1\u51b3\u5b8c\u6210\u540e\uff0c\u5927\u5bb6\u5c31\u53ef\u4ee5\u7ee7\u7eed\u53d1\u9001\u3002';
+const pendingSubmissionMessage = computed(() => {
+  const pendingSubmission = roomPendingSubmission.value;
+
+  if (!pendingSubmission) {
+    return '';
+  }
+
+  const actorLabel = pendingSubmission.participantId === activeParticipant.value?.participantId ? '\u4f60' : pendingSubmission.participantName;
+
+  switch (pendingSubmission.kind) {
+    case 'final_guess':
+      return `${actorLabel} \u6b63\u5728\u63d0\u4ea4\u6700\u7ec8\u731c\u6d4b\uff0c\u4e3b\u6301\u4eba\u6b63\u5728\u5b8c\u6210\u672c\u8f6e\u7ed3\u7b97\u3002`;
+    case 'restart':
+      return `${actorLabel} \u6b63\u5728\u51c6\u5907\u65b0\u4e00\u5c40\u6c64\u5e95\uff0c\u8bf7\u7a0d\u5019\u3002`;
+    default:
+      return `${actorLabel} \u6b63\u5728\u63d0\u4ea4\u95ee\u9898\uff0c\u4e3b\u6301\u4eba\u6b63\u5728\u88c1\u51b3\u7b54\u6848\u3002`;
+  }
+});
 
 function identityStorageKey(roomCode: string) {
   return `turtle-soup-room:${roomCode}`;
@@ -523,6 +610,11 @@ async function loadRoom(showError = true) {
   } finally {
     loadingRoom.value = false;
   }
+}
+
+function syncRestartForm() {
+  restartForm.difficulty = room.value?.difficulty ?? 'medium';
+  restartForm.generationPrompt = room.value?.generationPrompt ?? '';
 }
 
 function stopSyncTimers() {
@@ -735,6 +827,28 @@ async function copyRoomCode() {
   }
 }
 
+function openGuessDialog() {
+  if (!canOpenGuessDialog.value) {
+    return;
+  }
+
+  guessDialog.value = true;
+}
+
+function handleQuestionEnterSubmit(event: KeyboardEvent) {
+  if (event.isComposing || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (!canSubmitQuestion.value) {
+    return;
+  }
+
+  void handleAskQuestion();
+}
+
 async function handleCreateRoom() {
   const displayName = createForm.displayName.trim();
 
@@ -818,7 +932,7 @@ async function handleJoinRoom() {
 }
 
 async function handleAskQuestion() {
-  if (!room.value || !activeParticipant.value) {
+  if (!canSubmitQuestion.value || !room.value || !activeParticipant.value) {
     return;
   }
 
@@ -842,7 +956,7 @@ async function handleAskQuestion() {
 }
 
 async function handleSubmitGuess() {
-  if (!room.value || !activeParticipant.value) {
+  if (!canConfirmGuess.value || !room.value || !activeParticipant.value) {
     return;
   }
 
@@ -866,7 +980,7 @@ async function handleSubmitGuess() {
 }
 
 async function handleReveal() {
-  if (!room.value || !activeParticipant.value) {
+  if (!canRevealRoom.value || !room.value || !activeParticipant.value) {
     return;
   }
 
@@ -879,6 +993,34 @@ async function handleReveal() {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
     revealing.value = false;
+  }
+}
+
+function openRestartDialog() {
+  syncRestartForm();
+  restartDialog.value = true;
+}
+
+async function handleRestartRoom() {
+  if (!room.value || !activeParticipant.value) {
+    return;
+  }
+
+  restarting.value = true;
+
+  try {
+    room.value = await restartRoom(room.value.roomId, activeParticipant.value.participantId, {
+      difficulty: restartForm.difficulty,
+      generationPrompt: restartForm.generationPrompt.trim()
+    });
+    restartDialog.value = false;
+    question.value = '';
+    finalGuess.value = '';
+    ui.notify('新一局已经准备好了，房间成员无需重新加入。', 'success');
+  } catch (error) {
+    ui.notify(extractErrorMessage(error), 'error');
+  } finally {
+    restarting.value = false;
   }
 }
 

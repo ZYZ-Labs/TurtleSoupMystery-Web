@@ -21,6 +21,12 @@ const roomJoinSchema = z.object({
   clientId: z.string().trim().max(64).optional().default('')
 });
 
+const roomRestartSchema = z.object({
+  participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+  generationPrompt: z.string().trim().max(200, '生成提示请控制在 200 个字符内。').default('')
+});
+
 const roomQuestionSchema = z.object({
   participantId: z.string().trim().min(1, '缺少成员标识，请重新加入房间。'),
   question: z.string().trim().min(1, '问题不能为空。').max(280, '单次提问请控制在 280 个字符内。')
@@ -241,6 +247,20 @@ export async function createApp() {
       const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
       const body = participantActionSchema.parse(request.body ?? {});
       response.json(await roomService.revealRoom(roomId, body.participantId));
+    })
+  );
+
+  app.post(
+    '/api/rooms/:roomId/restart',
+    wrap(async (request, response) => {
+      const roomId = Array.isArray(request.params.roomId) ? request.params.roomId[0] : request.params.roomId;
+      const body = roomRestartSchema.parse(request.body ?? {});
+      response.json(
+        await roomService.restartRoom(roomId, body.participantId, {
+          difficulty: body.difficulty,
+          generationPrompt: body.generationPrompt
+        })
+      );
     })
   );
 
