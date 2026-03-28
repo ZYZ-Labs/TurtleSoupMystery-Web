@@ -1,0 +1,1617 @@
+Turtle Soup Mystery backend listening on http://0.0.0.0:8080
+AI debug logs enabled
+scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=周文健Ollama scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=周文健Ollama validationProvider=ollama scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=周文健Ollama scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:25:06.723Z difficulty=easy prompt=办公室误会、人物关系清晰、反转温和 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=周文健Ollama validationProvider=ollama validationModel=qwen2.5:7b
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:06.725Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Starting puzzle generation.",
+  "request": {
+    "difficulty": "easy",
+    "prompt": "办公室误会、人物关系清晰、反转温和"
+  },
+  "blueprint": {
+    "noveltyToken": "<redacted>",
+    "setting": "家庭",
+    "atmosphere": "带轻微悬疑",
+    "relationship": "雇主与员工之间",
+    "contradiction": "主角看起来像在逃避，其实是在求救",
+    "hiddenMechanism": "时间差造成误判",
+    "pressure": "不能直接说破真相",
+    "keyObject": "收据",
+    "redHerring": "像报复行为",
+    "revealAnchor": "重复出现的小动作"
+  },
+  "generationProvider": "deepseek",
+  "generationModel": "deepseek-chat",
+  "auditProvider": "ollama",
+  "auditModel": "qwen2.5:7b"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:06.726Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design the canonical incident skeleton for a turtle soup mystery.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nDesign exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.\nEvery field must refer to the same people, the same place, and the same timeline.\nDo not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.\nDo not switch incidents midway. Do not introduce a second story in fact seeds."
+    },
+    {
+      "role": "user",
+      "content": "Task: first create the canonical event skeleton for one turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nScenario rules:\n- visibleScene is the exact strange scene players will hear as the soup surface\n- hiddenCause explains the real hidden reason behind that same scene\n- trigger is the concrete moment that set the event in motion\n- decisiveAction is the one visible action that looked strange to bystanders\n- outcome is the concrete result caused by that action\n- involvedRoles must stay consistent across all fields\n- factSeeds must all belong to this same incident timeline\n- factSeeds must be concrete evidence or event details, not abstract conclusions\n- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"visibleScene\": \"string\",\n  \"hiddenCause\": \"string\",\n  \"trigger\": \"string\",\n  \"decisiveAction\": \"string\",\n  \"outcome\": \"string\",\n  \"involvedRoles\": [\n    \"主角\",\n    \"同伴\"\n  ],\n  \"keyObjects\": [\n    \"工牌\"\n  ],\n  \"factSeeds\": [\n    \"string\"\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.92,
+    "top_p": 0.9,
+    "repeat_penalty": 1.06,
+    "num_ctx": 12288,
+    "num_predict": 900
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:25.064Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"家庭办公室的收据疑云\",\n    \"visibleScene\": \"主角作为家庭保姆，在雇主王先生的书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开书房，整个过程显得紧张而刻意。\",\n    \"hiddenCause\": \"主角撕碎收据是为了掩盖自己用雇主信用卡购买急救药品的事实——主角的孩子突发高烧，主角临时用雇主放在书房的信用卡买了退烧药，但收据上显示了购买时间和药品名称，主角担心雇主看到后会误以为她滥用信用卡，而实际上主角打算第二天用自己的钱补上这笔消费。\",\n    \"trigger\": \"主角的孩子在下午3点突发高烧，主角急需退烧药，但手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用购买了药品。\",\n    \"decisiveAction\": \"主角在整理文件时看到收据，迅速撕碎并丢弃，然后快步离开书房。\",\n    \"outcome\": \"王先生后来在垃圾桶发现撕碎的收据碎片，拼凑后看到是药品购买记录，误以为主角故意毁坏证据进行报复，导致双方关系紧张。\",\n    \"involvedRoles\": [\"主角（家庭保姆）\", \"同伴（雇主王先生）\"],\n    \"keyObjects\": [\"收据\", \"信用卡\", \"退烧药\", \"垃圾桶\"],\n    \"factSeeds\": [\"收据显示购买时间为下午3:30\", \"收据上印有某药店名称和退烧药品牌\", \"主角的孩子当天确实发烧到39度\", \"王先生的信用卡在书房桌上放了一整天\", \"主角撕收据时手指微微发抖\", \"垃圾桶里的收据碎片被撕成超过10片\", \"主角离开书房后直接去了孩子房间\", \"王先生在晚上7点发现垃圾桶里的碎片\"],\n    \"misleadingPoints\": [\"撕收据的动作看起来像在销毁证据\", \"主角匆忙离开显得心虚\", \"收据被撕得很碎像是故意隐藏\", \"药品购买时间与工作时间重叠易被误解\"],\n    \"keyTriggers\": [\"孩子突发高烧\", \"主角发现信用卡在桌上\", \"收据被放在文件堆最上面\", \"王先生提前回家\"],\n    \"tags\": [\"办公室误会\", \"时间差\", \"家庭场景\", \"温和反转\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:25.066Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "家庭办公室的收据疑云",
+    "visibleScene": "主角作为家庭保姆，在雇主王先生的书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开书房，整个过程显得紧张而刻意。",
+    "hiddenCause": "主角撕碎收据是为了掩盖自己用雇主信用卡购买急救药品的事实——主角的孩子突发高烧，主角临时用雇主放在书房的信用卡买了退烧药，但收据上显示了购买时间和药品名称，主角担心雇主看到后会误以为她滥用信用卡，而实际上主角打算第二天用自己的钱补上这笔消费。",
+    "trigger": "主角的孩子在下午3点突发高烧，主角急需退烧药，但手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用购买了药品。",
+    "decisiveAction": "主角在整理文件时看到收据，迅速撕碎并丢弃，然后快步离开书房。",
+    "outcome": "王先生后来在垃圾桶发现撕碎的收据碎片，拼凑后看到是药品购买记录，误以为主角故意毁坏证据进行报复，导致双方关系紧张。",
+    "involvedRoles": [
+      "主角（家庭保姆）",
+      "同伴（雇主王先生）"
+    ],
+    "keyObjects": [
+      "收据",
+      "信用卡",
+      "退烧药",
+      "垃圾桶"
+    ],
+    "factSeeds": [
+      "收据显示购买时间为下午3:30",
+      "收据上印有某药店名称和退烧药品牌",
+      "主角的孩子当天确实发烧到39度",
+      "王先生的信用卡在书房桌上放了一整天",
+      "主角撕收据时手指微微发抖",
+      "垃圾桶里的收据碎片被撕成超过10片",
+      "主角离开书房后直接去了孩子房间",
+      "王先生在晚上7点发现垃圾桶里的碎片"
+    ],
+    "misleadingPoints": [
+      "撕收据的动作看起来像在销毁证据",
+      "主角匆忙离开显得心虚",
+      "收据被撕得很碎像是故意隐藏",
+      "药品购买时间与工作时间重叠易被误解"
+    ],
+    "keyTriggers": [
+      "孩子突发高烧",
+      "主角发现信用卡在桌上",
+      "收据被放在文件堆最上面",
+      "王先生提前回家"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差",
+      "家庭场景",
+      "温和反转",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:25.066Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario generated.",
+  "attempt": 1,
+  "scenario": {
+    "title": "家庭办公室的收据疑云",
+    "visibleScene": "主角作为家庭保姆，在雇主王先生的书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开书房，整个过程显得紧张而刻意。",
+    "hiddenCause": "主角撕碎收据是为了掩盖自己用雇主信用卡购买急救药品的事实——主角的孩子突发高烧，主角临时用雇主放在书房的信用卡买了退烧药，但收据上显示了购买时间和药品名称，主角担心雇主看到后会误以为她滥用信用卡，而实际上主角打算第二天用自己的钱补上这笔消费。",
+    "trigger": "主角的孩子在下午3点突发高烧，主角急需退烧药，但手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用购买了药品。",
+    "decisiveAction": "主角在整理文件时看到收据，迅速撕碎并丢弃，然后快步离开书房。",
+    "outcome": "王先生后来在垃圾桶发现撕碎的收据碎片，拼凑后看到是药品购买记录，误以为主角故意毁坏证据进行报复，导致双方关系紧张。",
+    "involvedRoles": [
+      "主角（家庭保姆）",
+      "同伴（雇主王先生）"
+    ],
+    "keyObjects": [
+      "收据",
+      "信用卡",
+      "退烧药",
+      "垃圾桶"
+    ],
+    "factSeeds": [
+      "收据显示购买时间为下午3:30",
+      "收据上印有某药店名称和退烧药品牌",
+      "主角的孩子当天确实发烧到39度",
+      "王先生的信用卡在书房桌上放了一整天",
+      "主角撕收据时手指微微发抖",
+      "垃圾桶里的收据碎片被撕成超过10片",
+      "主角离开书房后直接去了孩子房间",
+      "王先生在晚上7点发现垃圾桶里的碎片"
+    ],
+    "misleadingPoints": [
+      "撕收据的动作看起来像在销毁证据",
+      "主角匆忙离开显得心虚",
+      "收据被撕得很碎像是故意隐藏",
+      "药品购买时间与工作时间重叠易被误解"
+    ],
+    "keyTriggers": [
+      "孩子突发高烧",
+      "主角发现信用卡在桌上",
+      "收据被放在文件堆最上面",
+      "王先生提前回家"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差",
+      "家庭场景",
+      "温和反转",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:25.071Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario audit finished.",
+  "attempt": 1,
+  "scenarioAudit": {
+    "valid": true,
+    "coherenceScore": 100,
+    "reasons": []
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:25.071Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail."
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nApproved incident skeleton:\nTitle: 家庭办公室的收据疑云\nVisible scene: 主角作为家庭保姆，在雇主王先生的书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开书房，整个过程显得紧张而刻意。\nHidden cause: 主角撕碎收据是为了掩盖自己用雇主信用卡购买急救药品的事实——主角的孩子突发高烧，主角临时用雇主放在书房的信用卡买了退烧药，但收据上显示了购买时间和药品名称，主角担心雇主看到后会误以为她滥用信用卡，而实际上主角打算第二天用自己的钱补上这笔消费。\nTrigger: 主角的孩子在下午3点突发高烧，主角急需退烧药，但手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用购买了药品。\nDecisive action: 主角在整理文件时看到收据，迅速撕碎并丢弃，然后快步离开书房。\nOutcome: 王先生后来在垃圾桶发现撕碎的收据碎片，拼凑后看到是药品购买记录，误以为主角故意毁坏证据进行报复，导致双方关系紧张。\nInvolved roles: 主角（家庭保姆） / 同伴（雇主王先生）\nKey objects: 收据 / 信用卡 / 退烧药 / 垃圾桶\nFact seeds: 1. 收据显示购买时间为下午3:30 | 2. 收据上印有某药店名称和退烧药品牌 | 3. 主角的孩子当天确实发烧到39度 | 4. 王先生的信用卡在书房桌上放了一整天 | 5. 主角撕收据时手指微微发抖 | 6. 垃圾桶里的收据碎片被撕成超过10片 | 7. 主角离开书房后直接去了孩子房间 | 8. 王先生在晚上7点发现垃圾桶里的碎片\nMisleading points: 撕收据的动作看起来像在销毁证据 / 主角匆忙离开显得心虚 / 收据被撕得很碎像是故意隐藏 / 药品购买时间与工作时间重叠易被误解\nKey triggers: 孩子突发高烧 / 主角发现信用卡在桌上 / 收据被放在文件堆最上面 / 王先生提前回家\nTags: 办公室误会 / 时间差 / 家庭场景 / 温和反转 / CgBh6W\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:50.423Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"家庭办公室的收据疑云\",\n    \"soupSurface\": \"家庭保姆在雇主书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开，显得紧张而刻意。\",\n    \"truthStory\": \"当天下午3点，保姆的孩子突发高烧至39度，急需退烧药。保姆手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用，在3:30于附近药店购买了药品。之后，她在书房整理文件时，看到收据被放在文件堆最上面，担心雇主看到后会误以为她滥用信用卡（实际上她打算第二天用自己的钱补上），于是迅速将收据撕成超过10片扔进垃圾桶，然后快步离开去照顾孩子。晚上7点，王先生提前回家，在垃圾桶发现碎片，拼凑后看到是药品购买记录，误以为保姆故意毁坏证据进行报复，导致双方关系紧张。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"收据显示购买时间为下午3:30。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"收据\", \"购买时间\", \"3:30\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"收据上印有某药店名称和退烧药品牌。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"收据\", \"药店\", \"退烧药\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"保姆的孩子当天确实发烧到39度。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"保姆\", \"孩子\", \"发烧\", \"39度\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"王先生的信用卡在书房桌上放了一整天。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"王先生\", \"信用卡\", \"书房\", \"桌上\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"保姆撕收据时手指微微发抖。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"保姆\", \"撕收据\", \"手指发抖\"]\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"垃圾桶里的收据碎片被撕成超过10片。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"垃圾桶\", \"收据碎片\", \"超过10片\"]\n        },\n        {\n            \"factId\": \"fact-7\",\n            \"statement\": \"保姆离开书房后直接去了孩子房间。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"保姆\", \"离开书房\", \"孩子房间\"]\n        },\n        {\n            \"factId\": \"fact-8\",\n            \"statement\": \"王先生在晚上7点发现垃圾桶里的碎片。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"王先生\", \"晚上7点\", \"垃圾桶\", \"碎片\"]\n        }\n    ],\n    \"misleadingPoints\": [\"撕收据的动作看起来像在销毁证据\", \"保姆匆忙离开显得心虚\", \"收据被撕得很碎像是故意隐藏\", \"药品购买时间与工作时间重叠易被误解\"],\n    \"keyTriggers\": [\"孩子是否突发疾病？\", \"保姆是否使用了雇主的信用卡？\", \"收据上显示的是什么物品？\", \"王先生是否提前回家发现了碎片？\"],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"办公室误会\", \"时间差\", \"家庭场景\", \"温和反转\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:50.424Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "家庭办公室的收据疑云",
+    "soupSurface": "家庭保姆在雇主书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开，显得紧张而刻意。",
+    "truthStory": "当天下午3点，保姆的孩子突发高烧至39度，急需退烧药。保姆手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用，在3:30于附近药店购买了药品。之后，她在书房整理文件时，看到收据被放在文件堆最上面，担心雇主看到后会误以为她滥用信用卡（实际上她打算第二天用自己的钱补上），于是迅速将收据撕成超过10片扔进垃圾桶，然后快步离开去照顾孩子。晚上7点，王先生提前回家，在垃圾桶发现碎片，拼凑后看到是药品购买记录，误以为保姆故意毁坏证据进行报复，导致双方关系紧张。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "收据显示购买时间为下午3:30。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "购买时间",
+          "3:30"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "收据上印有某药店名称和退烧药品牌。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "药店",
+          "退烧药"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "保姆的孩子当天确实发烧到39度。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "孩子",
+          "发烧",
+          "39度"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "王先生的信用卡在书房桌上放了一整天。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "王先生",
+          "信用卡",
+          "书房",
+          "桌上"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "保姆撕收据时手指微微发抖。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "撕收据",
+          "手指发抖"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "垃圾桶里的收据碎片被撕成超过10片。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "收据碎片",
+          "超过10片"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "保姆离开书房后直接去了孩子房间。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "离开书房",
+          "孩子房间"
+      
+]
+      },
+      {
+        "factId": "fact-8",
+        "statement": "王先生在晚上7点发现垃圾桶里的碎片。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "王先生",
+          "晚上7点",
+          "垃圾桶",
+          "碎片"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "撕收据的动作看起来像在销毁证据",
+      "保姆匆忙离开显得心虚",
+      "收据被撕得很碎像是故意隐藏",
+      "药品购买时间与工作时间重叠易被误解"
+    ],
+    "keyTriggers": [
+      "孩子是否突发疾病？",
+      "保姆是否使用了雇主的信用卡？",
+      "收据上显示的是什么物品？",
+      "王先生是否提前回家发现了碎片？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差",
+      "家庭场景",
+      "温和反转",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:50.427Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Local audit finished.",
+  "attempt": 1,
+  "localAudit": {
+    "valid": false,
+    "coherenceScore": 60,
+    "reasons": [
+      "汤底没有同时交代清楚触发点、人物动作和结果。"
+    ]
+  },
+  "candidate": {
+    "puzzleId": "generated-9ICpVEWPsWp8",
+    "title": "家庭办公室的收据疑云",
+    "soupSurface": "家庭保姆在雇主书房整理文件时，突然将一张购物收据撕成碎片扔进垃圾桶，然后匆忙离开，显得紧张而刻意。",
+    "truthStory": "当天下午3点，保姆的孩子突发高烧至39度，急需退烧药。保姆手头现金不足，发现雇主王先生的信用卡放在书房桌上，便临时借用，在3:30于附近药店购买了药品。之后，她在书房整理文件时，看到收据被放在文件堆最上面，担心雇主看到后会误以为她滥用信用卡（实际上她打算第二天用自己的钱补上），于是迅速将收据撕成超过10片扔进垃圾桶，然后快步离开去照顾孩子。晚上7点，王先生提前回家，在垃圾桶发现碎片，拼凑后看到是药品购买记录，误以为保姆故意毁坏证据进行报复，导致双方关系紧张。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "收据显示购买时间为下午3:30。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "购买时间",
+          "3:30"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "收据上印有某药店名称和退烧药品牌。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "药店",
+          "退烧药"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "保姆的孩子当天确实发烧到39度。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "孩子",
+          "发烧",
+          "39度"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "王先生的信用卡在书房桌上放了一整天。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "王先生",
+          "信用卡",
+          "书房",
+          "桌上"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "保姆撕收据时手指微微发抖。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "撕收据",
+          "手指发抖"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "垃圾桶里的收据碎片被撕成超过10片。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "收据碎片",
+          "超过10片"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "保姆离开书房后直接去了孩子房间。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "保姆",
+          "离开书房",
+          "孩子房间"
+      
+]
+      },
+      {
+        "factId": "fact-8",
+        "statement": "王先生在晚上7点发现垃圾桶里的碎片。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "王先生",
+          "晚上7点",
+          "垃圾桶",
+          "碎片"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "撕收据的动作看起来像在销毁证据",
+      "保姆匆忙离开显得心虚",
+      "收据被撕得很碎像是故意隐藏",
+      "药品购买时间与工作时间重叠易被误解"
+    ],
+    "keyTriggers": [
+      "孩子是否突发疾病？",
+      "保姆是否使用了雇主的信用卡？",
+      "收据上显示的是什么物品？",
+      "王先生是否提前回家发现了碎片？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差",
+      "家庭场景",
+      "温和反转",
+      "CgBh6W",
+      "dynamic",
+      "家庭",
+      "人物关系清晰"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:25:50.427Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design the canonical incident skeleton for a turtle soup mystery.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nDesign exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.\nEvery field must refer to the same people, the same place, and the same timeline.\nDo not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.\nDo not switch incidents midway. Do not introduce a second story in fact seeds.\nThe previous scenario was rejected.\nRebuild the scenario from scratch with a tighter single-event causal chain."
+    },
+    {
+      "role": "user",
+      "content": "Task: first create the canonical event skeleton for one turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nScenario rules:\n- visibleScene is the exact strange scene players will hear as the soup surface\n- hiddenCause explains the real hidden reason behind that same scene\n- trigger is the concrete moment that set the event in motion\n- decisiveAction is the one visible action that looked strange to bystanders\n- outcome is the concrete result caused by that action\n- involvedRoles must stay consistent across all fields\n- factSeeds must all belong to this same incident timeline\n- factSeeds must be concrete evidence or event details, not abstract conclusions\n- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"visibleScene\": \"string\",\n  \"hiddenCause\": \"string\",\n  \"trigger\": \"string\",\n  \"decisiveAction\": \"string\",\n  \"outcome\": \"string\",\n  \"involvedRoles\": [\n    \"主角\",\n    \"同伴\"\n  ],\n  \"keyObjects\": [\n    \"工牌\"\n  ],\n  \"factSeeds\": [\n    \"string\"\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.92,
+    "top_p": 0.9,
+    "repeat_penalty": 1.06,
+    "num_ctx": 12288,
+    "num_predict": 900
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:10.328Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"收据上的求救信号\",\n    \"visibleScene\": \"家庭雇主王先生发现员工小李连续三天在办公室加班到深夜，每次离开时都故意把一张超市收据揉成团扔进垃圾桶，但王先生检查收据发现上面只买了面包和牛奶，金额很小。第四天小李突然请假，王先生在他抽屉里发现更多同样的收据，每张都被揉得很皱。\",\n    \"hiddenCause\": \"小李被前同事跟踪骚扰，对方每天下班后在公司附近徘徊。小李不敢直接报警，因为骚扰者威胁要伤害他的家人。他故意加班到深夜，等保安巡逻时再离开，揉收据是为了在垃圾桶留下明显痕迹，希望有人注意到他异常的行为模式。收据上的购买时间都是晚上11点后，这是他唯一安全离开的时间窗口。\",\n    \"trigger\": \"三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并警告他“别想轻易脱身”。小李看到对方口袋里露出半截匕首。\",\n    \"decisiveAction\": \"第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。\",\n    \"outcome\": \"王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。\",\n    \"involvedRoles\": [\"小李\", \"王先生\"],\n    \"keyObjects\": [\"收据\"],\n    \"factSeeds\": [\"收据购买时间都是23:15-23:20\", \"小李的车停在B2层监控死角\", \"跟踪者曾是小李的同事\", \"办公室垃圾桶每天22:30清空\", \"大楼保安23:00开始每小时巡逻一次\", \"小李的手机壳有被强行扯下的痕迹\", \"王先生发现小李的工牌挂在抽屉锁孔上\"],\n    \"misleadingPoints\": [\"收据金额很小像故意浪费\", \"揉皱收据像发泄情绪\", \"深夜加班像逃避家庭责任\", \"画圈行为像报复前公司\", \"请假时机像突然赌气离职\"],\n    \"keyTriggers\": [\"前同事掏出匕首的瞬间\", \"小李发现22:30后垃圾桶会清空\", \"王先生注意到收据时间戳的规律\", \"保安提到23:00巡逻路线经过停车场\"],\n    \"tags\": [\"办公室误会\", \"时间差误判\", \"隐蔽求救\", \"日常物品线索\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:10.328Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "收据上的求救信号",
+    "visibleScene": "家庭雇主王先生发现员工小李连续三天在办公室加班到深夜，每次离开时都故意把一张超市收据揉成团扔进垃圾桶，但王先生检查收据发现上面只买了面包和牛奶，金额很小。第四天小李突然请假，王先生在他抽屉里发现更多同样的收据，每张都被揉得很皱。",
+    "hiddenCause": "小李被前同事跟踪骚扰，对方每天下班后在公司附近徘徊。小李不敢直接报警，因为骚扰者威胁要伤害他的家人。他故意加班到深夜，等保安巡逻时再离开，揉收据是为了在垃圾桶留下明显痕迹，希望有人注意到他异常的行为模式。收据上的购买时间都是晚上11点后，这是他唯一安全离开的时间窗口。",
+    "trigger": "三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并警告他“别想轻易脱身”。小李看到对方口袋里露出半截匕首。",
+    "decisiveAction": "第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。",
+    "outcome": "王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。",
+    "involvedRoles": [
+      "小李",
+      "王先生"
+    ],
+    "keyObjects": [
+      "收据"
+    ],
+    "factSeeds": [
+      "收据购买时间都是23:15-23:20",
+      "小李的车停在B2层监控死角",
+      "跟踪者曾是小李的同事",
+      "办公室垃圾桶每天22:30清空",
+      "大楼保安23:00开始每小时巡逻一次",
+      "小李的手机壳有被强行扯下的痕迹",
+      "王先生发现小李的工牌挂在抽屉锁孔上"
+    ],
+    "misleadingPoints": [
+      "收据金额很小像故意浪费",
+      "揉皱收据像发泄情绪",
+      "深夜加班像逃避家庭责任",
+      "画圈行为像报复前公司",
+      "请假时机像突然赌气离职"
+    ],
+    "keyTriggers": [
+      "前同事掏出匕首的瞬间",
+      "小李发现22:30后垃圾桶会清空",
+      "王先生注意到收据时间戳的规律",
+      "保安提到23:00巡逻路线经过停车场"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "日常物品线索",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:10.328Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario generated.",
+  "attempt": 2,
+  "scenario": {
+    "title": "收据上的求救信号",
+    "visibleScene": "家庭雇主王先生发现员工小李连续三天在办公室加班到深夜，每次离开时都故意把一张超市收据揉成团扔进垃圾桶，但王先生检查收据发现上面只买了面包和牛奶，金额很小。第四天小李突然请假，王先生在他抽屉里发现更多同样的收据，每张都被揉得很皱。",
+    "hiddenCause": "小李被前同事跟踪骚扰，对方每天下班后在公司附近徘徊。小李不敢直接报警，因为骚扰者威胁要伤害他的家人。他故意加班到深夜，等保安巡逻时再离开，揉收据是为了在垃圾桶留下明显痕迹，希望有人注意到他异常的行为模式。收据上的购买时间都是晚上11点后，这是他唯一安全离开的时间窗口。",
+    "trigger": "三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并警告他“别想轻易脱身”。小李看到对方口袋里露出半截匕首。",
+    "decisiveAction": "第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。",
+    "outcome": "王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。",
+    "involvedRoles": [
+      "小李",
+      "王先生"
+    ],
+    "keyObjects": [
+      "收据"
+    ],
+    "factSeeds": [
+      "收据购买时间都是23:15-23:20",
+      "小李的车停在B2层监控死角",
+      "跟踪者曾是小李的同事",
+      "办公室垃圾桶每天22:30清空",
+      "大楼保安23:00开始每小时巡逻一次",
+      "小李的手机壳有被强行扯下的痕迹",
+      "王先生发现小李的工牌挂在抽屉锁孔上"
+    ],
+    "misleadingPoints": [
+      "收据金额很小像故意浪费",
+      "揉皱收据像发泄情绪",
+      "深夜加班像逃避家庭责任",
+      "画圈行为像报复前公司",
+      "请假时机像突然赌气离职"
+    ],
+    "keyTriggers": [
+      "前同事掏出匕首的瞬间",
+      "小李发现22:30后垃圾桶会清空",
+      "王先生注意到收据时间戳的规律",
+      "保安提到23:00巡逻路线经过停车场"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "日常物品线索",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:10.329Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario audit finished.",
+  "attempt": 2,
+  "scenarioAudit": {
+    "valid": true,
+    "coherenceScore": 100,
+    "reasons": []
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:10.330Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail.\nThe previous draft was rejected for inconsistency.\nRebuild the puzzle from scratch and keep every field tied to one single causal chain.\nMake the truth story more concrete, more event-driven, and less generic than before."
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nApproved incident skeleton:\nTitle: 收据上的求救信号\nVisible scene: 家庭雇主王先生发现员工小李连续三天在办公室加班到深夜，每次离开时都故意把一张超市收据揉成团扔进垃圾桶，但王先生检查收据发现上面只买了面包和牛奶，金额很小。第四天小李突然请假，王先生在他抽屉里发现更多同样的收据，每张都被揉得很皱。\nHidden cause: 小李被前同事跟踪骚扰，对方每天下班后在公司附近徘徊。小李不敢直接报警，因为骚扰者威胁要伤害他的家人。他故意加班到深夜，等保安巡逻时再离开，揉收据是为了在垃圾桶留下明显痕迹，希望有人注意到他异常的行为模式。收据上的购买时间都是晚上11点后，这是他唯一安全离开的时间窗口。\nTrigger: 三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并警告他“别想轻易脱身”。小李看到对方口袋里露出半截匕首。\nDecisive action: 第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。\nOutcome: 王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。\nInvolved roles: 小李 / 王先生\nKey objects: 收据\nFact seeds: 1. 收据购买时间都是23:15-23:20 | 2. 小李的车停在B2层监控死角 | 3. 跟踪者曾是小李的同事 | 4. 办公室垃圾桶每天22:30清空 | 5. 大楼保安23:00开始每小时巡逻一次 | 6. 小李的手机壳有被强行扯下的痕迹 | 7. 王先生发现小李的工牌挂在抽屉锁孔上\nMisleading points: 收据金额很小像故意浪费 / 揉皱收据像发泄情绪 / 深夜加班像逃避家庭责任 / 画圈行为像报复前公司 / 请假时机像突然赌气离职\nKey triggers: 前同事掏出匕首的瞬间 / 小李发现22:30后垃圾桶会清空 / 王先生注意到收据时间戳的规律 / 保安提到23:00巡逻路线经过停车场\nTags: 办公室误会 / 时间差误判 / 隐蔽求救 / 日常物品线索 / CgBh6W\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:38.063Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"深夜的收据信号\",\n    \"soupSurface\": \"雇主王先生发现员工小李连续三天深夜加班后，都会把一张只买了面包牛奶的小额收据揉成团扔进垃圾桶，第四天小李请假，王先生在他抽屉里发现更多被揉皱的同样收据。\",\n    \"truthStory\": \"三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并露出匕首威胁。小李不敢直接报警，因为对方威胁要伤害他的家人。他知道办公室垃圾桶每天22:30清空，而大楼保安23:00开始每小时巡逻一次。为了安全离开，小李故意加班到深夜，在23:15-23:20这个保安巡逻时段去楼下超市买面包牛奶，获得带有时间戳的收据，然后揉成团扔进垃圾桶，希望留下异常行为痕迹让人注意。第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"小李连续三天在23:15-23:20购买面包和牛奶，收据时间戳都是这个时段。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"收据\", \"时间戳\", \"23:15-23:20\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"办公室垃圾桶每天22:30准时清空，23:00后扔的收据会留到第二天。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"垃圾桶\", \"22:30清空\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"大楼保安从23:00开始每小时巡逻一次，巡逻路线会经过停车场。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"保安\", \"23:00巡逻\", \"停车场\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"小李的车停在B2层监控死角，前同事知道这个位置。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"B2层\", \"监控死角\", \"前同事\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"小李的手机壳有被强行扯下的痕迹，是三天前在停车场被抢手机时留下的。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"手机壳\", \"停车场\", \"被抢\"]\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"王先生发现小李的工牌挂在抽屉锁孔上，这是小李请假前故意留下的。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"工牌\", \"抽屉锁孔\", \"请假\"]\n        }\n    ],\n    \"misleadingPoints\": [\n        \"收据金额很小，看起来像是故意浪费公司电费加班\",\n        \"揉皱收据的行为像是发泄工作压力或不满情绪\",\n        \"深夜加班让人以为是在逃避家庭责任或婚姻问题\",\n        \"画圈收据的行为像是报复前公司或准备离职的赌气举动\"\n    ],\n    \"keyTriggers\": [\n        \"收据上的时间戳是否都有规律？\",\n        \"办公室垃圾桶的清空时间是否影响收据的留存？\",\n        \"小李选择23:15左右离开是否有特殊原因？\",\n        \"停车场是否有监控或保安巡逻的特殊安排？\"\n    ],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"办公室误会\", \"时间差误判\", \"隐蔽求救\", \"日常物品线索\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:38.064Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "深夜的收据信号",
+    "soupSurface": "雇主王先生发现员工小李连续三天深夜加班后，都会把一张只买了面包牛奶的小额收据揉成团扔进垃圾桶，第四天小李请假，王先生在他抽屉里发现更多被揉皱的同样收据。",
+    "truthStory": "三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并露出匕首威胁。小李不敢直接报警，因为对方威胁要伤害他的家人。他知道办公室垃圾桶每天22:30清空，而大楼保安23:00开始每小时巡逻一次。为了安全离开，小李故意加班到深夜，在23:15-23:20这个保安巡逻时段去楼下超市买面包牛奶，获得带有时间戳的收据，然后揉成团扔进垃圾桶，希望留下异常行为痕迹让人注意。第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "小李连续三天在23:15-23:20购买面包和牛奶，收据时间戳都是这个时段。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "时间戳",
+          "23:15-23:20"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "办公室垃圾桶每天22:30准时清空，23:00后扔的收据会留到第二天。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "22:30清空"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "大楼保安从23:00开始每小时巡逻一次，巡逻路线会经过停车场。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "保安",
+          "23:00巡逻",
+          "停车场"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "小李的车停在B2层监控死角，前同事知道这个位置。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "B2层",
+          "监控死角",
+          "前同事"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "小李的手机壳有被强行扯下的痕迹，是三天前在停车场被抢手机时留下的。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "手机壳",
+          "停车场",
+          "被抢"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "王先生发现小李的工牌挂在抽屉锁孔上，这是小李请假前故意留下的。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "工牌",
+          "抽屉锁孔",
+          "请假"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "收据金额很小，看起来像是故意浪费公司电费加班",
+      "揉皱收据的行为像是发泄工作压力或不满情绪",
+      "深夜加班让人以为是在逃避家庭责任或婚姻问题",
+      "画圈收据的行为像是报复前公司或准备离职的赌气举动"
+    ],
+    "keyTriggers": [
+      "收据上的时间戳是否都有规律？",
+      "办公室垃圾桶的清空时间是否影响收据的留存？",
+      "小李选择23:15左右离开是否有特殊原因？",
+      "停车场是否有监控或保安巡逻的特殊安排？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "日常物品线索",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:38.065Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Local audit finished.",
+  "attempt": 2,
+  "localAudit": {
+    "valid": false,
+    "coherenceScore": 60,
+    "reasons": [
+      "题面、汤底和事实链没有稳定落在同一条因果链上。"
+    ]
+  },
+  "candidate": {
+    "puzzleId": "generated-ggNyNSzZiuFB",
+    "title": "深夜的收据信号",
+    "soupSurface": "雇主王先生发现员工小李连续三天深夜加班后，都会把一张只买了面包牛奶的小额收据揉成团扔进垃圾桶，第四天小李请假，王先生在他抽屉里发现更多被揉皱的同样收据。",
+    "truthStory": "三天前，小李下班时在停车场被前同事堵住，对方抢走他的手机并露出匕首威胁。小李不敢直接报警，因为对方威胁要伤害他的家人。他知道办公室垃圾桶每天22:30清空，而大楼保安23:00开始每小时巡逻一次。为了安全离开，小李故意加班到深夜，在23:15-23:20这个保安巡逻时段去楼下超市买面包牛奶，获得带有时间戳的收据，然后揉成团扔进垃圾桶，希望留下异常行为痕迹让人注意。第四天早上，小李把一周的收据全部摊开在办公桌上，用红笔在每张收据的“23:15”时间戳上画圈，然后请假离开。王先生看到画圈的收据后，想起小李最近总在23:15左右离开，于是调取那个时段的监控，发现连续三天都有同一个戴帽子的男人在电梯口徘徊。王先生立即联系大楼保安，当晚23:20保安在停车场抓获正在撬小李车门的跟踪者。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "小李连续三天在23:15-23:20购买面包和牛奶，收据时间戳都是这个时段。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "时间戳",
+          "23:15-23:20"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "办公室垃圾桶每天22:30准时清空，23:00后扔的收据会留到第二天。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "22:30清空"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "大楼保安从23:00开始每小时巡逻一次，巡逻路线会经过停车场。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "保安",
+          "23:00巡逻",
+          "停车场"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "小李的车停在B2层监控死角，前同事知道这个位置。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "B2层",
+          "监控死角",
+          "前同事"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "小李的手机壳有被强行扯下的痕迹，是三天前在停车场被抢手机时留下的。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "手机壳",
+          "停车场",
+          "被抢"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "王先生发现小李的工牌挂在抽屉锁孔上，这是小李请假前故意留下的。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "工牌",
+          "抽屉锁孔",
+          "请假"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "收据金额很小，看起来像是故意浪费公司电费加班",
+      "揉皱收据的行为像是发泄工作压力或不满情绪",
+      "深夜加班让人以为是在逃避家庭责任或婚姻问题",
+      "画圈收据的行为像是报复前公司或准备离职的赌气举动"
+    ],
+    "keyTriggers": [
+      "收据上的时间戳是否都有规律？",
+      "办公室垃圾桶的清空时间是否影响收据的留存？",
+      "小李选择23:15左右离开是否有特殊原因？",
+      "停车场是否有监控或保安巡逻的特殊安排？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "日常物品线索",
+      "CgBh6W",
+      "dynamic",
+      "家庭",
+      "人物关系清晰"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:38.066Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design the canonical incident skeleton for a turtle soup mystery.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nDesign exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.\nEvery field must refer to the same people, the same place, and the same timeline.\nDo not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.\nDo not switch incidents midway. Do not introduce a second story in fact seeds.\nThe previous scenario was rejected.\nRebuild the scenario from scratch with a tighter single-event causal chain."
+    },
+    {
+      "role": "user",
+      "content": "Task: first create the canonical event skeleton for one turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nScenario rules:\n- visibleScene is the exact strange scene players will hear as the soup surface\n- hiddenCause explains the real hidden reason behind that same scene\n- trigger is the concrete moment that set the event in motion\n- decisiveAction is the one visible action that looked strange to bystanders\n- outcome is the concrete result caused by that action\n- involvedRoles must stay consistent across all fields\n- factSeeds must all belong to this same incident timeline\n- factSeeds must be concrete evidence or event details, not abstract conclusions\n- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"visibleScene\": \"string\",\n  \"hiddenCause\": \"string\",\n  \"trigger\": \"string\",\n  \"decisiveAction\": \"string\",\n  \"outcome\": \"string\",\n  \"involvedRoles\": [\n    \"主角\",\n    \"同伴\"\n  ],\n  \"keyObjects\": [\n    \"工牌\"\n  ],\n  \"factSeeds\": [\n    \"string\"\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.92,
+    "top_p": 0.9,
+    "repeat_penalty": 1.06,
+    "num_ctx": 12288,
+    "num_predict": 900
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:52.798Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"家庭办公室的求救信号\",\n    \"visibleScene\": \"雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。\",\n    \"hiddenCause\": \"员工发现收据上显示雇主购买的过敏药物与雇主声称的过敏源不符，意识到雇主可能误食了会引发严重过敏的食物，但雇主正在接一个重要电话，员工无法直接打断说明。\",\n    \"trigger\": \"员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主购买了治疗花生过敏的药物，但员工记得雇主曾说过自己对海鲜过敏。\",\n    \"decisiveAction\": \"员工将收据揉成团扔进垃圾桶，然后快步离开办公室。\",\n    \"outcome\": \"雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。\",\n    \"involvedRoles\": [\"员工\", \"雇主\"],\n    \"keyObjects\": [\"收据\"],\n    \"factSeeds\": [\"收据显示购买时间是今天下午3点\", \"收据上列有抗过敏药物名称\", \"雇主今天下午4点开始接听一个重要商务电话\", \"员工离开办公室时没有说任何话\", \"垃圾桶在办公室门边\", \"雇主的海鲜过敏是公开信息\", \"晚餐计划中有花生酱调味的菜肴\"],\n    \"misleadingPoints\": [\"揉收据的动作看起来像在销毁证据\", \"快速离开房间被误解为逃避责任\", \"员工沉默不语被当成心虚表现\", \"收据在垃圾桶里显得像被丢弃的废纸\"],\n    \"keyTriggers\": [\"员工看到收据上的药物信息\", \"雇主正在接听重要电话无法被打断\", \"晚餐菜单中含有花生成分\"],\n    \"tags\": [\"办公室误会\", \"时间差误判\", \"隐蔽求救\", \"家庭场景\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:52.798Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "家庭办公室的求救信号",
+    "visibleScene": "雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。",
+    "hiddenCause": "员工发现收据上显示雇主购买的过敏药物与雇主声称的过敏源不符，意识到雇主可能误食了会引发严重过敏的食物，但雇主正在接一个重要电话，员工无法直接打断说明。",
+    "trigger": "员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主购买了治疗花生过敏的药物，但员工记得雇主曾说过自己对海鲜过敏。",
+    "decisiveAction": "员工将收据揉成团扔进垃圾桶，然后快步离开办公室。",
+    "outcome": "雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。",
+    "involvedRoles": [
+      "员工",
+      "雇主"
+    ],
+    "keyObjects": [
+      "收据"
+    ],
+    "factSeeds": [
+      "收据显示购买时间是今天下午3点",
+      "收据上列有抗过敏药物名称",
+      "雇主今天下午4点开始接听一个重要商务电话",
+      "员工离开办公室时没有说任何话",
+      "垃圾桶在办公室门边",
+      "雇主的海鲜过敏是公开信息",
+      "晚餐计划中有花生酱调味的菜肴"
+    ],
+    "misleadingPoints": [
+      "揉收据的动作看起来像在销毁证据",
+      "快速离开房间被误解为逃避责任",
+      "员工沉默不语被当成心虚表现",
+      "收据在垃圾桶里显得像被丢弃的废纸"
+    ],
+    "keyTriggers": [
+      "员工看到收据上的药物信息",
+      "雇主正在接听重要电话无法被打断",
+      "晚餐菜单中含有花生成分"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "家庭场景",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:52.798Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario generated.",
+  "attempt": 3,
+  "scenario": {
+    "title": "家庭办公室的求救信号",
+    "visibleScene": "雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。",
+    "hiddenCause": "员工发现收据上显示雇主购买的过敏药物与雇主声称的过敏源不符，意识到雇主可能误食了会引发严重过敏的食物，但雇主正在接一个重要电话，员工无法直接打断说明。",
+    "trigger": "员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主购买了治疗花生过敏的药物，但员工记得雇主曾说过自己对海鲜过敏。",
+    "decisiveAction": "员工将收据揉成团扔进垃圾桶，然后快步离开办公室。",
+    "outcome": "雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。",
+    "involvedRoles": [
+      "员工",
+      "雇主"
+    ],
+    "keyObjects": [
+      "收据"
+    ],
+    "factSeeds": [
+      "收据显示购买时间是今天下午3点",
+      "收据上列有抗过敏药物名称",
+      "雇主今天下午4点开始接听一个重要商务电话",
+      "员工离开办公室时没有说任何话",
+      "垃圾桶在办公室门边",
+      "雇主的海鲜过敏是公开信息",
+      "晚餐计划中有花生酱调味的菜肴"
+    ],
+    "misleadingPoints": [
+      "揉收据的动作看起来像在销毁证据",
+      "快速离开房间被误解为逃避责任",
+      "员工沉默不语被当成心虚表现",
+      "收据在垃圾桶里显得像被丢弃的废纸"
+    ],
+    "keyTriggers": [
+      "员工看到收据上的药物信息",
+      "雇主正在接听重要电话无法被打断",
+      "晚餐菜单中含有花生成分"
+    ],
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "家庭场景",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:52.800Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Scenario audit finished.",
+  "attempt": 3,
+  "scenarioAudit": {
+    "valid": true,
+    "coherenceScore": 100,
+    "reasons": []
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:26:52.800Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail.\nThe previous draft was rejected for inconsistency.\nRebuild the puzzle from scratch and keep every field tied to one single causal chain.\nMake the truth story more concrete, more event-driven, and less generic than before."
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\n\nCreative brief:\n- Setting: 家庭\n- Atmosphere: 带轻微悬疑\n- Relationship focus: 雇主与员工之间\n- Surface contradiction: 主角看起来像在逃避，其实是在求救\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 不能直接说破真相\n- Key object: 收据\n- Red-herring flavor: 像报复行为\n- Reveal anchor: 重复出现的小动作\n- Novelty token: CgBh6W\n\nApproved incident skeleton:\nTitle: 家庭办公室的求救信号\nVisible scene: 雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。\nHidden cause: 员工发现收据上显示雇主购买的过敏药物与雇主声称的过敏源不符，意识到雇主可能误食了会引发严重过敏的食物，但雇主正在接一个重要电话，员工无法直接打断说明。\nTrigger: 员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主购买了治疗花生过敏的药物，但员工记得雇主曾说过自己对海鲜过敏。\nDecisive action: 员工将收据揉成团扔进垃圾桶，然后快步离开办公室。\nOutcome: 雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。\nInvolved roles: 员工 / 雇主\nKey objects: 收据\nFact seeds: 1. 收据显示购买时间是今天下午3点 | 2. 收据上列有抗过敏药物名称 | 3. 雇主今天下午4点开始接听一个重要商务电话 | 4. 员工离开办公室时没有说任何话 | 5. 垃圾桶在办公室门边 | 6. 雇主的海鲜过敏是公开信息 | 7. 晚餐计划中有花生酱调味的菜肴\nMisleading points: 揉收据的动作看起来像在销毁证据 / 快速离开房间被误解为逃避责任 / 员工沉默不语被当成心虚表现 / 收据在垃圾桶里显得像被丢弃的废纸\nKey triggers: 员工看到收据上的药物信息 / 雇主正在接听重要电话无法被打断 / 晚餐菜单中含有花生成分\nTags: 办公室误会 / 时间差误判 / 隐蔽求救 / 家庭场景 / CgBh6W\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:15.557Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+     �  "rawContent": "{\n    \"title\": \"家庭办公室的求救信号\",\n    \"soupSurface\": \"雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。\",\n    \"truthStory\": \"员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主今天下午3点购买了治疗花生过敏的药物，但员工记得雇主曾公开说过自己对海鲜过敏。员工意识到雇主可能误食了会引发严重过敏的食物，因为晚餐计划中有花生酱调味的菜肴。当时雇主正在接一个重要商务电话，员工无法直接打断说明。于是员工将收据揉成团扔进垃圾桶，然后快步离开办公室，希望雇主挂断电话后看到收据纸团。雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"收据显示购买时间是今天下午3点。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"收据\", \"购买时间\", \"下午3点\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"收据上列有治疗花生过敏的药物名称。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"收据\", \"花生过敏\", \"药物名称\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"雇主今天下午4点开始接听一个重要商务电话。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"雇主\", \"下午4点\", \"商务电话\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"员工离开办公室时没有说任何话。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"员工\", \"离开办公室\", \"没有说话\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"垃圾桶在办公室门边。\",\n            \"importance\": 5,\n            \"discoverable\": true,\n            \"keywords\": [\"垃圾桶\", \"办公室\", \"门边\"]\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"雇主的海鲜过敏是公开信息。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"雇主\", \"海鲜过敏\", \"公开信息\"]\n        },\n        {\n            \"factId\": \"fact-7\",\n            \"statement\": \"晚餐计划中有花生酱调味的菜肴。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"晚餐\", \"花生酱\", \"菜肴\"]\n        }\n    ],\n    \"misleadingPoints\": [\"揉收据的动作看起来像在销毁证据\", \"快速离开房间被误解为逃避责任\", \"员工沉默不语被当成心虚表现\"],\n    \"keyTriggers\": [\"收据上显示了什么药物信息？\", \"雇主当时正在做什么？\", \"晚餐菜单中有什么成分？\", \"员工为什么选择扔收据而不是直接说话？\"],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"办公室误会\", \"时间差误判\", \"隐蔽求救\", \"家庭场景\", \"CgBh6W\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:15.558Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_3",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "家庭办公室的求救信号",
+    "soupSurface": "雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。",
+    "truthStory": "员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主今天下午3点购买了治疗花生过敏的药物，但员工记得雇主曾公开说过自己对海鲜过敏。员工意识到雇主可能误食了会引发严重过敏的食物，因为晚餐计划中有花生酱调味的菜肴。当时雇主正在接一个重要商务电话，员工无法直接打断说明。于是员工将收据揉成团扔进垃圾桶，然后快步离开办公室，希望雇主挂断电话后看到收据纸团。雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "收据显示购买时间是今天下午3点。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "购买时间",
+          "下午3点"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "收据上列有治疗花生过敏的药物名称。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "花生过敏",
+          "药物名称"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "雇主今天下午4点开始接听一个重要商务电话。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "下午4点",
+          "商务电话"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "员工离开办公室时没有说任何话。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "员工",
+          "离开办公室",
+          "没有说话"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "垃圾桶在办公室门边。",
+        "importance": 5,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "办公室",
+          "门边"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "雇主的海鲜过敏是公开信息。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "海鲜过敏",
+          "公开信息"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "晚餐计划中有花生酱调味的菜肴。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "晚餐",
+          "花生酱",
+          "菜肴"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "揉收据的动作看起来像在销毁证据",
+      "快速离开房间被误解为逃避责任",
+      "员工沉默不语被当成心虚表现"
+    ],
+    "keyTriggers": [
+      "收据上显示了什么药物信息？",
+      "雇主当时正在做什么？",
+      "晚餐菜单中有什么成分？",
+      "员工为什么选择扔收据而不是直接说话？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "家庭场景",
+      "CgBh6W"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:15.559Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Local audit finished.",
+  "attempt": 3,
+  "localAudit": {
+    "valid": true,
+    "coherenceScore": 100,
+    "reasons": []
+  },
+  "candidate": {
+    "puzzleId": "generated-uV-tHVeKiSZC",
+    "title": "家庭办公室的求救信号",
+    "soupSurface": "雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。",
+    "truthStory": "员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主今天下午3点购买了治疗花生过敏的药物，但员工记得雇主曾公开说过自己对海鲜过敏。员工意识到雇主可能误食了会引发严重过敏的食物，因为晚餐计划中有花生酱调味的菜肴。当时雇主正在接一个重要商务电话，员工无法直接打断说明。于是员工将收据揉成团扔进垃圾桶，然后快步离开办公室，希望雇主挂断电话后看到收据纸团。雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "收据显示购买时间是今天下午3点。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "购买时间",
+          "下午3点"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "收据上列有治疗花生过敏的药物名称。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "花生过敏",
+          "药物名称"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "雇主今天下午4点开始接听一个重要商务电话。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "下午4点",
+          "商务电话"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "员工离开办公室时没有说任何话。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "员工",
+          "离开办公室",
+          "没有说话"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "垃圾桶在办公室门边。",
+        "importance": 5,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "办公室",
+          "门边"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "雇主的海鲜过敏是公开信息。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "海鲜过敏",
+          "公开信息"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "晚餐计划中有花生酱调味的菜肴。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "晚餐",
+          "花生酱",
+          "菜肴"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "揉收据的动作看起来像在销毁证据",
+      "快速离开房间被误解为逃避责任",
+      "员工沉默不语被当成心虚表现"
+    ],
+    "keyTriggers": [
+      "收据上显示了什么药物信息？",
+      "雇主当时正在做什么？",
+      "晚餐菜单中有什么成分？",
+      "员工为什么选择扔收据而不是直接说话？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "家庭场景",
+      "CgBh6W",
+      "dynamic",
+      "家庭",
+      "人物关系清晰"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:15.559Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "audit_generated_puzzle",
+  "stage": "audit_attempt_3",
+  "provider": "ollama",
+  "model": "qwen2.5:7b",
+  "supplierLabel": "周文健Ollama",
+  "baseUrl": "http://192.168.5.4:11434",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are auditing a turtle soup puzzle before it is published.\nReturn JSON only.\nBe strict: reject any puzzle whose soup surface, truth story, and facts do not describe the same event chain.\nReject abstract truth stories that only summarize reasoning, profession, or vague risk without a concrete incident.\nReject any puzzle where facts drift away from the soup surface or introduce a different story.\nReject any puzzle where facts talk about abstract judgment instead of concrete event details.\nReject any puzzle whose soup surface is not the visible scene caused by the truth story."
+    },
+    {
+      "role": "user",
+      "content": "Task: decide whether this puzzle is playable as a coherent turtle soup mystery.\n\nRequested difficulty: easy\nUser theme preference: 办公室误会、人物关系清晰、反转温和\nBlueprint setting: 家庭\nBlueprint key object: 收据\nBlueprint reveal anchor: 重复出现的小动作\n\nCandidate puzzle JSON:\n{\n  \"puzzleId\": \"generated-uV-tHVeKiSZC\",\n  \"title\": \"家庭办公室的求救信号\",\n  \"soupSurface\": \"雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。\",\n  \"truthStory\": \"员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主今天下午3点购买了治疗花生过敏的药物，但员工记得雇主曾公开说过自己对海鲜过敏。员工意识到雇主可能误食了会引发严重过敏的食物，因为晚餐计划中有花生酱调味的菜肴。当时雇主正在接一个重要商务电话，员工无法直接打断说明。于是员工将收据揉成团扔进垃圾桶，然后快步离开办公室，希望雇主挂断电话后看到收据纸团。雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"收据显示购买时间是今天下午3点。\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"收据\",\n        \"购买时间\",\n        \"下午3点\"\n      ]\n    },\n    {\n      \"factId\": \"fact-2\",\n      \"statement\": \"收据上列有治疗花生过敏的药物名称。\",\n      \"importance\": 9,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"收据\",\n        \"花生过敏\",\n        \"药物名称\"\n      ]\n    },\n    {\n      \"factId\": \"fact-3\",\n      \"statement\": \"雇主今天下午4点开始接听一个重要商务电话。\",\n      \"importance\": 7,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"雇主\",\n        \"下午4点\",\n        \"商务电话\"\n      ]\n    },\n    {\n      \"factId\": \"fact-4\",\n      \"statement\": \"员工离开办公室时没有说任何话。\",\n      \"importance\": 6,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"员工\",\n        \"离开办公室\",\n        \"没有说话\"\n      ]\n    },\n    {\n      \"factId\": \"fact-5\",\n      \"statement\": \"垃圾桶在办公室门边。\",\n      \"importance\": 5,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"垃圾桶\",\n        \"办公室\",\n        \"门边\"\n      ]\n    },\n    {\n      \"factId\": \"fact-6\",\n      \"statement\": \"雇主的海鲜过敏是公开信息。\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"雇主\",\n        \"海鲜过敏\",\n        \"公开信息\"\n      ]\n    },\n    {\n      \"factId\": \"fact-7\",\n      \"statement\": \"晚餐计划中有花生酱调味的菜肴。\",\n      \"importance\": 9,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"晚餐\",\n        \"花生酱\",\n        \"菜肴\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"揉收据的动作看起来像在销毁证据\",\n    \"快速离开房间被误解为逃避责任\",\n    \"员工沉默不语被当成心虚表现\"\n  ],\n  \"keyTriggers\": [\n    \"收据上显示了什么药物信息？\",\n    \"雇主当时正在做什么？\",\n    \"晚餐菜单中有什么成分？\",\n    \"员工为什么选择扔收据而不是直接说话？\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"办公室误会\",\n    \"时间差误判\",\n    \"隐蔽求救\",\n    \"家庭场景\",\n    \"CgBh6W\",\n    \"dynamic\",\n    \"家庭\",\n    \"人物关系清晰\"\n  ]\n}\n\nAudit rules:\n1. Soup surface, truth story, and facts must describe one single concrete incident.\n2. Truth story must contain specific event details, not only abstract explanation.\n3. Facts must support the same incident and should not feel like a different story.\n4. If the truth story could not be acted out as a specific scene, reject it.\n5. If the soup surface is not the visible climax scene of the truth story, reject it.\n6. If most facts cannot be pointed to a single incident timeline, reject it.\n\nJSON shape:\n{\n  \"valid\": true,\n  \"coherenceScore\": 0,\n  \"reasons\": [\n    \"short Chinese reason\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.08,
+    "top_p": 0.85,
+    "repeat_penalty": 1.01,
+    "num_ctx": 12288,
+    "num_predict": 300
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:23.594Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "audit_generated_puzzle",
+  "stage": "audit_attempt_3",
+  "provider": "ollama",
+  "model": "qwen2.5:7b",
+  "attempt": 1,
+  "rawContent": "{\n  \"valid\": true,\n  \"coherenceScore\": 10,\n  \"reasons\": [\n    \"事件链清晰，描述具体，且各要素一致\"\n  ]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:23.595Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "audit_generated_puzzle",
+  "stage": "audit_attempt_3",
+  "provider": "ollama",
+  "model": "qwen2.5:7b",
+  "attempt": 1,
+  "parsed": {
+    "valid": true,
+    "coherenceScore": 10,
+    "reasons": [
+      "事件链清晰，描述具体，且各要素一致"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:23.595Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Remote audit finished.",
+  "attempt": 3,
+  "remoteAudit": {
+    "valid": true,
+    "coherenceScore": 10,
+    "reasons": [
+      "事件链清晰，描述具体，且各要素一致"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:27:23.595Z",
+  "traceId": "puzzle--5a5POY1",
+  "operation": "generate_puzzle",
+  "message": "Puzzle accepted.",
+  "attempt": 3,
+  "candidate": {
+    "puzzleId": "generated-uV-tHVeKiSZC",
+    "title": "家庭办公室的求救信号",
+    "soupSurface": "雇主看到员工在家庭办公室工作时，突然将一张收据揉成一团扔进垃圾桶，然后快速离开房间，看起来像在销毁证据或逃避什么。",
+    "truthStory": "员工在整理办公室文件时，无意中看到雇主放在桌上的药店收据，上面显示雇主今天下午3点购买了治疗花生过敏的药物，但员工记得雇主曾公开说过自己对海鲜过敏。员工意识到雇主可能误食了会引发严重过敏的食物，因为晚餐计划中有花生酱调味的菜肴。当时雇主正在接一个重要商务电话，员工无法直接打断说明。于是员工将收据揉成团扔进垃圾桶，然后快步离开办公室，希望雇主挂断电话后看到收据纸团。雇主挂断电话后，看到垃圾桶里的收据纸团，好奇地捡起来查看，发现了药物信息与自身过敏情况的不符，避免了误食含有花生的晚餐。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "收据显示购买时间是今天下午3点。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "购买时间",
+          "下午3点"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "收据上列有治疗花生过敏的药物名称。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "收据",
+          "花生过敏",
+          "药物名称"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "雇主今天下午4点开始接听一个重要商务电话。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "下午4点",
+          "商务电话"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "员工离开办公室时没有说任何话。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "员工",
+          "离开办公室",
+          "没有说话"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "垃圾桶在办公室门边。",
+        "importance": 5,
+        "discoverable": true,
+        "keywords": [
+          "垃圾桶",
+          "办公室",
+          "门边"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "雇主的海鲜过敏是公开信息。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "雇主",
+          "海鲜过敏",
+          "公开信息"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "晚餐计划中有花生酱调味的菜肴。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "晚餐",
+          "花生酱",
+          "菜肴"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "揉收据的动作看起来像在销毁证据",
+      "快速离开房间被误解为逃避责任",
+      "员工沉默不语被当成心虚表现"
+    ],
+    "keyTriggers": [
+      "收据上显示了什么药物信息？",
+      "雇主当时正在做什么？",
+      "晚餐菜单中有什么成分？",
+      "员工为什么选择扔收据而不是直接说话？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "办公室误会",
+      "时间差误判",
+      "隐蔽求救",
+      "家庭场景",
+      "CgBh6W",
+      "dynamic",
+      "家庭",
+      "人物关系清晰"
+    ]
+  }
+}
+scope=room scope=room stage=create_room_generation_success scope=room scope=room stage=create_room_generation_success timestamp=2026-03-28T08:27:23.595Z scope=room scope=room stage=create_room_generation_success scope=room scope=room stage=create_room_generation_success timestamp=2026-03-28T08:27:23.595Z puzzleTitle=家庭办公室的求救信号 scope=room scope=room stage=create_room_generation_success scope=room scope=room stage=create_room_generation_success timestamp=2026-03-28T08:27:23.595Z scope=room scope=room stage=create_room_generation_success scope=room scope=room stage=create_room_generation_success timestamp=2026-03-28T08:27:23.595Z puzzleTitle=家庭办公室的求救信号 difficulty=easy

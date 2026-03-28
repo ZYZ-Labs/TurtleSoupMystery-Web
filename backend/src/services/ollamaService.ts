@@ -170,6 +170,8 @@ const PRESSURES = ['必须在几分钟内决定', '如果继续原计划会出�
 const KEY_OBJECTS = ['照片', '请假条', '闹钟', '外卖袋', '旧门卡', '车票', '录音', '药盒', '收据', '工牌'];
 const RED_HERRINGS = ['像感情纠纷', '像服务事故', '像主角撒谎', '像单纯的误会', '像报复行为'];
 const REVEAL_ANCHORS = ['背景反光', '时间点对不上', '物件位置异常', '一句看似多余的话', '重复出现的小动作', '被刻意忽略的职业信息'];
+const MAX_SCENARIO_ATTEMPTS = 2;
+const MAX_PUZZLE_DRAFT_ATTEMPTS = 2;
 
 type FallbackBuilder = (request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) => Puzzle;
 
@@ -273,14 +275,14 @@ export class OllamaService {
 
     let lastFailureReason = 'AI 生成题目未通过校验，请重试。';
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let scenarioAttempt = 0; scenarioAttempt < MAX_SCENARIO_ATTEMPTS; scenarioAttempt += 1) {
       try {
         const timedGenerationSupplier = this.withRemainingTimeout(supplier, generationDeadline);
         const scenario = await this.requestStructuredOutput(
           timedGenerationSupplier,
           selectedModel,
           puzzleScenarioSchema,
-          this.buildScenarioMessages(request, blueprint, attempt > 0),
+          this.buildScenarioMessages(request, blueprint, scenarioAttempt > 0),
           {
             temperature: 0.92,
             top_p: 0.9,
@@ -291,7 +293,7 @@ export class OllamaService {
           {
             traceId,
             operation: 'generate_puzzle',
-            stage: `scenario_attempt_${attempt + 1}`
+            stage: `scenario_attempt_${scenarioAttempt + 1}`
           }
         );
 
@@ -299,7 +301,7 @@ export class OllamaService {
           traceId,
           operation: 'generate_puzzle',
           message: 'Scenario generated.',
-          attempt: attempt + 1,
+          attempt: scenarioAttempt + 1,
           scenario
         });
 
@@ -309,7 +311,7 @@ export class OllamaService {
           traceId,
           operation: 'generate_puzzle',
           message: 'Scenario audit finished.',
-          attempt: attempt + 1,
+          attempt: scenarioAttempt + 1,
           scenarioAudit
         });
 
@@ -318,79 +320,94 @@ export class OllamaService {
           continue;
         }
 
-        const parsed = await this.requestStructuredOutput(
-          timedGenerationSupplier,
-          selectedModel,
-          generatedPuzzleSchema,
-          this.buildGenerationMessages(request, blueprint, scenario, attempt > 0),
-          {
-            temperature: 0.95,
-            top_p: 0.92,
-            repeat_penalty: 1.08,
-            num_ctx: 12_288,
-            num_predict: 1_400
-          },
-          {
-            traceId,
-            operation: 'generate_puzzle',
-            stage: `puzzle_attempt_${attempt + 1}`
-          }
-        );
-        const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
-        const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+        let previousPuzzleFailure = '';
 
-        this.logDebug('info', {
-          traceId,
-          operation: 'generate_puzzle',
-          message: 'Local audit finished.',
-          attempt: attempt + 1,
-          localAudit,
-          candidate: puzzle
-        });
+        for (let puzzleDraftAttempt = 0; puzzleDraftAttempt < MAX_PUZZLE_DRAFT_ATTEMPTS; puzzleDraftAttempt += 1) {
+          const parsed = await this.requestStructuredOutput(
+            timedGenerationSupplier,
+            selectedModel,
+            generatedPuzzleSchema,
+            this.buildGenerationMessages(
+              request,
+              blueprint,
+              scenario,
+              scenarioAttempt > 0 || puzzleDraftAttempt > 0,
+              previousPuzzleFailure
+            ),
+            {
+              temperature: 0.95,
+              top_p: 0.92,
+              repeat_penalty: 1.08,
+              num_ctx: 12_288,
+              num_predict: 1_400
+            },
+            {
+              traceId,
+              operation: 'generate_puzzle',
+              stage: `puzzle_attempt_${scenarioAttempt + 1}_${puzzleDraftAttempt + 1}`
+            }
+          );
+          const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
+          const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
 
-        if (!localAudit.valid) {
-          lastFailureReason = localAudit.reasons[0] ?? lastFailureReason;
-          continue;
-        }
-
-        const remoteAudit = await this.auditGeneratedPuzzleWithModel(
-          auditSupplier,
-          auditModel,
-          request,
-          blueprint,
-          puzzle,
-          generationDeadline,
-          traceId,
-          attempt + 1
-        );
-
-        this.logDebug('info', {
-          traceId,
-          operation: 'generate_puzzle',
-          message: 'Remote audit finished.',
-          attempt: attempt + 1,
-          remoteAudit
-        });
-
-        if (remoteAudit.valid) {
           this.logDebug('info', {
             traceId,
             operation: 'generate_puzzle',
-            message: 'Puzzle accepted.',
-            attempt: attempt + 1,
+            message: 'Local audit finished.',
+            attempt: scenarioAttempt + 1,
+            draftAttempt: puzzleDraftAttempt + 1,
+            localAudit,
             candidate: puzzle
           });
-          return puzzle;
-        }
 
-        lastFailureReason = remoteAudit.reasons[0] ?? lastFailureReason;
+          if (!localAudit.valid) {
+            previousPuzzleFailure = localAudit.reasons[0] ?? previousPuzzleFailure;
+            lastFailureReason = previousPuzzleFailure || lastFailureReason;
+            continue;
+          }
+
+          const remoteAudit = await this.auditGeneratedPuzzleWithModel(
+            auditSupplier,
+            auditModel,
+            request,
+            blueprint,
+            puzzle,
+            generationDeadline,
+            traceId,
+            scenarioAttempt + 1
+          );
+
+          this.logDebug('info', {
+            traceId,
+            operation: 'generate_puzzle',
+            message: 'Remote audit finished.',
+            attempt: scenarioAttempt + 1,
+            draftAttempt: puzzleDraftAttempt + 1,
+            remoteAudit
+          });
+
+          if (remoteAudit.valid) {
+            this.logDebug('info', {
+              traceId,
+              operation: 'generate_puzzle',
+              message: 'Puzzle accepted.',
+              attempt: scenarioAttempt + 1,
+              draftAttempt: puzzleDraftAttempt + 1,
+              candidate: puzzle
+            });
+            return puzzle;
+          }
+
+          previousPuzzleFailure = remoteAudit.reasons[0] ?? previousPuzzleFailure;
+          lastFailureReason = previousPuzzleFailure || lastFailureReason;
+        }
       } catch (error) {
         lastFailureReason = error instanceof Error ? error.message : lastFailureReason;
         this.logDebug('error', {
           traceId,
           operation: 'generate_puzzle',
           message: 'Puzzle generation attempt failed.',
-          attempt: attempt + 1,
+          attempt: scenarioAttempt + 1,
           error: this.describeUnknownError(error)
         });
       }
@@ -713,7 +730,8 @@ export class OllamaService {
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
     scenario: PuzzleScenario,
-    retryMode = false
+    retryMode = false,
+    rejectionReason = ''
   ): OllamaChatMessage[] {
     return [
       {
@@ -736,7 +754,8 @@ export class OllamaService {
             ? [
                 'The previous draft was rejected for inconsistency.',
                 'Rebuild the puzzle from scratch and keep every field tied to one single causal chain.',
-                'Make the truth story more concrete, more event-driven, and less generic than before.'
+                'Make the truth story more concrete, more event-driven, and less generic than before.',
+                ...(rejectionReason ? [`Most recent rejection reason: ${rejectionReason}`] : [])
               ]
             : [])
         ].join('\n')

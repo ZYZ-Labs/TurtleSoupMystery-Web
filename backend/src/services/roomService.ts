@@ -154,7 +154,6 @@ export class RoomService {
     const state = await this.store.readState();
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
-    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
     const generationStartedAtMs = Date.now();
     const clientId = this.normalizeClientId(input.clientId);
     const timestamp = nowIso();
@@ -179,9 +178,9 @@ export class RoomService {
           generationSupplier: generationSupplier?.label ?? null,
           generationProvider: generationSupplier?.provider ?? null,
           generationModel: state.ollama.generationModel,
-          validationSupplier: validationSupplier?.label ?? null,
-          validationProvider: validationSupplier?.provider ?? null,
-          validationModel: state.ollama.validationModel
+          validationSupplier: null,
+          validationProvider: null,
+          validationModel: null
         })
       );
       puzzle = await this.ollamaService.generatePuzzle(
@@ -192,8 +191,6 @@ export class RoomService {
           prompt: resolvedPrompt
         },
         {
-          supplier: validationSupplier,
-          model: state.ollama.validationModel,
           timeoutMs: state.ollama.generationTimeoutMs
         }
       );
@@ -845,7 +842,6 @@ export class RoomService {
 
     const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
-    const validationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.validationSupplierId);
     const generationStartedAtMs = Date.now();
     let puzzle;
 
@@ -861,9 +857,9 @@ export class RoomService {
           generationSupplier: generationSupplier?.label ?? null,
           generationProvider: generationSupplier?.provider ?? null,
           generationModel: state.ollama.generationModel,
-          validationSupplier: validationSupplier?.label ?? null,
-          validationProvider: validationSupplier?.provider ?? null,
-          validationModel: state.ollama.validationModel
+          validationSupplier: null,
+          validationProvider: null,
+          validationModel: null
         })
       );
       puzzle = await this.ollamaService.generatePuzzle(
@@ -874,8 +870,6 @@ export class RoomService {
           prompt: resolvedPrompt
         },
         {
-          supplier: validationSupplier,
-          model: state.ollama.validationModel,
           timeoutMs: state.ollama.generationTimeoutMs
         }
       );
