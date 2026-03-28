@@ -19,17 +19,6 @@
             class="mb-4"
           />
 
-          <v-textarea
-            v-model="createForm.generationPrompt"
-            rows="5"
-            auto-grow
-            label="汤底主题"
-            placeholder="留空即可随机，也可以手动写：例如现代都市、误导性强、围绕一张照片展开。"
-            hint="如果你懒得想主题，直接留空，系统会按难度随机挑一个方向。"
-            persistent-hint
-            class="mb-4"
-          />
-
           <div class="d-flex flex-wrap ga-3">
             <v-btn color="primary" size="large" :loading="creating" :disabled="creating" @click="handleCreateRoom">
               {{ creating ? '正在构建房间...' : '创建并进入房间' }}
@@ -66,7 +55,7 @@
         <v-card-title class="section-title px-6 pt-6">玩法说明</v-card-title>
         <v-card-text class="pt-4">
           <v-list density="comfortable">
-            <v-list-item>你现在只要选难度就能开局，主题留空时会自动随机。</v-list-item>
+            <v-list-item>你现在只要选难度就能开局，每一局都会完全随机生成。</v-list-item>
             <v-list-item>同一房间里的所有成员共享问题记录、主持回答、已揭示事实和最终结算结果。</v-list-item>
             <v-list-item>当前版本采用实时推送同步，局域网里多人协作时会更顺滑。</v-list-item>
           </v-list>
@@ -122,7 +111,7 @@
             <v-chip size="small" variant="outlined">生成耗时 {{ formatDuration(room.generationDurationMs) }}</v-chip>
           </div>
 
-          <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
+          <div class="text-body-2 text-medium-emphasis mb-2">生成模式</div>
           <p class="text-body-2 mb-0">{{ room.generationPrompt }}</p>
           <v-alert
             v-if="room.generationSource === 'fallback'"
@@ -149,7 +138,7 @@
             </v-btn>
           </div>
           <div v-if="isHost && isJoined && room.status !== 'playing'" class="mt-4">
-            <v-btn color="primary" variant="outlined" @click="openRestartDialog">换个主题再开一局</v-btn>
+            <v-btn color="primary" variant="outlined" @click="openRestartDialog">随机再开一局</v-btn>
           </div>
         </v-card-text>
       </v-card>
@@ -387,7 +376,7 @@
     <v-card>
       <v-card-title class="section-title px-6 pt-6">重新开一局</v-card-title>
       <v-card-text class="pt-4">
-        <div class="text-body-2 text-medium-emphasis mb-4">会保留房间码和当前成员，只重置这一局的汤底、进度和聊天记录。</div>
+        <div class="text-body-2 text-medium-emphasis mb-4">会保留房间码和当前成员，只重置这一局的汤底、进度和聊天记录，并重新随机出题。</div>
         <v-select
           v-model="restartForm.difficulty"
           :items="difficultyItems"
@@ -395,15 +384,6 @@
           item-value="value"
           label="新一局难度"
           class="mb-4"
-        />
-        <v-textarea
-          v-model="restartForm.generationPrompt"
-          rows="5"
-          auto-grow
-          label="新主题"
-          placeholder="留空即可随机，也可以手动写一个新的方向。"
-          hint="例如：现代都市、强误导、围绕一张照片展开。"
-          persistent-hint
         />
         <v-alert v-if="restarting" type="info" variant="tonal" class="mt-4">
           <div class="font-weight-medium mb-2">{{ creatingStatus }}</div>
@@ -503,11 +483,9 @@ const generationLogs = ref<string[]>([]);
 const createForm = reactive<{
   displayName: string;
   difficulty: Difficulty;
-  generationPrompt: string;
 }>({
   displayName: rememberedDisplayName,
-  difficulty: 'medium',
-  generationPrompt: ''
+  difficulty: 'medium'
 });
 
 const joinForm = reactive({
@@ -517,10 +495,8 @@ const joinForm = reactive({
 
 const restartForm = reactive<{
   difficulty: Difficulty;
-  generationPrompt: string;
 }>({
-  difficulty: 'medium',
-  generationPrompt: ''
+  difficulty: 'medium'
 });
 
 let heartbeatTimer: number | null = null;
@@ -788,7 +764,6 @@ async function loadRoom(showError = true) {
 
 function syncRestartForm() {
   restartForm.difficulty = room.value?.difficulty ?? 'medium';
-  restartForm.generationPrompt = room.value?.generationPrompt ?? '';
 }
 
 function appendGenerationLog(message: string) {
@@ -1109,7 +1084,7 @@ async function handleCreateRoom() {
       clientId: browserClientId,
       displayName,
       difficulty: createForm.difficulty,
-      generationPrompt: createForm.generationPrompt.trim()
+      generationPrompt: ''
     }, resolveGenerationRequestTimeout());
 
     room.value = created.room;
@@ -1300,7 +1275,7 @@ async function handleRestartRoom() {
   try {
     room.value = await restartRoom(room.value.roomId, activeParticipant.value.participantId, {
       difficulty: restartForm.difficulty,
-      generationPrompt: restartForm.generationPrompt.trim()
+      generationPrompt: ''
     }, resolveGenerationRequestTimeout());
     restartDialog.value = false;
     question.value = '';

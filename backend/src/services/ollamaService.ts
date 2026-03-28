@@ -793,7 +793,7 @@ export class OllamaService {
           '请先生成这一局海龟汤的汤底蓝图。',
           '',
           `难度：${this.toChineseDifficulty(request.difficulty)}`,
-          `用户主题偏好：${request.prompt.trim() || '随机主题，用户没有额外要求'}`,
+          `主题要求：${request.prompt.trim() || '本局不使用自定义主题，请完全随机发挥，但必须严格符合难度。'}`,
           '',
           '创意约束：',
           `- 场景方向：${blueprint.setting}`,
@@ -806,6 +806,9 @@ export class OllamaService {
           `- 常见误导：${blueprint.redHerring}`,
           `- 揭示锚点：${blueprint.revealAnchor}`,
           `- 新鲜度标记：${blueprint.noveltyToken}`,
+          '',
+          '难度要求：',
+          ...this.buildDifficultyGuidance(request.difficulty),
           '',
           '输出要求：',
           '1. title：这局题的标题，简短但不俗套。',
@@ -864,6 +867,10 @@ export class OllamaService {
           '现在请只基于这份汤底蓝图，生成题面和事实链。',
           '仍然必须使用简体中文。',
           '仍然只能返回一个 JSON 对象。',
+          '',
+          `当前难度：${this.toChineseDifficulty(request.difficulty)}`,
+          '难度要求：',
+          ...this.buildDifficultyGuidance(request.difficulty),
           '',
           '输出要求：',
           '1. soupSurface：1 到 2 句题面，必须是同一事件里玩家眼前看到的奇怪场景，不能换场景，不能剧透。',
@@ -2499,6 +2506,30 @@ export class OllamaService {
 
   private toChineseDifficulty(difficulty: Difficulty) {
     return difficulty === 'easy' ? '简单' : difficulty === 'hard' ? '困难' : '中等';
+  }
+
+  private buildDifficultyGuidance(difficulty: Difficulty) {
+    if (difficulty === 'easy') {
+      return [
+        '- 线索要直接，关键物件和关键动作要尽早可见。',
+        '- 误导最多轻微一层，不要把玩家带到完全错误的方向。',
+        '- 因果链尽量短，通常 1 到 2 步追问就能逼近核心。'
+      ];
+    }
+
+    if (difficulty === 'hard') {
+      return [
+        '- 允许更强的误导，但所有误导都必须公平，不能靠隐藏常识取胜。',
+        '- 因果链可以更长，至少需要 3 步以上有效提问才能逼近核心。',
+        '- 关键线索要更隐蔽，但一旦问对方向，答案仍然要能稳定落回同一事件。'
+      ];
+    }
+
+    return [
+      '- 误导强度适中，既不能一眼看穿，也不能故意绕远。',
+      '- 因果链保持清晰，但需要 2 到 3 步有效提问才能完整拼起来。',
+      '- 至少保留一个不起眼但公平的关键细节，供玩家逐步锁定方向。'
+    ];
   }
 
   private buildFallbackPuzzle(

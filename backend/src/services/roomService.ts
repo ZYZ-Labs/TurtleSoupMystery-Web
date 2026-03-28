@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { AI_HOST_NAME, ANSWER_LABELS } from '../lib/constants.js';
-import { clampProgress, createRoomCode, nowIso, slugifyPrompt, sortByUpdatedAt, unique } from '../lib/utils.js';
+import { clampProgress, createRoomCode, nowIso, sortByUpdatedAt, unique } from '../lib/utils.js';
 import { StateStore } from '../storage/stateStore.js';
 import type {
   Difficulty,
@@ -152,7 +152,7 @@ export class RoomService {
 
   async createRoom(input: CreateRoomInput): Promise<RoomJoinResult> {
     const state = await this.store.readState();
-    const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
+    const generationModeLabel = this.resolveGenerationPromptLabel();
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
     const generationStartedAtMs = Date.now();
     const clientId = this.normalizeClientId(input.clientId);
@@ -174,7 +174,7 @@ export class RoomService {
           stage: 'create_room_generation_start',
           timestamp,
           difficulty: input.difficulty,
-          prompt: resolvedPrompt,
+          promptMode: generationModeLabel,
           generationSupplier: generationSupplier?.label ?? null,
           generationProvider: generationSupplier?.provider ?? null,
           generationModel: state.ollama.generationModel,
@@ -188,7 +188,7 @@ export class RoomService {
         state.ollama.generationModel,
         {
           difficulty: input.difficulty,
-          prompt: resolvedPrompt
+          prompt: ''
         },
         {
           timeoutMs: state.ollama.generationTimeoutMs
@@ -218,12 +218,11 @@ export class RoomService {
     }
     const generationDurationMs = Math.max(0, Date.now() - generationStartedAtMs);
     const roomCode = this.createUniqueRoomCode(state.rooms);
-    const roomTitle = slugifyPrompt(resolvedPrompt) || puzzle.title;
     const room: GameRoom = {
       roomId: nanoid(),
       roomCode,
-      title: roomTitle,
-      generationPrompt: resolvedPrompt,
+      title: puzzle.title,
+      generationPrompt: generationModeLabel,
       generationDurationMs,
       generationSource: puzzle.generationSource ?? 'unknown',
       generationFailureReason: puzzle.generationFailureReason ?? null,
@@ -847,7 +846,7 @@ export class RoomService {
       throw new ServiceError(403, '只有房主可以重新开局。');
     }
 
-    const resolvedPrompt = this.resolveGenerationPrompt(input.difficulty, input.generationPrompt);
+    const generationModeLabel = this.resolveGenerationPromptLabel();
     const generationSupplier = this.findSupplier(state.ollama.suppliers, state.ollama.generationSupplierId);
     const generationStartedAtMs = Date.now();
     let puzzle;
@@ -860,7 +859,7 @@ export class RoomService {
           timestamp: nowIso(),
           roomId,
           difficulty: input.difficulty,
-          prompt: resolvedPrompt,
+          promptMode: generationModeLabel,
           generationSupplier: generationSupplier?.label ?? null,
           generationProvider: generationSupplier?.provider ?? null,
           generationModel: state.ollama.generationModel,
@@ -874,7 +873,7 @@ export class RoomService {
         state.ollama.generationModel,
         {
           difficulty: input.difficulty,
-          prompt: resolvedPrompt
+          prompt: ''
         },
         {
           timeoutMs: state.ollama.generationTimeoutMs
@@ -917,8 +916,8 @@ export class RoomService {
 
       const nextRoom: GameRoom = {
         ...currentRoom,
-        title: slugifyPrompt(resolvedPrompt) || puzzle.title,
-        generationPrompt: resolvedPrompt,
+        title: puzzle.title,
+        generationPrompt: generationModeLabel,
         generationDurationMs,
         generationSource: puzzle.generationSource ?? 'unknown',
         generationFailureReason: puzzle.generationFailureReason ?? null,
@@ -1370,36 +1369,8 @@ export class RoomService {
     });
   }
 
-  private resolveGenerationPrompt(difficulty: Difficulty, prompt: string) {
-    const normalized = prompt.trim();
-
-    if (normalized) {
-      return normalized;
-    }
-
-    const promptPool: Record<Difficulty, string[]> = {
-      easy: [
-        '校园日常、线索直接、现实向',
-        '办公室误会、人物关系清晰、反转温和',
-        '家庭场景、动机明确、容易联想到关键线索',
-        '公共场所小事件、因果链简单、误导较少'
-      ],
-      medium: [
-        '现代都市、误导性适中、围绕一件不起眼的物品',
-        '现实悬疑、人物动机隐藏、需要多步提问',
-        '社交关系、信息差驱动、结局合理但不直白',
-        '职场或校园、表面行为反常、背后另有原因'
-      ],
-      hard: [
-        '强误导现实悬疑、信息缺口大、需要逆向提问',
-        '多重身份误导、因果链较长、结局克制',
-        '心理动机主导、表象与真相反差大',
-        '冷门职业或场景、关键线索隐蔽、适合多人协作拆解'
-      ]
-    };
-
-    const pool = promptPool[difficulty];
-    return pool[Math.floor(Math.random() * pool.length)] ?? promptPool.medium[0];
+  private resolveGenerationPromptLabel() {
+    return '随机生成';
   }
 
   private normalizeRoomCode(value: string) {
