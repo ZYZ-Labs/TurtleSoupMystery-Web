@@ -200,11 +200,15 @@ export interface PuzzleGenerationRequest {
 
 export interface RoomContext {
   revealedFactIds: string[];
+  revealedFacts: RevealedFact[];
   progressScore: number;
   hintUsageCount: number;
   questionHistory: Array<{
     question: string;
     answerCode: AnswerCode;
+    reasoning?: string;
+    matchedFactIds: string[];
+    revealedFactIds: string[];
   }>;
 }
 

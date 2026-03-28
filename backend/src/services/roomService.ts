@@ -475,7 +475,7 @@ export class RoomService {
             id: `${questionRecord.id}-facts`,
             type: 'status',
             authorName: AI_HOST_NAME,
-            content: `\u65b0\u63ed\u793a\u4e8b\u5b9e\uff1a${newlyRevealedFacts.join('\uFF1B')}`,
+            content: `主持补充了一条较轻的线索：${newlyRevealedFacts.join('；')}`,
             createdAt: timestamp,
             source: evaluation.source
           });
@@ -1596,11 +1596,18 @@ export class RoomService {
   private toRoomContext(room: GameRoom): RoomContext {
     return {
       revealedFactIds: room.revealedFactIds,
+      revealedFacts: room.revealedFactIds.map((factId) => ({
+        factId,
+        statement: room.facts.find((fact) => fact.factId === factId)?.statement ?? factId
+      })),
       progressScore: room.progressScore,
       hintUsageCount: room.hintUsageCount,
       questionHistory: room.questions.map((item) => ({
         question: item.question,
-        answerCode: item.answerCode
+        answerCode: item.answerCode,
+        reasoning: item.reasoning,
+        matchedFactIds: item.matchedFactIds,
+        revealedFactIds: item.revealedFactIds
       }))
     };
   }

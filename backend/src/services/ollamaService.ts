@@ -542,8 +542,13 @@ export class OllamaService {
       return {
         ...parsed,
         matchedFactIds: unique(parsed.matchedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId)),
-        revealedFactIds: unique(parsed.revealedFactIds).filter((factId) =>
-          puzzle.facts.some((fact) => fact.factId === factId && fact.discoverable)
+        revealedFactIds: this.filterSafeRevealedFactIds(
+          puzzle,
+          context,
+          question,
+          parsed.answerCode,
+          unique(parsed.matchedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId)),
+          unique(parsed.revealedFactIds).filter((factId) => puzzle.facts.some((fact) => fact.factId === factId && fact.discoverable))
         ),
         source: 'ollama'
       } satisfies QuestionEvaluation;
@@ -1127,35 +1132,39 @@ export class OllamaService {
       {
         role: 'system',
         content: [
-          'You are a rigorous turtle soup host and referee.',
-          'Judge only from the canonical puzzle dossier.',
-          'Common sense must not override the dossier.',
-          'Soup surface is player-facing setup; truth story and facts are authoritative.',
-          'You may use unrevealed facts to judge yes/no, but only reveal discoverable facts.',
-          'Prefer "irrelevant" for questions that do not help solve the core mystery.',
-          'Prefer "unknown" only when the wording is too ambiguous to judge fairly.',
-          'Return JSON only.'
+          '你是严格、不自爆的海龟汤主持人兼裁判。',
+          '你只能根据下方谜题档案裁定，不能用常识脑补超出档案的信息。',
+          '题面只是玩家视角，汤底和事实链才是裁定依据。',
+          '默认只回答 是 / 否 / 部分相关 / 无关 / 无法判断。',
+          '除非玩家的问题已经非常具体地命中了一个“非核心、可公开、不会直接锁定关键机制”的细节，否则 revealedFactIds 必须返回空数组。',
+          '高重要度事实、关键物件、关键异常、关键时间错位，默认都不能主动揭示。',
+          '不要因为玩家问到了最终动作或结果，就顺手把关键事实讲出来。',
+          '无关问题优先回答“无关”；结构模糊的问题回答“无法判断”。',
+          '只能返回一个 JSON 对象。'
         ].join('\n')
       },
       {
         role: 'user',
         content: [
-          'Task: judge a player question.',
+          '任务：裁定玩家刚才的问题。',
           '',
           this.buildPuzzleDossier(puzzle, context),
           '',
-          'Current question:',
+          '当前问题：',
           question,
           '',
-          'Judging rules:',
-          '1. If the question matches the truth, answer yes.',
-          '2. If the question contradicts the truth, answer no.',
-          '3. If only part of it is right, answer partial.',
-          '4. If it is off-track or too detached from the mystery, answer irrelevant.',
-          '5. Use unknown only when the question is structurally ambiguous.',
-          '6. Reveal at most 2 discoverable facts in one answer.',
+          '裁定规则：',
+          '1. 问题命中真相，就回答 yes。',
+          '2. 问题与真相相反，就回答 no。',
+          '3. 只说对一部分，就回答 partial。',
+          '4. 和核心谜题关系弱，就回答 irrelevant。',
+          '5. 只有在问题本身结构模糊时，才回答 unknown。',
+          '6. 普通问题默认 revealedFactIds = []。',
+          '7. 只有当问题已经明确命中一个低强度、可公开的小细节时，才允许揭示最多 1 条事实。',
+          '8. 如果一条事实会明显暴露关键物件、关键异常、关键时间点或核心反转，就绝对不要揭示。',
+          '9. reasoning 要简短说明裁定依据，但不要剧透。',
           '',
-          'JSON shape:',
+          'JSON 结构：',
           JSON.stringify(
             {
               answerCode: 'yes|no|irrelevant|partial|unknown',
@@ -1218,7 +1227,7 @@ export class OllamaService {
 
   private buildPuzzleDossier(puzzle: Puzzle, context: RoomContext) {
     const revealedSet = new Set(context.revealedFactIds);
-    const recentHistory = context.questionHistory.slice(-10);
+    const historySection = this.buildQuestionHistorySummary(context, puzzle);
     const factsSection = puzzle.facts
       .map(
         (fact) =>
@@ -1227,26 +1236,28 @@ export class OllamaService {
           }; statement=${fact.statement}`
       )
       .join('\n');
-    const historySection =
-      recentHistory.length > 0
-        ? recentHistory.map((item, index) => `${index + 1}. Q=${item.question} | A=${item.answerCode}`).join('\n')
+    const revealedFactsSection =
+      context.revealedFacts.length > 0
+        ? context.revealedFacts.map((fact, index) => `${index + 1}. [${fact.factId}] ${fact.statement}`).join('\n')
         : 'none';
 
     return [
-      'Canonical puzzle dossier:',
-      `Title: ${puzzle.title}`,
-      `Soup surface: ${puzzle.soupSurface}`,
-      `Truth story: ${puzzle.truthStory}`,
-      `Tags: ${puzzle.tags.join(' / ') || 'none'}`,
-      `Key triggers: ${puzzle.keyTriggers.join(' / ') || 'none'}`,
-      `Misleading points: ${puzzle.misleadingPoints.join(' / ') || 'none'}`,
+      '谜题档案：',
+      `标题：${puzzle.title}`,
+      `题面：${puzzle.soupSurface}`,
+      `汤底：${puzzle.truthStory}`,
+      `标签：${puzzle.tags.join(' / ') || 'none'}`,
+      `推荐追问方向：${puzzle.keyTriggers.join(' / ') || 'none'}`,
+      `常见误导：${puzzle.misleadingPoints.join(' / ') || 'none'}`,
       '',
-      'Canonical facts:',
+      '完整事实链：',
       factsSection,
       '',
-      `Already revealed fact ids: ${context.revealedFactIds.join(', ') || 'none'}`,
-      `Current progress score: ${context.progressScore}`,
-      'Recent question history:',
+      '已经公开给玩家的事实：',
+      revealedFactsSection,
+      '',
+      `当前进度：${context.progressScore}`,
+      '关键问答历史：',
       historySection
     ].join('\n');
   }
@@ -1282,6 +1293,107 @@ export class OllamaService {
       `Key triggers: ${truthBlueprint.keyTriggers.join(' / ') || 'none'}`,
       `Tags: ${truthBlueprint.tags.join(' / ') || 'none'}`
     ].join('\n');
+  }
+
+  private buildQuestionHistorySummary(context: RoomContext, puzzle: Puzzle) {
+    if (context.questionHistory.length === 0) {
+      return 'none';
+    }
+
+    const olderHistory = context.questionHistory.slice(0, -6);
+    const recentHistory = context.questionHistory.slice(-6);
+    const olderSummary =
+      olderHistory.length > 0
+        ? `更早之前共有 ${olderHistory.length} 轮问答，其中命中过事实的有 ${
+            olderHistory.filter((item) => item.matchedFactIds.length > 0).length
+          } 轮，公开过新事实的有 ${olderHistory.filter((item) => item.revealedFactIds.length > 0).length} 轮。`
+        : '';
+    const recentSummary = recentHistory
+      .map((item, index) => {
+        const revealed = item.revealedFactIds
+          .map((factId) => puzzle.facts.find((fact) => fact.factId === factId)?.statement ?? factId)
+          .join(' / ');
+
+        return [
+          `${olderHistory.length + index + 1}. Q=${item.question}`,
+          `A=${item.answerCode}`,
+          item.reasoning ? `R=${item.reasoning}` : '',
+          item.matchedFactIds.length > 0 ? `matched=${item.matchedFactIds.join(', ')}` : '',
+          revealed ? `revealed=${revealed}` : ''
+        ]
+          .filter(Boolean)
+          .join(' | ');
+      })
+      .join('\n');
+
+    return [olderSummary, recentSummary].filter(Boolean).join('\n');
+  }
+
+  private filterSafeRevealedFactIds(
+    puzzle: Puzzle,
+    context: RoomContext,
+    question: string,
+    answerCode: QuestionEvaluation['answerCode'],
+    matchedFactIds: string[],
+    candidateRevealedFactIds: string[]
+  ) {
+    if (candidateRevealedFactIds.length === 0) {
+      return [];
+    }
+
+    if (answerCode !== 'yes' && answerCode !== 'partial') {
+      return [];
+    }
+
+    const derivedTerms = this.extractSearchTerms([question]);
+
+    if (this.isBroadQuestion(question, derivedTerms)) {
+      return [];
+    }
+
+    const matchedSet = new Set(matchedFactIds);
+    const revealedSet = new Set(context.revealedFactIds);
+
+    return candidateRevealedFactIds
+      .map((factId) => puzzle.facts.find((fact) => fact.factId === factId))
+      .filter((fact): fact is Puzzle['facts'][number] => Boolean(fact))
+      .filter((fact) => fact.discoverable && !revealedSet.has(fact.factId))
+      .filter((fact) => matchedSet.has(fact.factId))
+      .filter((fact) => fact.importance <= 5)
+      .filter((fact) => !this.isSensitiveRevealFact(fact))
+      .filter((fact) => this.questionSpecificallyTargetsFact(question, derivedTerms, fact))
+      .slice(0, 1)
+      .map((fact) => fact.factId);
+  }
+
+  private isBroadQuestion(question: string, derivedTerms: string[]) {
+    return (
+      derivedTerms.length <= 1 ||
+      /为什么|怎么|如何|具体|到底|真相|发生了什么|怎么回事|原因|前因后果|全部经过/u.test(question)
+    );
+  }
+
+  private isSensitiveRevealFact(fact: Puzzle['facts'][number]) {
+    if (fact.importance >= 7) {
+      return true;
+    }
+
+    return /时间.*对不上|录音|监控|门卡|工牌|药盒|收据|身份|冒充|调包|伪装|关键|真正|其实/u.test(fact.statement);
+  }
+
+  private questionSpecificallyTargetsFact(question: string, derivedTerms: string[], fact: Puzzle['facts'][number]) {
+    const normalizedQuestion = normalizeText(question);
+    const factTerms = unique(this.extractSearchTerms([fact.statement, ...fact.keywords]));
+    const keywordHits = unique(
+      factTerms.filter((term) => term.length >= 2 && (derivedTerms.includes(term) || normalizedQuestion.includes(term)))
+    );
+    const directKeywordHit = fact.keywords.some((keyword) => {
+      const normalizedKeyword = normalizeText(keyword);
+      return normalizedKeyword.length >= 2 && normalizedQuestion.includes(normalizedKeyword);
+    });
+    const concreteQuestion = /是不是|是否|有没有|有无|看到|听到|拿着|带着|写着|提到|出现|放在|来自/u.test(question);
+
+    return directKeywordHit || (concreteQuestion && keywordHits.length >= 2);
   }
 
   private composePuzzleFromDraft(
@@ -2145,26 +2257,30 @@ export class OllamaService {
     const normalizedQuestion = normalizeText(question);
     const derivedTerms = this.extractSearchTerms([question]);
     const matchedFacts = puzzle.facts.filter((fact) => this.factMatchesQuestion(fact, normalizedQuestion, derivedTerms));
-    const revealedFactIds = matchedFacts
-      .filter((fact) => fact.discoverable && !context.revealedFactIds.includes(fact.factId))
-      .slice(0, 2)
-      .map((fact) => fact.factId);
 
     if (matchedFacts.length === 0) {
-      const isBroadQuestion = derivedTerms.length <= 1 || /为什么|怎么|具体|到底|真相/u.test(question);
+      const broadQuestion = this.isBroadQuestion(question, derivedTerms);
 
       return {
-        answerCode: isBroadQuestion ? 'unknown' : 'irrelevant',
+        answerCode: broadQuestion ? 'unknown' : 'irrelevant',
         matchedFactIds: [],
         revealedFactIds: [],
         progressDelta: 0,
-        reasoning: isBroadQuestion ? '问题过于宽泛，无法仅凭当前信息直接判定。' : '没有命中与谜题核心直接相关的事实。',
+        reasoning: broadQuestion ? '问题过于宽泛，无法仅凭当前信息直接判定。' : '没有命中与谜题核心直接相关的事实。',
         source: 'heuristic'
       };
     }
 
     const importance = matchedFacts.reduce((total, fact) => total + fact.importance, 0);
     const answerCode = this.resolveHeuristicAnswerCode(question, matchedFacts);
+    const revealedFactIds = this.filterSafeRevealedFactIds(
+      puzzle,
+      context,
+      question,
+      answerCode,
+      matchedFacts.map((fact) => fact.factId),
+      matchedFacts.map((fact) => fact.factId)
+    );
 
     return {
       answerCode,
