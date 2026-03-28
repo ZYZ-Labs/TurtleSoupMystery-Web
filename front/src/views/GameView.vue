@@ -113,6 +113,9 @@
 
           <div class="d-flex flex-wrap ga-2 mb-4">
             <v-chip size="small" color="primary" variant="tonal">{{ formatDifficulty(room.difficulty) }}</v-chip>
+            <v-chip size="small" :color="generationSourceColor(room.generationSource)" variant="tonal">
+              {{ generationSourceLabel(room.generationSource) }}
+            </v-chip>
             <v-chip size="small" variant="outlined">{{ room.participants.length }} 人</v-chip>
             <v-chip size="small" variant="outlined">{{ room.questionCount }} 次提问</v-chip>
             <v-chip size="small" variant="outlined">已用提示 {{ room.hintUsageCount }}/{{ room.maxHintCount }}</v-chip>
@@ -121,6 +124,18 @@
 
           <div class="text-body-2 text-medium-emphasis mb-2">生成提示</div>
           <p class="text-body-2 mb-0">{{ room.generationPrompt }}</p>
+          <v-alert
+            v-if="room.generationSource === 'fallback'"
+            type="warning"
+            variant="tonal"
+            density="comfortable"
+            class="mt-4"
+          >
+            <div class="font-weight-medium mb-1">本局使用稳定本地题兜底</div>
+            <div class="text-body-2">
+              {{ room.generationFailureReason ? `原因：${room.generationFailureReason}` : 'AI 生成未通过校验，因此回落到了稳定本地题。' }}
+            </div>
+          </v-alert>
 
           <div v-if="canManageRoom" class="mt-4">
             <v-btn
@@ -449,6 +464,7 @@ import type {
   Difficulty,
   PublicGameRoom,
   PublicRoomParticipant,
+  RoomGenerationSource,
   RoomRealtimeEvent,
   RoomStatus
 } from '@/types/api';
@@ -690,6 +706,14 @@ function statusColor(status: RoomStatus) {
     solved: 'success',
     failed: 'error'
   }[status];
+}
+
+function generationSourceLabel(source: RoomGenerationSource) {
+  return source === 'ai' ? 'AI 生成' : source === 'fallback' ? '本地兜底' : '来源未知';
+}
+
+function generationSourceColor(source: RoomGenerationSource) {
+  return source === 'ai' ? 'success' : source === 'fallback' ? 'warning' : 'default';
 }
 
 function endingBadgeType(tier: 'perfect' | 'gold' | 'silver' | 'bronze'): 'success' | 'info' | 'warning' {
@@ -1096,7 +1120,12 @@ async function handleCreateRoom() {
     await router.push(`/game/${created.room.roomCode}`);
     restartHeartbeatTimer();
     void sendHeartbeat(false);
-    ui.notify(`房间已创建，把房间码发给其他成员即可加入。生成耗时 ${formatDuration(created.room.generationDurationMs)}。`, 'success');
+    ui.notify(
+      `房间已创建，把房间码发给其他成员即可加入。${generationSourceLabel(created.room.generationSource)}，生成耗时 ${formatDuration(
+        created.room.generationDurationMs
+      )}。`,
+      created.room.generationSource === 'fallback' ? 'warning' : 'success'
+    );
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {
@@ -1276,7 +1305,12 @@ async function handleRestartRoom() {
     restartDialog.value = false;
     question.value = '';
     finalGuess.value = '';
-    ui.notify(`新一局已经准备好了，房间成员无需重新加入。生成耗时 ${formatDuration(room.value.generationDurationMs)}。`, 'success');
+    ui.notify(
+      `新一局已经准备好了，房间成员无需重新加入。${generationSourceLabel(room.value.generationSource)}，生成耗时 ${formatDuration(
+        room.value.generationDurationMs
+      )}。`,
+      room.value.generationSource === 'fallback' ? 'warning' : 'success'
+    );
   } catch (error) {
     ui.notify(extractErrorMessage(error), 'error');
   } finally {

@@ -10,6 +10,7 @@ export type ModelCategory = 'all' | 'balanced' | 'reasoning' | 'lightweight' | '
 export type ConnectionStatus = 'idle' | 'connected' | 'error';
 export type EndingBadgeCode = 'perfect' | 'guided_once' | 'guided_twice' | 'open_truth' | 'missed';
 export type EndingBadgeTier = 'perfect' | 'gold' | 'silver' | 'bronze';
+export type RoomGenerationSource = 'ai' | 'fallback' | 'unknown';
 
 export interface PuzzleFact {
   factId: string;
@@ -29,6 +30,8 @@ export interface Puzzle {
   keyTriggers: string[];
   difficulty: Difficulty;
   tags: string[];
+  generationSource?: Exclude<RoomGenerationSource, 'unknown'>;
+  generationFailureReason?: string | null;
 }
 
 export interface RoomParticipant {
@@ -105,6 +108,8 @@ export interface GameRoom {
   title: string;
   generationPrompt: string;
   generationDurationMs: number;
+  generationSource: RoomGenerationSource;
+  generationFailureReason: string | null;
   puzzleId: string;
   puzzleTitle: string;
   soupSurface: string;
@@ -241,6 +246,8 @@ export interface PublicGameRoom {
   title: string;
   generationPrompt: string;
   generationDurationMs: number;
+  generationSource: RoomGenerationSource;
+  generationFailureReason: string | null;
   puzzleTitle: string;
   soupSurface: string;
   difficulty: Difficulty;

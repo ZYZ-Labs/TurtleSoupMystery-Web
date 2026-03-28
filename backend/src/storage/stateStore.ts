@@ -182,6 +182,9 @@ export class StateStore {
         rooms: (parsed.rooms ?? []).map((room) => ({
           ...room,
           generationDurationMs: room.generationDurationMs ?? 0,
+          generationSource:
+            room.generationSource ?? (Array.isArray(room.tags) && room.tags.includes('fallback-local') ? 'fallback' : 'unknown'),
+          generationFailureReason: room.generationFailureReason ?? null,
           facts: room.facts ?? [],
           misleadingPoints: room.misleadingPoints ?? [],
           keyTriggers: room.keyTriggers ?? [],
@@ -577,6 +580,8 @@ export class StateStore {
       title: session.puzzleTitle,
       generationPrompt: 'Migrated legacy session',
       generationDurationMs: 0,
+      generationSource: 'unknown',
+      generationFailureReason: null,
       puzzleId: session.puzzleId,
       puzzleTitle: session.puzzleTitle,
       soupSurface: session.soupSurface,

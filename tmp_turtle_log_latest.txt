@@ -1,0 +1,810 @@
+Turtle Soup Mystery backend listening on http://0.0.0.0:8080
+AI debug logs enabled
+scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=null scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=null validationProvider=null scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=null scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z scope=room scope=room stage=create_room_generation_start scope=room scope=room stage=create_room_generation_start timestamp=2026-03-28T08:40:43.637Z difficulty=easy prompt=校园日常、线索直接、现实向 generationSupplier=DeepSeek generationProvider=deepseek generationModel=deepseek-chat validationSupplier=null validationProvider=null validationModel=null
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:43.638Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Starting puzzle generation.",
+  "request": {
+    "difficulty": "easy",
+    "prompt": "校园日常、线索直接、现实向"
+  },
+  "blueprint": {
+    "noveltyToken": "<redacted>",
+    "setting": "校园",
+    "atmosphere": "像日常小事",
+    "relationship": "家人之间",
+    "contradiction": "表面像情绪失控，实际上是对隐藏线索的准确反应",
+    "hiddenMechanism": "时间差造成误判",
+    "pressure": "如果继续原计划会出大事",
+    "keyObject": "外卖袋",
+    "redHerring": "像服务事故",
+    "revealAnchor": "重复出现的小动作"
+  },
+  "generationProvider": "deepseek",
+  "generationModel": "deepseek-chat",
+  "auditProvider": "deepseek",
+  "auditModel": "deepseek-chat"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:43.638Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design the canonical incident skeleton for a turtle soup mystery.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nDesign exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.\nEvery field must refer to the same people, the same place, and the same timeline.\nDo not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.\nDo not switch incidents midway. Do not introduce a second story in fact seeds."
+    },
+    {
+      "role": "user",
+      "content": "Task: first create the canonical event skeleton for one turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 校园日常、线索直接、现实向\n\nCreative brief:\n- Setting: 校园\n- Atmosphere: 像日常小事\n- Relationship focus: 家人之间\n- Surface contradiction: 表面像情绪失控，实际上是对隐藏线索的准确反应\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 如果继续原计划会出大事\n- Key object: 外卖袋\n- Red-herring flavor: 像服务事故\n- Reveal anchor: 重复出现的小动作\n- Novelty token: DcVz3B\n\nScenario rules:\n- visibleScene is the exact strange scene players will hear as the soup surface\n- hiddenCause explains the real hidden reason behind that same scene\n- trigger is the concrete moment that set the event in motion\n- decisiveAction is the one visible action that looked strange to bystanders\n- outcome is the concrete result caused by that action\n- involvedRoles must stay consistent across all fields\n- factSeeds must all belong to this same incident timeline\n- factSeeds must be concrete evidence or event details, not abstract conclusions\n- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"visibleScene\": \"string\",\n  \"hiddenCause\": \"string\",\n  \"trigger\": \"string\",\n  \"decisiveAction\": \"string\",\n  \"outcome\": \"string\",\n  \"involvedRoles\": [\n    \"主角\",\n    \"同伴\"\n  ],\n  \"keyObjects\": [\n    \"工牌\"\n  ],\n  \"factSeeds\": [\n    \"string\"\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.92,
+    "top_p": 0.9,
+    "repeat_penalty": 1.06,
+    "num_ctx": 12288,
+    "num_predict": 900
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:58.659Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"外卖袋里的时间差\",\n    \"visibleScene\": \"校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对送餐员大喊'这根本不是我的订单'，而袋子上明明写着主角的名字和手机号。\",\n    \"hiddenCause\": \"送餐员在送餐途中手机没电关机，错过了主角在10分钟前发送的修改地址短信，仍按旧地址送到了食堂，而主角此时正在图书馆等待外卖。\",\n    \"trigger\": \"送餐员到达食堂时，主角的同伴刚好路过，误以为外卖是给自己的，签收后打电话叫主角来取。\",\n    \"decisiveAction\": \"主角撕开外卖袋检查后，突然将整个袋子扔进垃圾桶，转身跑向图书馆方向。\",\n    \"outcome\": \"主角在图书馆门口拦住了正准备离开的送餐员，拿到了正确地址的外卖，而食堂垃圾桶里的外卖被清洁工收走。\",\n    \"involvedRoles\": [\"主角\", \"同伴\"],\n    \"keyObjects\": [\"外卖袋\"],\n    \"factSeeds\": [\"主角的手机有10:05发送的修改地址短信记录\", \"送餐员的手机在10:00-10:20期间无通话记录\", \"食堂门口的监控显示同伴10:15签收外卖\", \"图书馆门口的送餐记录显示10:25送达\", \"外卖袋上的订单时间戳为9:50\"],\n    \"misleadingPoints\": [\"袋子上信息完全匹配主角\", \"同伴确认签收时核对了姓名\", \"送餐员坚称按订单地址配送\", \"主角最初看到外卖时表情困惑但未立即拒绝\"],\n    \"keyTriggers\": [\"同伴打电话说'你的外卖到了食堂'\", \"主角看到外卖袋里的餐品是辣的（主角不吃辣）\", \"送餐员离开食堂时摸了摸口袋（重复出现的小动作：检查手机）\"],\n    \"tags\": [\"校园日常\", \"时间差\", \"外卖\", \"DcVz3B\", \"现实向\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:58.660Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "外卖袋里的时间差",
+    "visibleScene": "校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对送餐员大喊'这根本不是我的订单'，而袋子上明明写着主角的名字和手机号。",
+    "hiddenCause": "送餐员在送餐途中手机没电关机，错过了主角在10分钟前发送的修改地址短信，仍按旧地址送到了食堂，而主角此时正在图书馆等待外卖。",
+    "trigger": "送餐员到达食堂时，主角的同伴刚好路过，误以为外卖是给自己的，签收后打电话叫主角来取。",
+    "decisiveAction": "主角撕开外卖袋检查后，突然将整个袋子扔进垃圾桶，转身跑向图书馆方向。",
+    "outcome": "主角在图书馆门口拦住了正准备离开的送餐员，拿到了正确地址的外卖，而食堂垃圾桶里的外卖被清洁工收走。",
+    "involvedRoles": [
+      "主角",
+      "同伴"
+    ],
+    "keyObjects": [
+      "外卖袋"
+    ],
+    "factSeeds": [
+      "主角的手机有10:05发送的修改地址短信记录",
+      "送餐员的手机在10:00-10:20期间无通话记录",
+      "食堂门口的监控显示同伴10:15签收外卖",
+      "图书馆门口的送餐记录显示10:25送达",
+      "外卖袋上的订单时间戳为9:50"
+    ],
+    "misleadingPoints": [
+      "袋子上信息完全匹配主角",
+      "同伴确认签收时核对了姓名",
+      "送餐员坚称按订单地址配送",
+      "主角最初看到外卖时表情困惑但未立即拒绝"
+    ],
+    "keyTriggers": [
+      "同伴打电话说'你的外卖到了食堂'",
+      "主角看到外卖袋里的餐品是辣的（主角不吃辣）",
+      "送餐员离开食堂时摸了摸口袋（重复出现的小动作：检查手机）"
+    ],
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖",
+      "DcVz3B",
+      "现实向"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:58.661Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Scenario generated.",
+  "attempt": 1,
+  "scenario": {
+    "title": "外卖袋里的时间差",
+    "visibleScene": "校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对送餐员大喊'这根本不是我的订单'，而袋子上明明写着主角的名字和手机号。",
+    "hiddenCause": "送餐员在送餐途中手机没电关机，错过了主角在10分钟前发送的修改地址短信，仍按旧地址送到了食堂，而主角此时正在图书馆等待外卖。",
+    "trigger": "送餐员到达食堂时，主角的同伴刚好路过，误以为外卖是给自己的，签收后打电话叫主角来取。",
+    "decisiveAction": "主角撕开外卖袋检查后，突然将整个袋子扔进垃圾桶，转身跑向图书馆方向。",
+    "outcome": "主角在图书馆门口拦住了正准备离开的送餐员，拿到了正确地址的外卖，而食堂垃圾桶里的外卖被清洁工收走。",
+    "involvedRoles": [
+      "主角",
+      "同伴"
+    ],
+    "keyObjects": [
+      "外卖袋"
+    ],
+    "factSeeds": [
+      "主角的手机有10:05发送的修改地址短信记录",
+      "送餐员的手机在10:00-10:20期间无通话记录",
+      "食堂门口的监控显示同伴10:15签收外卖",
+      "图书馆门口的送餐记录显示10:25送达",
+      "外卖袋上的订单时间戳为9:50"
+    ],
+    "misleadingPoints": [
+      "袋子上信息完全匹配主角",
+      "同伴确认签收时核对了姓名",
+      "送餐员坚称按订单地址配送",
+      "主角最初看到外卖时表情困惑但未立即拒绝"
+    ],
+    "keyTriggers": [
+      "同伴打电话说'你的外卖到了食堂'",
+      "主角看到外卖袋里的餐品是辣的（主角不吃辣）",
+      "送餐员离开食堂时摸了摸口袋（重复出现的小动作：检查手机）"
+    ],
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖",
+      "DcVz3B",
+      "现实向"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:58.665Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Scenario audit finished.",
+  "attempt": 1,
+  "scenarioAudit": {
+    "valid": false,
+    "coherenceScore": 68,
+    "reasons": [
+      "事件骨架里的事实种子没有稳定支撑同一条时间线。"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:40:58.665Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design the canonical incident skeleton for a turtle soup mystery.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nDesign exactly one concrete incident with one visible strange scene, one hidden cause, one decisive action, and one concrete outcome.\nEvery field must refer to the same people, the same place, and the same timeline.\nDo not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.\nDo not switch incidents midway. Do not introduce a second story in fact seeds.\nThe previous scenario was rejected.\nRebuild the scenario from scratch with a tighter single-event causal chain."
+    },
+    {
+      "role": "user",
+      "content": "Task: first create the canonical event skeleton for one turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 校园日常、线索直接、现实向\n\nCreative brief:\n- Setting: 校园\n- Atmosphere: 像日常小事\n- Relationship focus: 家人之间\n- Surface contradiction: 表面像情绪失控，实际上是对隐藏线索的准确反应\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 如果继续原计划会出大事\n- Key object: 外卖袋\n- Red-herring flavor: 像服务事故\n- Reveal anchor: 重复出现的小动作\n- Novelty token: DcVz3B\n\nScenario rules:\n- visibleScene is the exact strange scene players will hear as the soup surface\n- hiddenCause explains the real hidden reason behind that same scene\n- trigger is the concrete moment that set the event in motion\n- decisiveAction is the one visible action that looked strange to bystanders\n- outcome is the concrete result caused by that action\n- involvedRoles must stay consistent across all fields\n- factSeeds must all belong to this same incident timeline\n- factSeeds must be concrete evidence or event details, not abstract conclusions\n- avoid phrases like “noticed a risk”, “knew a rule”, “made a judgment”, “something was wrong” unless you also say exactly what happened\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"visibleScene\": \"string\",\n  \"hiddenCause\": \"string\",\n  \"trigger\": \"string\",\n  \"decisiveAction\": \"string\",\n  \"outcome\": \"string\",\n  \"involvedRoles\": [\n    \"主角\",\n    \"同伴\"\n  ],\n  \"keyObjects\": [\n    \"工牌\"\n  ],\n  \"factSeeds\": [\n    \"string\"\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.92,
+    "top_p": 0.9,
+    "repeat_penalty": 1.06,
+    "num_ctx": 12288,
+    "num_predict": 900
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:13.602Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"外卖袋里的秘密\",\n    \"visibleScene\": \"校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录\",\n    \"hiddenCause\": \"主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单\",\n    \"trigger\": \"送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符\",\n    \"decisiveAction\": \"主角坚持要求送餐员当场打开手机订单详情页面核对\",\n    \"outcome\": \"送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖\",\n    \"involvedRoles\": [\"主角\", \"同伴\", \"送餐员\"],\n    \"keyObjects\": [\"外卖袋\", \"手机订单页面\", \"餐盒\"],\n    \"factSeeds\": [\"主角前一天用家人手机点了黄色餐盒的外卖\", \"今天外卖袋里露出的是蓝色餐盒\", \"送餐员手机显示订单下单时间是今天上午\", \"外卖袋上贴的订单标签被折叠遮挡了部分信息\", \"同伴记得主角昨天说过'明天还想吃这个'\"],\n    \"misleadingPoints\": [\"外卖袋外观与昨天完全相同\", \"送餐员穿着不同平台的工作服\", \"主角检查订单时反复用手指敲打手机屏幕边缘\", \"食堂门口有其他学生在抱怨送餐延误\"],\n    \"keyTriggers\": [\"看到餐盒颜色不符\", \"送餐员准备离开时被叫住\", \"同伴说'算了别为难人家'\"],\n    \"tags\": [\"校园日常\", \"时间差\", \"外卖误会\", \"家人账号\", \"DcVz3B\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:13.602Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "scenario_attempt_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "外卖袋里的秘密",
+    "visibleScene": "校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录",
+    "hiddenCause": "主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单",
+    "trigger": "送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符",
+    "decisiveAction": "主角坚持要求送餐员当场打开手机订单详情页面核对",
+    "outcome": "送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖",
+    "involvedRoles": [
+      "主角",
+      "同伴",
+      "送餐员"
+    ],
+    "keyObjects": [
+      "外卖袋",
+      "手机订单页面",
+      "餐盒"
+    ],
+    "factSeeds": [
+      "主角前一天用家人手机点了黄色餐盒的外卖",
+      "今天外卖袋里露出的是蓝色餐盒",
+      "送餐员手机显示订单下单时间是今天上午",
+      "外卖袋上贴的订单标签被折叠遮挡了部分信息",
+      "同伴记得主角昨天说过'明天还想吃这个'"
+    ],
+    "misleadingPoints": [
+      "外卖袋外观与昨天完全相同",
+      "送餐员穿着不同平台的工作服",
+      "主角检查订单时反复用手指敲打手机屏幕边缘",
+      "食堂门口有其他学生在抱怨送餐延误"
+    ],
+    "keyTriggers": [
+      "看到餐盒颜色不符",
+      "送餐员准备离开时被叫住",
+      "同伴说'算了别为难人家'"
+    ],
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖误会",
+      "家人账号",
+      "DcVz3B"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:13.602Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Scenario generated.",
+  "attempt": 2,
+  "scenario": {
+    "title": "外卖袋里的秘密",
+    "visibleScene": "校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录",
+    "hiddenCause": "主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单",
+    "trigger": "送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符",
+    "decisiveAction": "主角坚持要求送餐员当场打开手机订单详情页面核对",
+    "outcome": "送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖",
+    "involvedRoles": [
+      "主角",
+      "同伴",
+      "送餐员"
+    ],
+    "keyObjects": [
+      "外卖袋",
+      "手机订单页面",
+      "餐盒"
+    ],
+    "factSeeds": [
+      "主角前一天用家人手机点了黄色餐盒的外卖",
+      "今天外卖袋里露出的是蓝色餐盒",
+      "送餐员手机显示订单下单时间是今天上午",
+      "外卖袋上贴的订单标签被折叠遮挡了部分信息",
+      "同伴记得主角昨天说过'明天还想吃这个'"
+    ],
+    "misleadingPoints": [
+      "外卖袋外观与昨天完全相同",
+      "送餐员穿着不同平台的工作服",
+      "主角检查订单时反复用手指敲打手机屏幕边缘",
+      "食堂门口有其他学生在抱怨送餐延误"
+    ],
+    "keyTriggers": [
+      "看到餐盒颜色不符",
+      "送餐员准备离开时被叫住",
+      "同伴说'算了别为难人家'"
+    ],
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖误会",
+      "家人账号",
+      "DcVz3B"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:13.604Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Scenario audit finished.",
+  "attempt": 2,
+  "scenarioAudit": {
+    "valid": true,
+    "coherenceScore": 100,
+    "reasons": []
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:13.604Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail.\nThe previous draft was rejected for inconsistency.\nRebuild the puzzle from scratch and keep every field tied to one single causal chain.\nMake the truth story more concrete, more event-driven, and less generic than before."
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 校园日常、线索直接、现实向\n\nCreative brief:\n- Setting: 校园\n- Atmosphere: 像日常小事\n- Relationship focus: 家人之间\n- Surface contradiction: 表面像情绪失控，实际上是对隐藏线索的准确反应\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 如果继续原计划会出大事\n- Key object: 外卖袋\n- Red-herring flavor: 像服务事故\n- Reveal anchor: 重复出现的小动作\n- Novelty token: DcVz3B\n\nApproved incident skeleton:\nTitle: 外卖袋里的秘密\nVisible scene: 校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录\nHidden cause: 主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单\nTrigger: 送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符\nDecisive action: 主角坚持要求送餐员当场打开手机订单详情页面核对\nOutcome: 送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖\nInvolved roles: 主角 / 同伴 / 送餐员\nKey objects: 外卖袋 / 手机订单页面 / 餐盒\nFact seeds: 1. 主角前一天用家人手机点了黄色餐盒的外卖 | 2. 今天外卖袋里露出的是蓝色餐盒 | 3. 送餐员手机显示订单下单时间是今天上午 | 4. 外卖袋上贴的订单标签被折叠遮挡了部分信息 | 5. 同伴记得主角昨天说过'明天还想吃这个'\nMisleading points: 外卖袋外观与昨天完全相同 / 送餐员穿着不同平台的工作服 / 主角检查订单时反复用手指敲打手机屏幕边缘 / 食堂门口有其他学生在抱怨送餐延误\nKey triggers: 看到餐盒颜色不符 / 送餐员准备离开时被叫住 / 同伴说'算了别为难人家'\nTags: 校园日常 / 时间差 / 外卖误会 / 家人账号 / DcVz3B\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:38.225Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "rawContent": "{\n    \"title\": \"外卖袋里的秘密\",\n    \"soupSurface\": \"校园食堂门口，主角突然扔掉外卖袋，激动地指责送餐员送错了订单，坚持要检查对方的手机订单记录。\",\n    \"truthStory\": \"前一天，主角用家人的手机账号点了黄色餐盒的外卖送到学校食堂门口。第二天，家人用同一账号新点了蓝色餐盒的外卖送到相同地址。当送餐员将外观相同的外卖袋递给主角时，主角瞥见袋子里露出的蓝色餐盒与预期的黄色不符，误以为送餐员送错了订单。主角立即叫住准备离开的送餐员，坚持要求当场打开手机订单详情页面核对。送餐员展示订单记录显示收货人是主角家人，下单时间是今天上午，比主角记忆中的下单时间晚一天。主角这才意识到这是家人新点的外卖，而不是送餐错误。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"主角前一天用家人手机点了黄色餐盒的外卖送到学校食堂门口。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"家人手机\", \"黄色餐盒\", \"前一天\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"今天外卖袋里露出的是蓝色餐盒，不是黄色。\",\n            \"importance\": 10,\n            \"discoverable\": true,\n            \"keywords\": [\"外卖袋\", \"蓝色餐盒\", \"今天\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"送餐员手机订单页面显示下单时间是今天上午，收货人是主角家人。\",\n            \"importance\": 10,\n            \"discoverable\": true,\n            \"keywords\": [\"送餐员手机\", \"订单页面\", \"今天上午\", \"主角家人\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"外卖袋上贴的订单标签被折叠遮挡了部分信息，主角没有仔细查看。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"外卖袋\", \"订单标签\", \"折叠遮挡\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"同伴记得主角昨天说过'明天还想吃这个'，指的是黄色餐盒的外卖。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"同伴\", \"昨天\", \"黄色餐盒\"]\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"主角看到蓝色餐盒后立即叫住准备离开的送餐员要求核对订单。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"蓝色餐盒\", \"送餐员\", \"核对订单\"]\n        },\n        {\n            \"factId\": \"fact-7\",\n            \"statement\": \"食堂门口有其他学生在抱怨送餐延误，但与本订单无关。\",\n            \"importance\": 5,\n            \"discoverable\": true,\n            \"keywords\": [\"食堂门口\", \"送餐延误\"]\n        }\n    ],\n    \"misleadingPoints\": [\"送餐员穿着不同平台的工作服，让人误以为送错了平台\", \"主角检查订单时反复用手指敲打手机屏幕边缘，显得情绪失控\", \"外卖袋外观与昨天完全相同，掩盖了内容差异\"],\n    \"keyTriggers\": [\"外卖袋里的餐盒颜色是否与主角预期一致？\", \"送餐员手机上的订单下单时间是什么时候？\", \"外卖袋上的订单标签是否完整可见？\", \"主角是否在昨天用同一账号点过外卖？\"],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"校园日常\", \"时间差\", \"外卖误会\", \"家人账号\", \"DcVz3B\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:38.227Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_1",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+  "parsed": {
+    "title": "外卖袋里的秘密",
+    "soupSurface": "校园食堂门口，主角突然扔掉外卖袋，激动地指责送餐员送错了订单，坚持要检查对方的手机订单记录。",
+    "truthStory": "前一天，主角用家人的手机账号点了黄色餐盒的外卖送到学校食堂门口。第二天，家人用同一账号新点了蓝色餐盒的外卖送到相同地址。当送餐员将外观相同的外卖袋递给主角时，主角瞥见袋子里露出的蓝色餐盒与预期的黄色不符，误以为送餐员送错了订单。主角立即叫住准备离开的送餐员，坚持要求当场打开手机订单详情页面核对。送餐员展示订单记录显示收货人是主角家人，下单时间是今天上午，比主角记忆中的下单时间晚一天。主角这才意识到这是家人新点的外卖，而不是送餐错误。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "主角前一天用家人手机点了黄色餐盒的外卖送到学校食堂门口。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "家人手机",
+          "黄色餐盒",
+          "前一天"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "今天外卖袋里露出的是蓝色餐盒，不是黄色。",
+        "importance": 10,
+        "discoverable": true,
+        "keywords": [
+          "外卖袋",
+          "蓝色餐盒",
+          "今天"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "送餐员手机订单页面显示下单时间是今天上午，收货人是主角家人。",
+        "importance": 10,
+        "discoverable": true,
+        "keywords": [
+          "送餐员手机",
+          "订单页面",
+          "今天上午",
+          "主角家人"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "外卖袋上贴的订单标签被折叠遮挡了部分信息，主角没有仔细查看。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "外卖袋",
+          "订单标签",
+          "折叠遮挡"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "同伴记得主角昨天说过'明天还想吃这个'，指的是黄色餐盒的外卖。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "同伴",
+          "昨天",
+          "黄色餐盒"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "主角看到蓝色餐盒后立即叫住准备离开的送餐员要求核对订单。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "蓝色餐盒",
+          "送餐员",
+          "核对订单"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "食堂门口有其他学生在抱怨送餐延误，但与本订单无关。",
+        "importance": 5,
+        "discoverable": true,
+        "keywords": [
+          "食堂门口",
+          "送餐延误"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "送餐员穿着不同平台的工作服，让人误以为送错了平台",
+      "主角检查订单时反复用手指敲打手机屏幕边缘，显得情绪失控",
+      "外卖袋外观与昨天完全相同，掩盖了内容差异"
+    ],
+    "keyTriggers": [
+      "外卖袋里的餐盒颜色是否与主角预期一致？",
+      "送餐员手机上的订单下单时间是什么时候？",
+      "外卖袋上的订单标签是否完整可见？",
+      "主角是否在昨天用同一账号点过外卖？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖误会",
+      "家人账号",
+      "DcVz3B"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:38.229Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Local audit finished.",
+  "attempt": 2,
+  "draftAttempt": 1,
+  "localAudit": {
+    "valid": false,
+    "coherenceScore": 60,
+    "reasons": [
+      "汤底没有同时交代清楚触发点、人物动作和结果。"
+    ]
+  },
+  "candidate": {
+    "puzzleId": "generated-wSrVP0xXHOcs",
+    "title": "外卖袋里的秘密",
+    "soupSurface": "校园食堂门口，主角突然扔掉外卖袋，激动地指责送餐员送错了订单，坚持要检查对方的手机订单记录。",
+    "truthStory": "前一天，主角用家人的手机账号点了黄色餐盒的外卖送到学校食堂门口。第二天，家人用同一账号新点了蓝色餐盒的外卖送到相同地址。当送餐员将外观相同的外卖袋递给主角时，主角瞥见袋子里露出的蓝色餐盒与预期的黄色不符，误以为送餐员送错了订单。主角立即叫住准备离开的送餐员，坚持要求当场打开手机订单详情页面核对。送餐员展示订单记录显示收货人是主角家人，下单时间是今天上午，比主角记忆中的下单时间晚一天。主角这才意识到这是家人新点的外卖，而不是送餐错误。",
+    "facts": [
+      {
+        "factId": "fact-1",
+        "statement": "主角前一天用家人手机点了黄色餐盒的外卖送到学校食堂门口。",
+        "importance": 9,
+        "discoverable": true,
+        "keywords": [
+          "家人手机",
+          "黄色餐盒",
+          "前一天"
+      
+]
+      },
+      {
+        "factId": "fact-2",
+        "statement": "今天外卖袋里露出的是蓝色餐盒，不是黄色。",
+        "importance": 10,
+        "discoverable": true,
+        "keywords": [
+          "外卖袋",
+          "蓝色餐盒",
+          "今天"
+      
+]
+      },
+      {
+        "factId": "fact-3",
+        "statement": "送餐员手机订单页面显示下单时间是今天上午，收货人是主角家人。",
+        "importance": 10,
+        "discoverable": true,
+        "keywords": [
+          "送餐员手机",
+          "订单页面",
+          "今天上午",
+          "主角家人"
+      
+]
+      },
+      {
+        "factId": "fact-4",
+        "statement": "外卖袋上贴的订单标签被折叠遮挡了部分信息，主角没有仔细查看。",
+        "importance": 7,
+        "discoverable": true,
+        "keywords": [
+          "外卖袋",
+          "订单标签",
+          "折叠遮挡"
+      
+]
+      },
+      {
+        "factId": "fact-5",
+        "statement": "同伴记得主角昨天说过'明天还想吃这个'，指的是黄色餐盒的外卖。",
+        "importance": 6,
+        "discoverable": true,
+        "keywords": [
+          "同伴",
+          "昨天",
+          "黄色餐盒"
+      
+]
+      },
+      {
+        "factId": "fact-6",
+        "statement": "主角看到蓝色餐盒后立即叫住准备离开的送餐员要求核对订单。",
+        "importance": 8,
+        "discoverable": true,
+        "keywords": [
+          "蓝色餐盒",
+          "送餐员",
+          "核对订单"
+      
+]
+      },
+      {
+        "factId": "fact-7",
+        "statement": "食堂门口有其他学生在抱怨送餐延误，但与本订单无关。",
+        "importance": 5,
+        "discoverable": true,
+        "keywords": [
+          "食堂门口",
+          "送餐延误"
+      
+]
+      }
+    ],
+    "misleadingPoints": [
+      "送餐员穿着不同平台的工作服，让人误以为送错了平台",
+      "主角检查订单时反复用手指敲打手机屏幕边缘，显得情绪失控",
+      "外卖袋外观与昨天完全相同，掩盖了内容差异"
+    ],
+    "keyTriggers": [
+      "外卖袋里的餐盒颜色是否与主角预期一致？",
+      "送餐员手机上的订单下单时间是什么时候？",
+      "外卖袋上的订单标签是否完整可见？",
+      "主角是否在昨天用同一账号点过外卖？"
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "校园日常",
+      "时间差",
+      "外卖误会",
+      "家人账号",
+      "DcVz3B",
+      "dynamic",
+      "校园",
+      "线索直接"
+    ]
+  }
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:41:38.230Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 1,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail.\nThe previous draft was rejected for inconsistency.\nRebuild the puzzle from scratch and keep every field tied to one single causal chain.\nMake the truth story more concrete, more event-driven, and less generic than before.\nMost recent rejection reason: 汤底没有同时交代清楚触发点、人物动作和结果。"
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 校园日常、线索直接、现实向\n\nCreative brief:\n- Setting: 校园\n- Atmosphere: 像日常小事\n- Relationship focus: 家人之间\n- Surface contradiction: 表面像情绪失控，实际上是对隐藏线索的准确反应\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 如果继续原计划会出大事\n- Key object: 外卖袋\n- Red-herring flavor: 像服务事故\n- Reveal anchor: 重复出现的小动作\n- Novelty token: DcVz3B\n\nApproved incident skeleton:\nTitle: 外卖袋里的秘密\nVisible scene: 校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录\nHidden cause: 主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单\nTrigger: 送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符\nDecisive action: 主角坚持要求送餐员当场打开手机订单详情页面核对\nOutcome: 送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖\nInvolved roles: 主角 / 同伴 / 送餐员\nKey objects: 外卖袋 / 手机订单页面 / 餐盒\nFact seeds: 1. 主角前一天用家人手机点了黄色餐盒的外卖 | 2. 今天外卖袋里露出的是蓝色餐盒 | 3. 送餐员手机显示订单下单时间是今天上午 | 4. 外卖袋上贴的订单标签被折叠遮挡了部分信息 | 5. 同伴记得主角昨天说过'明天还想吃这个'\nMisleading points: 外卖袋外观与昨天完全相同 / 送餐员穿着不同平台的工作服 / 主角检查订单时反复用手指敲打手机屏幕边缘 / 食堂门口有其他学生在抱怨送餐延误\nKey triggers: 看到餐盒颜色不符 / 送餐员准备离开时被叫住 / 同伴说'算了别为难人家'\nTags: 校园日常 / 时间差 / 外卖误会 / 家人账号 / DcVz3B\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:42:00.376Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 1,
+     o  "rawContent": "{\n    \"title\": \"外卖袋里的颜色警报\",\n    \"soupSurface\": \"校园食堂门口，主角突然扔掉外卖袋，激动地质问送餐员'这不是我的订单'，坚持要查看对方的手机订单记录，同伴劝解也无用。\",\n    \"truthStory\": \"前一天，主角用家人的手机账号点了一份黄色餐盒的外卖送到学校食堂门口。第二天，家人用同一账号新点了一份蓝色餐盒的外卖送到相同地址。当送餐员将外观相同的外卖袋递给主角时，主角瞥见袋子里露出的蓝色餐盒，与记忆中的黄色不符，误以为送餐员送错了订单。主角立即叫住准备离开的送餐员，坚持要求当场打开手机订单详情页面核对。送餐员展示订单记录显示收货人是主角家人，下单时间是今天上午，主角这才意识到这是家人新点的外卖，避免了误拿或争执。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"主角前一天用家人手机点了黄色餐盒的外卖送到校园食堂门口。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"黄色餐盒\", \"前一天\", \"家人手机\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"今天外卖袋里露出的餐盒是蓝色的。\",\n            \"importance\": 10,\n            \"discoverable\": true,\n            \"keywords\": [\"蓝色餐盒\", \"外卖袋\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"送餐员手机订单页面显示下单时间是今天上午，收货人是主角家人。\",\n            \"importance\": 10,\n            \"discoverable\": true,\n            \"keywords\": [\"手机订单页面\", \"今天上午\", \"主角家人\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"外卖袋上贴的订单标签被折叠遮挡了部分信息。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"外卖袋\", \"订单标签\", \"折叠遮挡\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"同伴记得主角昨天说过'明天还想吃这个'。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"同伴\", \"昨天\", '明天还想吃这个']\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"送餐员准备离开时被主角叫住要求检查订单。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"送餐员\", \"叫住\", \"检查订单\"]\n        }\n    ],\n    \"misleadingPoints\": [\"送餐员穿着不同平台的工作服，让人误以为送错了平台\", \"主角检查订单时反复用手指敲打手机屏幕边缘，像在发泄情绪\", \"食堂门口有其他学生在抱怨送餐延误，可能影响判断\"],\n    \"keyTriggers\": [\"外卖袋里的餐盒颜色与主角预期一致吗？\", \"送餐员手机上的订单下单时间是什么时候？\", \"外卖袋上的订单标签信息完整可见吗？\", \"主角昨天是否点过类似的外卖？\"],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"校园日常\", \"时间差\", \"外卖误会\", \"家人账号\", \"DcVz3B\"]\n}"
+}
+{
+  "scope": "ai",
+{
+  "level": "warn",
+  "scope": "ai",
+  "timestamp": "2026-03-28T08:42:00.376Z",
+  "level": "info",
+  "traceId": "puzzle-SfdAU-Av",
+  "timestamp": "2026-03-28T08:42:00.377Z",
+  "operation": "generate_puzzle",
+  "traceId": "puzzle-SfdAU-Av",
+  "stage": "puzzle_attempt_2_2",
+  "operation": "generate_puzzle",
+  "provider": "deepseek",
+  "stage": "puzzle_attempt_2_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "supplierLabel": "DeepSeek",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "attempt": 2,
+  "messages": [
+    {
+      "role": "system",
+  "model": "deepseek-chat",
+  "attempt": 1,
+        "error": {
+    "name": "Error",
+    "message": "Unable to parse structured JSON from AI stream output.",
+      "content": "You design original turtle soup mysteries for Chinese-speaking players.\nWrite all natural-language fields in Simplified Chinese.\nReturn JSON only.\nThe puzzle must be solvable through careful yes/no questioning.\nAvoid stale stock plots unless they are clearly subverted.\nDo not use supernatural explanations, dream endings, or pure coincidence.\nThe approved scenario is the single source of truth.\nSoup surface, truth story, facts, and key triggers must all be mutually consistent.\nThe soup surface must describe the same event that the truth story fully explains.\nDo not invent any second story, second timeline, second culprit, or second hidden cause.\nUse the same concrete anchors across the entire puzzle, not different unrelated stories.\nThe truth story must describe one concrete incident, not an abstract summary of reasoning or professional judgment.\nReject vague templates such as \"the protagonist noticed something was wrong and interrupted the process\" unless you explain the exact event in detail.\nThe previous draft was rejected for inconsistency.\nRebuild the puzzle from scratch and keep every field tied to one single causal chain.\nMake the truth story more concrete, more event-driven, and less generic than before.\nMost recent rejection reason: 汤底没有同时交代清楚触发点、人物动作和结果。"
+    },
+    {
+      "role": "user",
+      "content": "Task: generate one original turtle soup puzzle.\n\nDifficulty: easy\nUser theme preference: 校园日常、线索直接、现实向\n\nCreative brief:\n- Setting: 校园\n- Atmosphere: 像日常小事\n- Relationship focus: 家人之间\n- Surface contradiction: 表面像情绪失控，实际上是对隐藏线索的准确反应\n- Hidden mechanism: 时间差造成误判\n- Immediate pressure: 如果继续原计划会出大事\n- Key object: 外卖袋\n- Red-herring flavor: 像服务事故\n- Reveal anchor: 重复出现的小动作\n- Novelty token: DcVz3B\n\nApproved incident skeleton:\nTitle: 外卖袋里的秘密\nVisible scene: 校园食堂门口，主角突然情绪激动地扔掉手中的外卖袋，对着送餐员大喊'这不是我的订单'，同伴试图安抚但主角坚持要检查送餐员的手机订单记录\nHidden cause: 主角前一天用家人手机点了外卖，今天家人用同一账号点了另一份外卖送到相同地址，外卖袋外观相同但内容不同，主角看到外卖袋时误以为送餐员送错了订单\nTrigger: 送餐员将外卖袋递给主角时，主角瞥见袋子里露出的餐盒颜色与预期不符\nDecisive action: 主角坚持要求送餐员当场打开手机订单详情页面核对\nOutcome: 送餐员展示订单记录显示收货人是主角家人，订单时间比主角记忆中的下单时间晚一天，主角意识到这是家人新点的外卖\nInvolved roles: 主角 / 同伴 / 送餐员\nKey objects: 外卖袋 / 手机订单页面 / 餐盒\nFact seeds: 1. 主角前一天用家人手机点了黄色餐盒的外卖 | 2. 今天外卖袋里露出的是蓝色餐盒 | 3. 送餐员手机显示订单下单时间是今天上午 | 4. 外卖袋上贴的订单标签被折叠遮挡了部分信息 | 5. 同伴记得主角昨天说过'明天还想吃这个'\nMisleading points: 外卖袋外观与昨天完全相同 / 送餐员穿着不同平台的工作服 / 主角检查订单时反复用手指敲打手机屏幕边缘 / 食堂门口有其他学生在抱怨送餐延误\nKey triggers: 看到餐盒颜色不符 / 送餐员准备离开时被叫住 / 同伴说'算了别为难人家'\nTags: 校园日常 / 时间差 / 外卖误会 / 家人账号 / DcVz3B\n\nOutput requirements:\n- title: memorable, not generic\n- soupSurface: 1-2 concise sentences, strange but fair, no direct spoiler\n- truthStory: complete causal chain, clearly explain why the surface happened\n- soupSurface and truthStory must point to the same people, event, and hidden mechanism\n- the soupSurface must be the visible climax scene of the same incident described in truthStory\n- soupSurface must be a concise rewrite of visibleScene, not a different scene\n- truthStory must explicitly cover trigger -> hiddenCause -> decisiveAction -> outcome from the approved scenario\n- at least one anchor from setting / key object / reveal anchor should appear in both soupSurface and truthStory\n- truthStory must include a concrete trigger, a concrete action, and a concrete outcome\n- truthStory must not stop at abstract phrases like \"the protagonist knew a rule\" or \"there was risk in the process\"\n- explain what actually happened to whom, where, and why\n- facts: 5-8 canonical facts with concrete wording\n- every fact must support the same story, not introduce a separate subplot\n- every fact must describe either the hidden setup, the trigger, the mistaken appearance, the decisive action, or the concrete outcome of this same incident\n- at least 4 facts must explicitly reuse concrete nouns already present in soupSurface or truthStory\n- never output facts that only say someone \"noticed risk\", \"understood a rule\", or \"made a judgment\" without describing the concrete event\n- misleadingPoints: 2-4 believable but wrong assumptions players may make\n- keyTriggers: 2-4 good yes/no question directions\n- difficulty must match the requested difficulty\n- tags should be short Chinese labels\n\nJSON shape:\n{\n  \"title\": \"string\",\n  \"soupSurface\": \"string\",\n  \"truthStory\": \"string\",\n  \"facts\": [\n    {\n      \"factId\": \"fact-1\",\n      \"statement\": \"string\",\n      \"importance\": 8,\n      \"discoverable\": true,\n      \"keywords\": [\n        \"string\"\n      ]\n    }\n  ],\n  \"misleadingPoints\": [\n    \"string\"\n  ],\n  \"keyTriggers\": [\n    \"string\"\n  ],\n  \"difficulty\": \"easy\",\n  \"tags\": [\n    \"string\"\n  ]\n}"
+    },
+    "stack": "Error: Unable to parse structured JSON from AI stream output.\n    at OllamaService.parseStructuredJson (file:///app/dist/services/ollamaService.js:1153:15)\n    at OllamaService.requestStructuredOutput (file:///app/dist/services/ollamaService.js:405:37)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async OllamaService.generatePuzzle (file:///app/dist/services/ollamaService.js:193:36)\n    at async RoomService.createRoom (file:///app/dist/services/roomService.js:125:22)\n    at async file:///app/dist/app.js:134:35"
+    {
+  }
+      "role": "user",
+      "content": "Your last answer was not accepted.\nReturn exactly one valid JSON object.\nNo markdown, no comments, no extra prose, no code fences."
+    }
+  ],
+  "options": {
+    "temperature": 0.95,
+    "top_p": 0.92,
+    "repeat_penalty": 1.08,
+    "num_ctx": 12288,
+    "num_predict": 1400
+  },
+  "format": "json"
+}
+}
+{
+  "scope": "ai",
+  "level": "info",
+  "timestamp": "2026-03-28T08:42:21.673Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 2,
+       "rawContent": "{\n    \"title\": \"外卖袋里的秘密\",\n    \"soupSurface\": \"校园食堂门口，主角突然扔掉外卖袋，对送餐员大喊'这不是我的订单'，坚持要检查对方的手机订单记录。\",\n    \"truthStory\": \"主角前一天用家人的手机点了黄色餐盒的外卖。第二天，家人用同一账号点了蓝色餐盒的外卖送到相同地址。在食堂门口，送餐员将外观相同的外卖袋递给主角时，主角瞥见袋子里露出的蓝色餐盒，与记忆中的黄色不符，误以为送餐员送错了订单。主角立即叫住准备离开的送餐员，坚持要求当场打开手机订单详情页面核对。送餐员展示订单记录显示收货人是主角家人，下单时间是今天上午。主角这才意识到这是家人新点的外卖，避免了因误判而引发的争执。\",\n    \"facts\": [\n        {\n            \"factId\": \"fact-1\",\n            \"statement\": \"主角前一天用家人手机点了黄色餐盒的外卖。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"前一天\", \"家人手机\", \"黄色餐盒\", \"外卖\"]\n        },\n        {\n            \"factId\": \"fact-2\",\n            \"statement\": \"今天外卖袋里露出的是蓝色餐盒。\",\n            \"importance\": 10,\n            \"discoverable\": true,\n            \"keywords\": [\"外卖袋\", \"蓝色餐盒\"]\n        },\n        {\n            \"factId\": \"fact-3\",\n            \"statement\": \"送餐员手机显示订单下单时间是今天上午。\",\n            \"importance\": 9,\n            \"discoverable\": true,\n            \"keywords\": [\"送餐员手机\", \"订单\", \"今天上午\"]\n        },\n        {\n            \"factId\": \"fact-4\",\n            \"statement\": \"外卖袋上贴的订单标签被折叠遮挡了部分信息。\",\n            \"importance\": 7,\n            \"discoverable\": true,\n            \"keywords\": [\"外卖袋\", \"订单标签\", \"折叠遮挡\"]\n        },\n        {\n            \"factId\": \"fact-5\",\n            \"statement\": \"同伴记得主角昨天说过'明天还想吃这个'。\",\n            \"importance\": 6,\n            \"discoverable\": true,\n            \"keywords\": [\"同伴\", \"昨天\", '明天还想吃这个']\n        },\n        {\n            \"factId\": \"fact-6\",\n            \"statement\": \"主角在食堂门口叫住准备离开的送餐员。\",\n            \"importance\": 8,\n            \"discoverable\": true,\n            \"keywords\": [\"食堂门口\", \"叫住\", \"送餐员\"]\n        }\n    ],\n    \"misleadingPoints\": [\"送餐员穿着不同平台的工作服，让人误以为送错了平台\", \"食堂门口有其他学生在抱怨送餐延误，看似是服务事故\", \"主角检查订单时反复用手指敲打手机屏幕边缘，像在发泄情绪\"],\n    \"keyTriggers\": [\"外卖袋里的餐盒颜色是否与主角预期一致？\", \"送餐员手机上的订单时间是什么时候？\", \"外卖袋上的订单标签是否完整可见？\", \"主角是否在送餐员准备离开时采取了行动？\"],\n    \"difficulty\": \"easy\",\n    \"tags\": [\"校园日常\", \"时间差\", \"外卖误会\", \"家人账号\", \"DcVz3B\"]\n}"
+}
+{
+  "scope": "ai",
+  "level": "warn",
+  "timestamp": "2026-03-28T08:42:21.673Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "stage": "puzzle_attempt_2_2",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "attempt": 2,
+        "error": {
+    "name": "Error",
+    "message": "Unable to parse structured JSON from AI stream output.",
+    "stack": "Error: Unable to parse structured JSON from AI stream output.\n    at OllamaService.parseStructuredJson (file:///app/dist/services/ollamaService.js:1153:15)\n    at OllamaService.requestStructuredOutput (file:///app/dist/services/ollamaService.js:405:37)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async OllamaService.generatePuzzle (file:///app/dist/services/ollamaService.js:193:36)\n    at async RoomService.createRoom (file:///app/dist/services/roomService.js:125:22)\n    at async file:///app/dist/app.js:134:35"
+  }
+}
+{
+  "scope": "ai",
+  "level": "error",
+  "timestamp": "2026-03-28T08:42:21.673Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Puzzle generation attempt failed.",
+  "attempt": 2,
+        "error": {
+    "name": "Error",
+    "message": "Unable to parse structured JSON from AI stream output.",
+    "stack": "Error: Unable to parse structured JSON from AI stream output.\n    at OllamaService.parseStructuredJson (file:///app/dist/services/ollamaService.js:1153:15)\n    at OllamaService.requestStructuredOutput (file:///app/dist/services/ollamaService.js:405:37)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async OllamaService.generatePuzzle (file:///app/dist/services/ollamaService.js:193:36)\n    at async RoomService.createRoom (file:///app/dist/services/roomService.js:125:22)\n    at async file:///app/dist/app.js:134:35"
+  }
+}
+{
+  "scope": "ai",
+  "level": "error",
+  "timestamp": "2026-03-28T08:42:21.673Z",
+  "traceId": "puzzle-SfdAU-Av",
+  "operation": "generate_puzzle",
+  "message": "Puzzle generation rejected after all attempts.",
+  "reason": "Unable to parse structured JSON from AI stream output.",
+  "request": {
+    "difficulty": "easy",
+    "prompt": "校园日常、线索直接、现实向"
+  },
+  "blueprint": {
+    "noveltyToken": "<redacted>",
+    "setting": "校园",
+    "atmosphere": "像日常小事",
+    "relationship": "家人之间",
+    "contradiction": "表面像情绪失控，实际上是对隐藏线索的准确反应",
+    "hiddenMechanism": "时间差造成误判",
+    "pressure": "如果继续原计划会出大事",
+    "keyObject": "外卖袋",
+    "redHerring": "像服务事故",
+    "revealAnchor": "重复出现的小动作"
+  }
+}
+Unable to parse structured JSON from AI stream output. | Unable to parse structured JSON from AI stream output. | scope=room Unable to parse structured JSON from AI stream output. | Unable to parse structured JSON from AI stream output. | scope=room stage=create_room_generation_error Unable to parse structured JSON from AI stream output. | Unable to parse structured JSON from AI stream output. | scope=room Unable to parse structured JSON from AI stream output. | Unable to parse structured JSON from AI stream output. | scope=room stage=create_room_generation_error timestamp=2026-03-28T08:42:21.673Z

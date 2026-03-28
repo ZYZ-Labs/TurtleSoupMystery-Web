@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { buildOllamaApiUrl, normalizeOllamaBaseUrl, normalizeText, unique } from '../lib/utils.js';
 import type {
+  Difficulty,
   GuessEvaluation,
   ModelCategory,
   OllamaModel,
@@ -34,6 +35,20 @@ const generatedPuzzleSchema = z.object({
   tags: z.array(z.string()).default([])
 });
 
+const truthBlueprintSchema = z.object({
+  title: z.string().min(4),
+  truthStory: z.string().min(40),
+  trigger: z.string().min(8),
+  decisiveAction: z.string().min(8),
+  outcome: z.string().min(8),
+  involvedRoles: z.array(z.string().min(1)).min(2).max(5),
+  keyObjects: z.array(z.string().min(1)).min(1).max(5),
+  factSeeds: z.array(z.string().min(6)).min(5).max(8),
+  misleadingPoints: z.array(z.string()).default([]),
+  keyTriggers: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([])
+});
+
 const puzzleScenarioSchema = z.object({
   title: z.string().min(4),
   visibleScene: z.string().min(12),
@@ -44,6 +59,25 @@ const puzzleScenarioSchema = z.object({
   involvedRoles: z.array(z.string().min(1)).min(2).max(5),
   keyObjects: z.array(z.string().min(1)).min(1).max(5),
   factSeeds: z.array(z.string().min(6)).min(5).max(8),
+  misleadingPoints: z.array(z.string()).default([]),
+  keyTriggers: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([])
+});
+
+const surfaceDraftSchema = z.object({
+  soupSurface: z.string().min(8),
+  facts: z
+    .array(
+      z.object({
+        factId: z.string().optional(),
+        statement: z.string().min(4),
+        importance: z.number().int().min(1).max(10).default(6),
+        discoverable: z.boolean().default(true),
+        keywords: z.array(z.string()).default([])
+      })
+    )
+    .min(5)
+    .max(8),
   misleadingPoints: z.array(z.string()).default([]),
   keyTriggers: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([])
@@ -82,7 +116,7 @@ interface CheckResult {
 }
 
 interface OllamaChatMessage {
-  role: 'system' | 'user';
+  role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
@@ -144,6 +178,8 @@ interface GenerationBlueprint {
 }
 
 type PuzzleScenario = z.infer<typeof puzzleScenarioSchema>;
+type TruthBlueprint = z.infer<typeof truthBlueprintSchema>;
+type SurfaceDraft = z.infer<typeof surfaceDraftSchema>;
 
 const EASY_SETTINGS = ['校园', '办公室', '家庭', '便利店', '小区', '餐馆', '商场'];
 const MEDIUM_SETTINGS = ['现代都市', '医院', '旅馆', '摄影棚', '短途列车', '演出后台', '旅游大巴'];
@@ -171,13 +207,15 @@ const KEY_OBJECTS = ['照片', '请假条', '闹钟', '外卖袋', '旧门卡', 
 const RED_HERRINGS = ['像感情纠纷', '像服务事故', '像主角撒谎', '像单纯的误会', '像报复行为'];
 const REVEAL_ANCHORS = ['背景反光', '时间点对不上', '物件位置异常', '一句看似多余的话', '重复出现的小动作', '被刻意忽略的职业信息'];
 const MAX_SCENARIO_ATTEMPTS = 2;
-const MAX_PUZZLE_DRAFT_ATTEMPTS = 2;
+const GENERATION_REQUEST_ATTEMPTS = 1;
 
 type FallbackBuilder = (request: PuzzleGenerationRequest, blueprint: GenerationBlueprint) => Puzzle;
 
 export class OllamaService {
   private readonly debugLogsEnabled = !/^(0|false|no|off)$/iu.test(process.env.AI_DEBUG_LOGS ?? 'true');
   private readonly debugLogMaxChars = this.resolveDebugLogMaxChars(process.env.AI_DEBUG_LOG_MAX_CHARS);
+  private readonly recentFallbackSignatures: string[] = [];
+  private readonly recentFallbackWindowSize = 18;
 
   async checkConnection(
     provider: OllamaSupplier['provider'],
@@ -242,11 +280,6 @@ export class OllamaService {
     const selectedModel = model.trim();
     const blueprint = this.createGenerationBlueprint(request);
     const traceId = `puzzle-${nanoid(8)}`;
-    const auditSupplier =
-      auditOptions?.supplier?.baseUrl && auditOptions.model?.trim()
-        ? auditOptions.supplier
-        : supplier;
-    const auditModel = auditOptions?.model?.trim() || selectedModel;
     const generationDeadline = Number.isFinite(auditOptions?.timeoutMs)
       ? Date.now() + Math.max(30_000, Number(auditOptions?.timeoutMs))
       : null;
@@ -258,7 +291,11 @@ export class OllamaService {
         message: 'No active AI supplier/model. Falling back to local puzzle template.',
         request
       });
-      return this.generateFallbackPuzzle(request, blueprint);
+      return {
+        ...this.generateFallbackPuzzle(request, blueprint),
+        generationSource: 'fallback',
+        generationFailureReason: 'No active AI supplier/model.'
+      };
     }
 
     this.logDebug('info', {
@@ -269,159 +306,155 @@ export class OllamaService {
       blueprint,
       generationProvider: supplier.provider,
       generationModel: selectedModel,
-      auditProvider: auditSupplier?.provider ?? null,
-      auditModel
+      maxScenarioAttempts: MAX_SCENARIO_ATTEMPTS,
+      perScenarioRequestAttempts: GENERATION_REQUEST_ATTEMPTS
     });
 
     let lastFailureReason = 'AI 生成题目未通过校验，请重试。';
 
-    for (let scenarioAttempt = 0; scenarioAttempt < MAX_SCENARIO_ATTEMPTS; scenarioAttempt += 1) {
+    for (let truthAttempt = 0; truthAttempt < MAX_SCENARIO_ATTEMPTS; truthAttempt += 1) {
       try {
         const timedGenerationSupplier = this.withRemainingTimeout(supplier, generationDeadline);
-        const scenario = await this.requestStructuredOutput(
+        const truthBlueprint = await this.requestStructuredOutput(
           timedGenerationSupplier,
           selectedModel,
-          puzzleScenarioSchema,
-          this.buildScenarioMessages(request, blueprint, scenarioAttempt > 0),
+          truthBlueprintSchema,
+          this.buildTruthBlueprintMessages(request, blueprint, truthAttempt > 0),
           {
-            temperature: 0.92,
-            top_p: 0.9,
-            repeat_penalty: 1.06,
-            num_ctx: 12_288,
-            num_predict: 900
+            temperature: 0.38,
+            top_p: 0.82,
+            repeat_penalty: 1.04,
+            num_ctx: 8_192,
+            num_predict: 850
           },
           {
             traceId,
             operation: 'generate_puzzle',
-            stage: `scenario_attempt_${scenarioAttempt + 1}`
-          }
+            stage: `truth_attempt_${truthAttempt + 1}`
+          },
+          GENERATION_REQUEST_ATTEMPTS
         );
 
         this.logDebug('info', {
           traceId,
           operation: 'generate_puzzle',
-          message: 'Scenario generated.',
-          attempt: scenarioAttempt + 1,
-          scenario
+          message: 'Truth blueprint generated.',
+          attempt: truthAttempt + 1,
+          truthBlueprint
         });
 
-        const scenarioAudit = this.auditScenarioLocally(scenario, request, blueprint);
+        const truthAudit = this.auditTruthBlueprintLocally(truthBlueprint, request, blueprint);
 
         this.logDebug('info', {
           traceId,
           operation: 'generate_puzzle',
-          message: 'Scenario audit finished.',
-          attempt: scenarioAttempt + 1,
-          scenarioAudit
+          message: 'Truth blueprint audit finished.',
+          attempt: truthAttempt + 1,
+          truthAudit
         });
 
-        if (!scenarioAudit.valid) {
-          lastFailureReason = scenarioAudit.reasons[0] ?? lastFailureReason;
+        if (!truthAudit.valid) {
+          lastFailureReason = truthAudit.reasons[0] ?? lastFailureReason;
           continue;
         }
 
-        let previousPuzzleFailure = '';
+        const surfaceDraft = await this.requestStructuredOutput(
+          timedGenerationSupplier,
+          selectedModel,
+          surfaceDraftSchema,
+          this.buildSurfaceDraftMessages(request, blueprint, truthBlueprint),
+          {
+            temperature: 0.42,
+            top_p: 0.84,
+            repeat_penalty: 1.04,
+            num_ctx: 8_192,
+            num_predict: 900
+          },
+          {
+            traceId,
+            operation: 'generate_puzzle',
+            stage: `draft_attempt_${truthAttempt + 1}`
+          },
+          GENERATION_REQUEST_ATTEMPTS
+        );
 
-        for (let puzzleDraftAttempt = 0; puzzleDraftAttempt < MAX_PUZZLE_DRAFT_ATTEMPTS; puzzleDraftAttempt += 1) {
-          const parsed = await this.requestStructuredOutput(
-            timedGenerationSupplier,
-            selectedModel,
-            generatedPuzzleSchema,
-            this.buildGenerationMessages(
-              request,
-              blueprint,
-              scenario,
-              scenarioAttempt > 0 || puzzleDraftAttempt > 0,
-              previousPuzzleFailure
-            ),
-            {
-              temperature: 0.95,
-              top_p: 0.92,
-              repeat_penalty: 1.08,
-              num_ctx: 12_288,
-              num_predict: 1_400
-            },
-            {
-              traceId,
-              operation: 'generate_puzzle',
-              stage: `puzzle_attempt_${scenarioAttempt + 1}_${puzzleDraftAttempt + 1}`
-            }
-          );
-          const puzzle = this.normalizeGeneratedPuzzle(parsed, request, blueprint);
-          const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Surface draft generated from truth blueprint.',
+          attempt: truthAttempt + 1,
+          surfaceDraft
+        });
 
+        const puzzle = this.composePuzzleFromDraft(truthBlueprint, surfaceDraft, request, blueprint);
+        const localAudit = this.auditGeneratedPuzzleLocally(puzzle, request, blueprint);
+
+        this.logDebug('info', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Draft assembled and finished local audit.',
+          attempt: truthAttempt + 1,
+          localAudit,
+          candidate: puzzle
+        });
+
+        if (localAudit.valid) {
           this.logDebug('info', {
             traceId,
             operation: 'generate_puzzle',
-            message: 'Local audit finished.',
-            attempt: scenarioAttempt + 1,
-            draftAttempt: puzzleDraftAttempt + 1,
-            localAudit,
+            message: 'Puzzle accepted.',
+            attempt: truthAttempt + 1,
             candidate: puzzle
           });
-
-          if (!localAudit.valid) {
-            previousPuzzleFailure = localAudit.reasons[0] ?? previousPuzzleFailure;
-            lastFailureReason = previousPuzzleFailure || lastFailureReason;
-            continue;
-          }
-
-          const remoteAudit = await this.auditGeneratedPuzzleWithModel(
-            auditSupplier,
-            auditModel,
-            request,
-            blueprint,
-            puzzle,
-            generationDeadline,
-            traceId,
-            scenarioAttempt + 1
-          );
-
-          this.logDebug('info', {
-            traceId,
-            operation: 'generate_puzzle',
-            message: 'Remote audit finished.',
-            attempt: scenarioAttempt + 1,
-            draftAttempt: puzzleDraftAttempt + 1,
-            remoteAudit
-          });
-
-          if (remoteAudit.valid) {
-            this.logDebug('info', {
-              traceId,
-              operation: 'generate_puzzle',
-              message: 'Puzzle accepted.',
-              attempt: scenarioAttempt + 1,
-              draftAttempt: puzzleDraftAttempt + 1,
-              candidate: puzzle
-            });
-            return puzzle;
-          }
-
-          previousPuzzleFailure = remoteAudit.reasons[0] ?? previousPuzzleFailure;
-          lastFailureReason = previousPuzzleFailure || lastFailureReason;
+          return puzzle;
         }
+
+        const locallyComposedPuzzle = this.compilePuzzleFromTruthBlueprint(truthBlueprint, request, blueprint);
+        const locallyComposedAudit = this.auditGeneratedPuzzleLocally(locallyComposedPuzzle, request, blueprint);
+
+        this.logDebug('warn', {
+          traceId,
+          operation: 'generate_puzzle',
+          message: 'Model draft rejected, trying deterministic draft from accepted truth blueprint.',
+          attempt: truthAttempt + 1,
+          rejectionReason: localAudit.reasons[0] ?? null,
+          locallyComposedAudit
+        });
+
+        if (locallyComposedAudit.valid) {
+          return locallyComposedPuzzle;
+        }
+
+        lastFailureReason = locallyComposedAudit.reasons[0] ?? localAudit.reasons[0] ?? lastFailureReason;
       } catch (error) {
         lastFailureReason = error instanceof Error ? error.message : lastFailureReason;
         this.logDebug('error', {
           traceId,
           operation: 'generate_puzzle',
           message: 'Puzzle generation attempt failed.',
-          attempt: scenarioAttempt + 1,
+          attempt: truthAttempt + 1,
           error: this.describeUnknownError(error)
         });
       }
     }
 
-    this.logDebug('error', {
+    const fallbackPuzzle = this.generateFallbackPuzzle(request, blueprint);
+
+    this.logDebug('warn', {
       traceId,
       operation: 'generate_puzzle',
-      message: 'Puzzle generation rejected after all attempts.',
+      message: 'Puzzle generation rejected after all attempts. Falling back to stable local puzzle.',
       reason: lastFailureReason,
       request,
-      blueprint
+      blueprint,
+      fallbackTitle: fallbackPuzzle.title
     });
-    throw new Error(lastFailureReason);
+
+    return {
+      ...fallbackPuzzle,
+      generationSource: 'fallback',
+      generationFailureReason: lastFailureReason
+    };
   }
 
   async generateHint(supplier: OllamaSupplier | null, model: string, puzzle: Puzzle, context: RoomContext) {
@@ -568,12 +601,14 @@ export class OllamaService {
     schema: z.ZodType<T>,
     messages: OllamaChatMessage[],
     options: Record<string, unknown>,
-    traceMeta?: AiTraceMeta
+    traceMeta?: AiTraceMeta,
+    maxAttempts = 2
   ) {
     let lastError: unknown = null;
-    const attempts: OllamaChatMessage[][] = [
-      messages,
-      [
+    const attempts: OllamaChatMessage[][] = [messages];
+
+    if (maxAttempts > 1) {
+      attempts.push([
         ...messages,
         {
           role: 'user',
@@ -583,10 +618,10 @@ export class OllamaService {
             'No markdown, no comments, no extra prose, no code fences.'
           ].join('\n')
         }
-      ]
-    ];
+      ]);
+    }
 
-    for (const attemptMessages of attempts) {
+    for (const [attemptIndex, attemptMessages] of attempts.entries()) {
       try {
         this.logDebug('info', {
           traceId: traceMeta?.traceId ?? '',
@@ -596,7 +631,8 @@ export class OllamaService {
           model,
           supplierLabel: supplier.label,
           baseUrl: supplier.baseUrl,
-          attempt: attempts.indexOf(attemptMessages) + 1,
+          attempt: attemptIndex + 1,
+          maxAttempts: attempts.length,
           messages: attemptMessages,
           options,
           format: 'json'
@@ -615,7 +651,7 @@ export class OllamaService {
           stage: traceMeta?.stage ?? 'response',
           provider: supplier.provider,
           model,
-          attempt: attempts.indexOf(attemptMessages) + 1,
+          attempt: attemptIndex + 1,
           rawContent: content
         });
 
@@ -626,7 +662,7 @@ export class OllamaService {
           stage: traceMeta?.stage ?? 'parsed',
           provider: supplier.provider,
           model,
-          attempt: attempts.indexOf(attemptMessages) + 1,
+          attempt: attemptIndex + 1,
           parsed
         });
         return parsed;
@@ -638,7 +674,7 @@ export class OllamaService {
           stage: traceMeta?.stage ?? 'error',
           provider: supplier.provider,
           model,
-          attempt: attempts.indexOf(attemptMessages) + 1,
+          attempt: attemptIndex + 1,
           error: this.describeUnknownError(error)
         });
       }
@@ -663,6 +699,8 @@ export class OllamaService {
           'Every field must refer to the same people, the same place, and the same timeline.',
           'Do not output abstract summaries about professional judgment, hidden risk, or noticing something wrong.',
           'Do not switch incidents midway. Do not introduce a second story in fact seeds.',
+          'Use short, concrete, event-driven sentences that can be directly acted out on screen.',
+          'Avoid nested causes, excessive backstory, or any answer that requires a second drafting pass to become concrete.',
           ...(retryMode
             ? [
                 'The previous scenario was rejected.',
@@ -717,6 +755,145 @@ export class OllamaService {
               misleadingPoints: ['string'],
               keyTriggers: ['string'],
               tags: ['string']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildTruthBlueprintMessages(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    retryMode = false
+  ): OllamaChatMessage[] {
+    return [
+      {
+        role: 'system',
+        content: [
+          '你是中文海龟汤出题编辑。',
+          '你只负责先生成可游玩的汤底蓝图。',
+          '必须使用简体中文。',
+          '只能返回一个 JSON 对象，不要输出任何解释、代码块或额外文字。',
+          '先把汤底写扎实，再考虑题面。',
+          '汤底必须是一个具体事件，必须能完整讲清楚：发生了什么、谁做了什么、为什么这么做、最后结果是什么。',
+          '禁止空泛表达，比如“察觉风险”“知道规则”“觉得不对劲”“做出判断”。',
+          '禁止双线故事、双重反转、平行时间线、无关支线。',
+          '事实种子必须都服务于同一条因果链。',
+          ...(retryMode
+            ? ['上一版汤底蓝图不合格，请重写，并且保证整条因果链更具体、更单一、更容易还原。']
+            : [])
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          '请先生成这一局海龟汤的汤底蓝图。',
+          '',
+          `难度：${this.toChineseDifficulty(request.difficulty)}`,
+          `用户主题偏好：${request.prompt.trim() || '随机主题，用户没有额外要求'}`,
+          '',
+          '创意约束：',
+          `- 场景方向：${blueprint.setting}`,
+          `- 氛围：${blueprint.atmosphere}`,
+          `- 人际关系：${blueprint.relationship}`,
+          `- 表面反差：${blueprint.contradiction}`,
+          `- 隐藏机制：${blueprint.hiddenMechanism}`,
+          `- 当下压力：${blueprint.pressure}`,
+          `- 关键物件：${blueprint.keyObject}`,
+          `- 常见误导：${blueprint.redHerring}`,
+          `- 揭示锚点：${blueprint.revealAnchor}`,
+          `- 新鲜度标记：${blueprint.noveltyToken}`,
+          '',
+          '输出要求：',
+          '1. title：这局题的标题，简短但不俗套。',
+          '2. truthStory：完整汤底，2 到 4 句话，必须是一件具体发生过的事，不要抽象总结。',
+          '3. trigger：真正触发事件的那个瞬间。',
+          '4. decisiveAction：旁观者能看到的那个奇怪动作。',
+          '5. outcome：这个动作最终避免了什么、暴露了什么，或者导致了什么。',
+          '6. involvedRoles：涉及人物，2 到 5 个。',
+          '7. keyObjects：关键物件，1 到 5 个。',
+          '8. factSeeds：5 到 8 条事实种子，都是同一事件线上的具体细节。',
+          '9. misleadingPoints：2 到 4 条常见误解方向。',
+          '10. keyTriggers：2 到 4 条值得玩家追问的方向。',
+          '11. tags：短中文标签。',
+          '',
+          'JSON 结构：',
+          JSON.stringify(
+            {
+              title: '字符串',
+              truthStory: '字符串',
+              trigger: '字符串',
+              decisiveAction: '字符串',
+              outcome: '字符串',
+              involvedRoles: ['主角', '同伴'],
+              keyObjects: ['工牌'],
+              factSeeds: ['字符串'],
+              misleadingPoints: ['字符串'],
+              keyTriggers: ['字符串'],
+              tags: ['字符串']
+            },
+            null,
+            2
+          )
+        ].join('\n')
+      }
+    ];
+  }
+
+  private buildSurfaceDraftMessages(
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint,
+    truthBlueprint: TruthBlueprint
+  ): OllamaChatMessage[] {
+    const stageOneMessages = this.buildTruthBlueprintMessages(request, blueprint, false);
+
+    return [
+      stageOneMessages[0] as OllamaChatMessage,
+      stageOneMessages[1] as OllamaChatMessage,
+      {
+        role: 'assistant',
+        content: JSON.stringify(truthBlueprint, null, 2)
+      },
+      {
+        role: 'user',
+        content: [
+          '上面这份 JSON 已经是确认通过的汤底蓝图，不允许改动它的核心事件。',
+          '现在请只基于这份汤底蓝图，生成题面和事实链。',
+          '仍然必须使用简体中文。',
+          '仍然只能返回一个 JSON 对象。',
+          '',
+          '输出要求：',
+          '1. soupSurface：1 到 2 句题面，必须是同一事件里玩家眼前看到的奇怪场景，不能换场景，不能剧透。',
+          '2. facts：5 到 8 条正式事实链，必须都服务于同一条因果链，不能引入第二个故事。',
+          '3. misleadingPoints：2 到 4 条误导方向，可以沿用或优化汤底蓝图里的误导。',
+          '4. keyTriggers：2 到 4 条提问方向，必须能帮助玩家逼近这份汤底。',
+          '5. tags：短中文标签。',
+          '',
+          '硬性限制：',
+          '- 题面必须依赖上面的汤底，不能另起炉灶。',
+          '- facts 里至少 4 条要复用汤底中的具体名词、人物、物件或动作。',
+          '- 不要输出“主角知道规则”“发现风险”这种抽象句子，必须写清楚具体细节。',
+          '- 不允许在 facts 里偷偷改写汤底。',
+          '',
+          'JSON 结构：',
+          JSON.stringify(
+            {
+              soupSurface: '字符串',
+              facts: [
+                {
+                  factId: 'fact-1',
+                  statement: '字符串',
+                  importance: 8,
+                  discoverable: true,
+                  keywords: ['字符串']
+                }
+              ],
+              misleadingPoints: ['字符串'],
+              keyTriggers: ['字符串'],
+              tags: ['字符串']
             },
             null,
             2
@@ -1084,6 +1261,221 @@ export class OllamaService {
     ].join('\n');
   }
 
+  private buildTruthBlueprintDossier(truthBlueprint: TruthBlueprint) {
+    return [
+      `Title: ${truthBlueprint.title}`,
+      `Truth story: ${truthBlueprint.truthStory}`,
+      `Trigger: ${truthBlueprint.trigger}`,
+      `Decisive action: ${truthBlueprint.decisiveAction}`,
+      `Outcome: ${truthBlueprint.outcome}`,
+      `Involved roles: ${truthBlueprint.involvedRoles.join(' / ')}`,
+      `Key objects: ${truthBlueprint.keyObjects.join(' / ')}`,
+      `Fact seeds: ${truthBlueprint.factSeeds.map((item, index) => `${index + 1}. ${item}`).join(' | ')}`,
+      `Misleading points: ${truthBlueprint.misleadingPoints.join(' / ') || 'none'}`,
+      `Key triggers: ${truthBlueprint.keyTriggers.join(' / ') || 'none'}`,
+      `Tags: ${truthBlueprint.tags.join(' / ') || 'none'}`
+    ].join('\n');
+  }
+
+  private composePuzzleFromDraft(
+    truthBlueprint: TruthBlueprint,
+    draft: SurfaceDraft,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint
+  ): Puzzle {
+    const promptTags = this.extractPromptFragments(request.prompt);
+
+    return {
+      puzzleId: `generated-${nanoid(12)}`,
+      title: this.normalizeScenarioTitle(truthBlueprint.title, blueprint),
+      soupSurface: this.normalizeScenarioSentence(draft.soupSurface),
+      truthStory: this.normalizeScenarioSentence(truthBlueprint.truthStory),
+      facts: draft.facts.map((fact, index) => ({
+        factId: fact.factId?.trim() || `fact-${index + 1}`,
+        statement: this.normalizeScenarioSentence(fact.statement),
+        importance: fact.importance,
+        discoverable: fact.discoverable,
+        keywords: this.ensureKeywords(fact.statement, fact.keywords)
+      })),
+      misleadingPoints: unique(
+        [...draft.misleadingPoints, ...truthBlueprint.misleadingPoints, blueprint.redHerring]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      keyTriggers: unique(
+        [...draft.keyTriggers, ...truthBlueprint.keyTriggers, ...this.buildDefaultKeyTriggers(truthBlueprint)]
+          .map((item) => this.normalizeQuestionPrompt(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      difficulty: request.difficulty,
+      tags: unique(
+        [...draft.tags, ...truthBlueprint.tags, 'dynamic', blueprint.setting, blueprint.keyObject, ...promptTags]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 8),
+      generationSource: 'ai',
+      generationFailureReason: null
+    };
+  }
+
+  private compilePuzzleFromTruthBlueprint(
+    truthBlueprint: TruthBlueprint,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint
+  ): Puzzle {
+    const promptTags = this.extractPromptFragments(request.prompt);
+    const factStatements = unique(
+      [...truthBlueprint.factSeeds, truthBlueprint.trigger, truthBlueprint.decisiveAction, truthBlueprint.outcome]
+        .map((item) => this.normalizeScenarioSentence(item))
+        .filter(Boolean)
+    ).slice(0, 8);
+    const soupSurface = this.buildSoupSurfaceFromTruthBlueprint(truthBlueprint, blueprint);
+
+    return {
+      puzzleId: `generated-${nanoid(12)}`,
+      title: this.normalizeScenarioTitle(truthBlueprint.title, blueprint),
+      soupSurface,
+      truthStory: this.normalizeScenarioSentence(truthBlueprint.truthStory),
+      facts: factStatements.map((statement, index) => ({
+        factId: `fact-${index + 1}`,
+        statement,
+        importance: Math.max(4, 10 - index),
+        discoverable: true,
+        keywords: this.ensureKeywords(statement, [])
+      })),
+      misleadingPoints: unique(
+        [...truthBlueprint.misleadingPoints, blueprint.redHerring]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      keyTriggers: unique(
+        [...truthBlueprint.keyTriggers, ...this.buildDefaultKeyTriggers(truthBlueprint)]
+          .map((item) => this.normalizeQuestionPrompt(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      difficulty: request.difficulty,
+      tags: unique(
+        [...truthBlueprint.tags, 'dynamic', blueprint.setting, blueprint.keyObject, ...promptTags]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 8),
+      generationSource: 'ai',
+      generationFailureReason: null
+    };
+  }
+
+  private compilePuzzleFromScenario(
+    scenario: PuzzleScenario,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint
+  ): Puzzle {
+    const promptTags = this.extractPromptFragments(request.prompt);
+    const factStatements = unique(
+      [
+        ...scenario.factSeeds,
+        scenario.trigger,
+        scenario.hiddenCause,
+        scenario.decisiveAction,
+        scenario.outcome
+      ]
+        .map((item) => this.normalizeScenarioSentence(item))
+        .filter(Boolean)
+    ).slice(0, 8);
+    const truthStory = [
+      this.normalizeScenarioSentence(scenario.hiddenCause),
+      this.normalizeScenarioSentence(scenario.trigger, '事发时，'),
+      this.normalizeScenarioSentence(scenario.decisiveAction, '于是，'),
+      this.normalizeScenarioSentence(scenario.outcome, '最后，')
+    ]
+      .filter(Boolean)
+      .join('');
+
+    return {
+      puzzleId: `generated-${nanoid(12)}`,
+      title: this.normalizeScenarioTitle(scenario.title, blueprint),
+      soupSurface: this.normalizeScenarioSentence(scenario.visibleScene),
+      truthStory,
+      facts: factStatements.map((statement, index) => ({
+        factId: `fact-${index + 1}`,
+        statement,
+        importance: Math.max(4, 10 - index),
+        discoverable: true,
+        keywords: this.ensureKeywords(statement, [])
+      })),
+      misleadingPoints: unique(
+        [...scenario.misleadingPoints, blueprint.redHerring]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      keyTriggers: unique(
+        [...scenario.keyTriggers, ...this.buildDefaultKeyTriggers(scenario)]
+          .map((item) => this.normalizeQuestionPrompt(item))
+          .filter(Boolean)
+      ).slice(0, 4),
+      difficulty: request.difficulty,
+      tags: unique(
+        [...scenario.tags, 'dynamic', blueprint.setting, blueprint.keyObject, ...promptTags]
+          .map((item) => this.normalizeShortListItem(item))
+          .filter(Boolean)
+      ).slice(0, 8),
+      generationSource: 'ai',
+      generationFailureReason: null
+    };
+  }
+
+  private auditTruthBlueprintLocally(
+    truthBlueprint: TruthBlueprint,
+    request: PuzzleGenerationRequest,
+    blueprint: GenerationBlueprint
+  ) {
+    const reasons: string[] = [];
+    const truthTokens = new Set(this.extractComparableTokens([truthBlueprint.truthStory]));
+    const triggerTokens = new Set(this.extractComparableTokens([truthBlueprint.trigger]));
+    const actionTokens = new Set(this.extractComparableTokens([truthBlueprint.decisiveAction]));
+    const outcomeTokens = new Set(this.extractComparableTokens([truthBlueprint.outcome]));
+    const factLinkedCount = truthBlueprint.factSeeds.filter((fact) => {
+      const factTokens = new Set(this.extractComparableTokens([fact]));
+      return this.countSharedTokens(factTokens, truthTokens, triggerTokens, actionTokens, outcomeTokens) >= 1;
+    }).length;
+    const roomTokens = new Set(
+      this.extractComparableTokens([
+        truthBlueprint.title,
+        truthBlueprint.truthStory,
+        truthBlueprint.trigger,
+        truthBlueprint.decisiveAction,
+        truthBlueprint.outcome,
+        ...truthBlueprint.factSeeds,
+        ...truthBlueprint.keyObjects,
+        ...truthBlueprint.involvedRoles,
+        blueprint.setting,
+        blueprint.keyObject
+      ])
+    );
+    const promptTokens = this.extractComparableTokens([request.prompt]);
+
+    if (this.countSharedTokens(truthTokens, triggerTokens, actionTokens, outcomeTokens) < 2) {
+      reasons.push('汤底主叙述和触发、动作、结果没有稳定落在同一事件上。');
+    }
+
+    if (factLinkedCount < 4) {
+      reasons.push('汤底事实种子没有稳定支撑同一条事件线。');
+    }
+
+    if (this.isAbstractTruthStory(truthBlueprint.truthStory)) {
+      reasons.push('汤底仍然过于抽象，缺少可具体还原的事件经过。');
+    }
+
+    if (promptTokens.length > 0 && !promptTokens.some((token) => roomTokens.has(token))) {
+      reasons.push('汤底没有响应用户主题要求。');
+    }
+
+    return {
+      valid: reasons.length === 0,
+      coherenceScore: reasons.length === 0 ? 100 : Math.max(0, 88 - reasons.length * 20),
+      reasons
+    };
+  }
+
   private auditScenarioLocally(
     scenario: PuzzleScenario,
     request: PuzzleGenerationRequest,
@@ -1279,8 +1671,31 @@ export class OllamaService {
   }
 
   private hasConcreteEventStructure(puzzle: Puzzle) {
-    const actionSignals = ['报警', '离开', '打断', '打翻', '拒绝', '更换', '锁上', '跟踪', '冒充', '拿走', '送来', '退回', '中断'];
-    const outcomeSignals = ['结果', '于是', '因此', '随后', '最后', '为了', '导致', '避免', '阻止', '发现', '意识到'];
+    const actionSignals = [
+      '报警',
+      '离开',
+      '打断',
+      '打翻',
+      '拒绝',
+      '更换',
+      '锁上',
+      '跟踪',
+      '冒充',
+      '拿走',
+      '送来',
+      '退回',
+      '中断',
+      '检查',
+      '核对',
+      '叫住',
+      '查看',
+      '取消',
+      '拦住',
+      '打开',
+      '质问',
+      '求助'
+    ];
+    const outcomeSignals = ['结果', '于是', '因此', '随后', '最后', '为了', '导致', '避免', '阻止', '发现', '意识到', '确认', '明白', '这才'];
     const narrativeText = `${puzzle.soupSurface} ${puzzle.truthStory} ${puzzle.facts.slice(0, 3).map((fact) => fact.statement).join(' ')}`;
     const actionCount = actionSignals.filter((signal) => narrativeText.includes(signal)).length;
     const outcomeCount = outcomeSignals.filter((signal) => narrativeText.includes(signal)).length;
@@ -1506,10 +1921,13 @@ export class OllamaService {
 
   private parseStructuredJson<T>(raw: string, schema: z.ZodType<T>) {
     const normalized = raw.trim();
+    const extracted = this.extractJsonBlock(normalized);
     const candidates = [
       normalized,
       normalized.replace(/^```json\s*/iu, '').replace(/^```\s*/u, '').replace(/\s*```$/u, '').trim(),
-      this.extractJsonBlock(normalized)
+      extracted,
+      this.repairLikelyJson(normalized),
+      extracted ? this.repairLikelyJson(extracted) : ''
     ].filter((item): item is string => Boolean(item));
 
     for (const candidate of candidates) {
@@ -1532,6 +1950,18 @@ export class OllamaService {
     }
 
     return '';
+  }
+
+  private repairLikelyJson(value: string) {
+    return value
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/gu, '')
+      .replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/gu, '$1"$2":')
+      .replace(/([:\[,]\s*)'([^'\\]*(?:\\.[^'\\]*)*)'(?=\s*[,}\]])/gu, (_match, prefix: string, inner: string) => {
+        const escaped = inner.replace(/\\/gu, '\\\\').replace(/"/gu, '\\"');
+        return `${prefix}"${escaped}"`;
+      })
+      .replace(/,\s*([}\]])/gu, '$1')
+      .trim();
   }
 
   private mapOllamaModel(item: Record<string, unknown>): OllamaModel {
@@ -1862,23 +2292,40 @@ export class OllamaService {
       this.buildFallbackImpersonation.bind(this),
       this.buildFallbackRecordedSignal.bind(this),
       this.buildFallbackIsolation.bind(this),
-      this.buildFallbackStalkerReveal.bind(this),
-      this.buildFallbackJobConstraint.bind(this)
+      this.buildFallbackStalkerReveal.bind(this)
     ];
 
-    const candidates = [...builders];
+    const recentSignatures = new Set(this.recentFallbackSignatures);
+    const blueprintCandidates = this.shuffleItems([
+      blueprint,
+      this.createGenerationBlueprint(request),
+      this.createGenerationBlueprint(request),
+      this.createGenerationBlueprint(request)
+    ]);
+    let repeatedCandidate: Puzzle | null = null;
 
-    while (candidates.length > 0) {
-      const builderIndex = Math.floor(Math.random() * candidates.length);
-      const [builder] = candidates.splice(builderIndex, 1);
-      const puzzle = builder?.(request, blueprint);
+    for (const currentBlueprint of blueprintCandidates) {
+      for (const builder of this.shuffleItems(builders)) {
+        const puzzle = builder?.(request, currentBlueprint);
 
-      if (puzzle && this.auditGeneratedPuzzleLocally(puzzle, request, blueprint).valid) {
-        return puzzle;
+        if (!puzzle || !this.auditGeneratedPuzzleLocally(puzzle, request, currentBlueprint).valid) {
+          continue;
+        }
+
+        const signature = this.buildFallbackSignature(puzzle);
+
+        if (!recentSignatures.has(signature)) {
+          this.rememberFallbackSignature(signature);
+          return puzzle;
+        }
+
+        repeatedCandidate ??= puzzle;
       }
     }
 
-    return this.buildFallbackProtectiveLie(request, blueprint);
+    const fallbackPuzzle = repeatedCandidate ?? this.buildFallbackProtectiveLie(request, blueprint);
+    this.rememberFallbackSignature(this.buildFallbackSignature(fallbackPuzzle));
+    return fallbackPuzzle;
   }
 
   private buildFallbackProtectiveLie(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
@@ -1902,7 +2349,7 @@ export class OllamaService {
 
   private buildFallbackImpersonation(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
-      title: '迟到的身份',
+      title: `${blueprint.setting}里的迟到身份`,
       soupSurface: `在${blueprint.setting}里，主角听到一句再普通不过的自我介绍后，立刻取消原计划，转身就报了警。`,
       truthStory: `一名自称来接人的陌生人在${blueprint.setting}里说了一句外人很难注意的错误套话。主角又看见对方递出的${blueprint.keyObject}和${blueprint.revealAnchor}完全对不上，立刻确定来的人不是原本约好的那个人，而是在冒充身份接近目标。由于${blueprint.pressure}，主角不能继续陪着演下去，只能当场改口取消安排并报警。`,
       facts: [
@@ -1921,7 +2368,7 @@ export class OllamaService {
 
   private buildFallbackRecordedSignal(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
-      title: '没出现的提醒',
+      title: `${blueprint.keyObject}没有出现的提醒`,
       soupSurface: '主角醒来后发现某个平时必然出现的提醒没有出现，却因此判断事情已经发生了。',
       truthStory: `前一天晚上，主角和同伴约好，只要对方安全到家，就会用${blueprint.keyObject}发来固定提醒。第二天那条提醒没有出现，主角却在门口发现和${blueprint.revealAnchor}有关的异常，意识到不是同伴忘了发，而是对方在回家前就被人拦住了。有人还故意动过主角周围的信息，让他差点错过报警时机。`,
       facts: [
@@ -1940,7 +2387,7 @@ export class OllamaService {
 
   private buildFallbackIsolation(request: PuzzleGenerationRequest, blueprint: GenerationBlueprint): Puzzle {
     return this.buildFallbackPuzzle(request, blueprint, {
-      title: '被安排好的安静',
+      title: `${blueprint.setting}里的假安静`,
       soupSurface: `主角在${blueprint.setting}里突然发现周围异常安静，随后立刻放弃了自己原本最在意的安排。`,
       truthStory: `主角原本准备带着${blueprint.keyObject}按时离开${blueprint.setting}去见一个重要的人，可那天周围安静得反常，连平时一定会传来的动静都没有。他检查后发现门口和${blueprint.revealAnchor}被人动过，意识到自己被故意困在里面。真正的目标不是他手上的安排，而是有人想趁他无法出去时，在外面对另一个人下手，所以他立刻放弃原计划，改成先求助。`,
       facts: [
@@ -1995,6 +2442,65 @@ export class OllamaService {
     });
   }
 
+  private normalizeScenarioTitle(title: string, blueprint: GenerationBlueprint) {
+    const normalized = title.trim().replace(/[。！？]+$/u, '');
+    return normalized || `${blueprint.keyObject}里的异常`;
+  }
+
+  private buildSoupSurfaceFromTruthBlueprint(truthBlueprint: TruthBlueprint, blueprint: GenerationBlueprint) {
+    const role = truthBlueprint.involvedRoles[0]?.trim() || '主角';
+    const keyObject = truthBlueprint.keyObjects[0]?.trim() || blueprint.keyObject;
+    const action = this.normalizeShortListItem(truthBlueprint.decisiveAction);
+    const outcome = this.normalizeShortListItem(truthBlueprint.outcome);
+
+    return `在${blueprint.setting}里，${role}${action}，旁人完全看不懂。直到最后，人们才知道这和${keyObject}以及“${outcome}”有关。`;
+  }
+
+  private normalizeScenarioSentence(value: string, prefix = '') {
+    const normalized = value
+      .trim()
+      .replace(/^[：:、，,\s]+/u, '')
+      .replace(/[。！？]+$/u, '');
+
+    if (!normalized) {
+      return '';
+    }
+
+    return `${prefix}${normalized}。`;
+  }
+
+  private normalizeShortListItem(value: string) {
+    return value
+      .trim()
+      .replace(/^[：:、，,\s]+/u, '')
+      .replace(/[。！？]+$/u, '');
+  }
+
+  private normalizeQuestionPrompt(value: string) {
+    const normalized = this.normalizeShortListItem(value);
+
+    if (!normalized) {
+      return '';
+    }
+
+    return /[？?]$/u.test(normalized) ? normalized : `${normalized}？`;
+  }
+
+  private buildDefaultKeyTriggers(input: { keyObjects: string[]; involvedRoles: string[] }) {
+    const keyObject = input.keyObjects[0]?.trim();
+    const role = input.involvedRoles[0]?.trim();
+
+    return [
+      keyObject ? `关键是不是藏在${keyObject}的细节里` : '',
+      role ? `${role}为什么会在那一刻突然行动` : '',
+      '表面异常是不是由时间或身份错位造成的'
+    ];
+  }
+
+  private toChineseDifficulty(difficulty: Difficulty) {
+    return difficulty === 'easy' ? '简单' : difficulty === 'hard' ? '困难' : '中等';
+  }
+
   private buildFallbackPuzzle(
     request: PuzzleGenerationRequest,
     blueprint: GenerationBlueprint,
@@ -2025,7 +2531,9 @@ export class OllamaService {
       misleadingPoints: unique([...input.misleadingPoints, blueprint.redHerring]).slice(0, 4),
       keyTriggers: unique(input.keyTriggers).slice(0, 4),
       difficulty: request.difficulty,
-      tags: unique([...input.tags, 'dynamic', blueprint.setting, ...promptTags]).slice(0, 8)
+      tags: unique([...input.tags, 'dynamic', 'fallback-local', blueprint.setting, ...promptTags]).slice(0, 8),
+      generationSource: 'fallback',
+      generationFailureReason: null
     };
   }
 
@@ -2166,6 +2674,29 @@ export class OllamaService {
 
   private pickRandom<T>(items: T[]) {
     return items[Math.floor(Math.random() * items.length)] as T;
+  }
+
+  private shuffleItems<T>(items: T[]) {
+    const next = [...items];
+
+    for (let index = next.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [next[index], next[swapIndex]] = [next[swapIndex] as T, next[index] as T];
+    }
+
+    return next;
+  }
+
+  private buildFallbackSignature(puzzle: Puzzle) {
+    return `${puzzle.title}__${puzzle.soupSurface}`;
+  }
+
+  private rememberFallbackSignature(signature: string) {
+    this.recentFallbackSignatures.push(signature);
+
+    if (this.recentFallbackSignatures.length > this.recentFallbackWindowSize) {
+      this.recentFallbackSignatures.splice(0, this.recentFallbackSignatures.length - this.recentFallbackWindowSize);
+    }
   }
 
   private logDebug(level: 'info' | 'warn' | 'error', payload: Record<string, unknown>) {

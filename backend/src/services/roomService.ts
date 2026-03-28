@@ -200,7 +200,9 @@ export class RoomService {
           stage: 'create_room_generation_success',
           timestamp: nowIso(),
           puzzleTitle: puzzle.title,
-          difficulty: puzzle.difficulty
+          difficulty: puzzle.difficulty,
+          generationSource: puzzle.generationSource ?? 'unknown',
+          generationFailureReason: puzzle.generationFailureReason ?? null
         })
       );
     } catch (error) {
@@ -223,6 +225,8 @@ export class RoomService {
       title: roomTitle,
       generationPrompt: resolvedPrompt,
       generationDurationMs,
+      generationSource: puzzle.generationSource ?? 'unknown',
+      generationFailureReason: puzzle.generationFailureReason ?? null,
       puzzleId: puzzle.puzzleId,
       puzzleTitle: puzzle.title,
       soupSurface: puzzle.soupSurface,
@@ -238,7 +242,10 @@ export class RoomService {
           id: nanoid(),
           type: 'system',
           authorName: '系统',
-          content: `${host.displayName} 创建了房间，AI 主持已经准备好汤面。`,
+          content:
+            puzzle.generationSource === 'fallback'
+              ? `${host.displayName} 创建了房间，本局已回落到稳定本地题兜底。`
+              : `${host.displayName} 创建了房间，本局题目由 AI 生成。`,
           createdAt: timestamp
         },
         {
@@ -880,7 +887,9 @@ export class RoomService {
           timestamp: nowIso(),
           roomId,
           puzzleTitle: puzzle.title,
-          difficulty: puzzle.difficulty
+          difficulty: puzzle.difficulty,
+          generationSource: puzzle.generationSource ?? 'unknown',
+          generationFailureReason: puzzle.generationFailureReason ?? null
         })
       );
     } catch (error) {
@@ -911,6 +920,8 @@ export class RoomService {
         title: slugifyPrompt(resolvedPrompt) || puzzle.title,
         generationPrompt: resolvedPrompt,
         generationDurationMs,
+        generationSource: puzzle.generationSource ?? 'unknown',
+        generationFailureReason: puzzle.generationFailureReason ?? null,
         puzzleId: puzzle.puzzleId,
         puzzleTitle: puzzle.title,
         soupSurface: puzzle.soupSurface,
@@ -928,7 +939,10 @@ export class RoomService {
             id: nanoid(),
             type: 'system',
             authorName: '系统',
-            content: `${currentParticipant.displayName} 开启了新一轮，之前的问答记录已清空。`,
+            content:
+              puzzle.generationSource === 'fallback'
+                ? `${currentParticipant.displayName} 开启了新一轮，之前的问答记录已清空，本局暂时使用稳定本地题兜底。`
+                : `${currentParticipant.displayName} 开启了新一轮，之前的问答记录已清空，本局题目由 AI 生成。`,
             createdAt: timestamp
           },
           {
@@ -1666,6 +1680,8 @@ export class RoomService {
       title: room.title,
       generationPrompt: room.generationPrompt,
       generationDurationMs: room.generationDurationMs,
+      generationSource: room.generationSource,
+      generationFailureReason: room.generationFailureReason,
       puzzleTitle: room.puzzleTitle,
       soupSurface: room.soupSurface,
       difficulty: room.difficulty,
