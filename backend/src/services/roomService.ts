@@ -194,7 +194,7 @@ export class RoomService {
           includesDeath: input.includesDeath
         },
         {
-          timeoutMs: state.ollama.generationTimeoutMs
+          timeoutMs: this.resolveGenerationTimeoutMs(state.ollama.generationTimeoutMs, generationSupplier)
         }
       );
       console.info(
@@ -900,7 +900,7 @@ export class RoomService {
           includesDeath: input.includesDeath
         },
         {
-          timeoutMs: state.ollama.generationTimeoutMs
+          timeoutMs: this.resolveGenerationTimeoutMs(state.ollama.generationTimeoutMs, generationSupplier)
         }
       );
       console.info(
@@ -1636,6 +1636,14 @@ export class RoomService {
 
   private resolveMaxQuestionCount(difficulty: Difficulty) {
     return difficulty === 'hard' ? HARD_DIFFICULTY_MAX_QUESTION_COUNT : null;
+  }
+
+  private resolveGenerationTimeoutMs(globalTimeoutMs: number, supplier: OllamaSupplier | null) {
+    if (!supplier?.timeoutMs || !Number.isFinite(supplier.timeoutMs) || supplier.timeoutMs <= 0) {
+      return globalTimeoutMs;
+    }
+
+    return Math.max(30_000, Math.min(globalTimeoutMs, supplier.timeoutMs));
   }
 
   private toRoomContext(room: GameRoom): RoomContext {

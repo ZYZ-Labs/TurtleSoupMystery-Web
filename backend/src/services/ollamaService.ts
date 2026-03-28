@@ -625,6 +625,7 @@ export class OllamaService {
 
     for (const [attemptIndex, attemptMessages] of attempts.entries()) {
       try {
+        const tunedOptions = this.tuneOptionsForSupplier(supplier, options);
         this.logDebug('info', {
           traceId: traceMeta?.traceId ?? '',
           operation: traceMeta?.operation ?? 'structured_output',
@@ -636,7 +637,7 @@ export class OllamaService {
           attempt: attemptIndex + 1,
           maxAttempts: attempts.length,
           messages: attemptMessages,
-          options,
+          options: tunedOptions,
           format: 'json'
         });
 
@@ -644,7 +645,7 @@ export class OllamaService {
           model,
           messages: attemptMessages,
           format: 'json',
-          options
+          options: tunedOptions
         });
 
         this.logDebug('info', {
@@ -711,6 +712,24 @@ export class OllamaService {
     }
 
     return /structured json|valid json|schema|parse|unexpected token|end of json/i.test(error.message);
+  }
+
+  private tuneOptionsForSupplier(supplier: OllamaSupplier, options: Record<string, unknown>) {
+    if (supplier.provider !== 'ollama') {
+      return options;
+    }
+
+    const tunedOptions = { ...options };
+
+    if (typeof tunedOptions.num_ctx === 'number') {
+      tunedOptions.num_ctx = Math.min(Math.max(2048, tunedOptions.num_ctx), 4096);
+    }
+
+    if (typeof tunedOptions.num_predict === 'number') {
+      tunedOptions.num_predict = Math.min(Math.max(160, tunedOptions.num_predict), 480);
+    }
+
+    return tunedOptions;
   }
 
   private buildScenarioMessages(
