@@ -10,11 +10,11 @@
     "init:data": "node --disable-warning=ExperimentalWarning --import tsx/esm src/scripts/initData.ts"
   },
   "dependencies": {
-    "axios": "1.13.6",
+    "axios": "1.17.0",
     "cors": "2.8.6",
     "express": "5.2.1",
     "nanoid": "5.1.7",
-    "ws": "^8.20.0",
+    "ws": "^8.21.0",
     "zod": "4.3.6"
   },
   "devDependencies": {
